@@ -10,6 +10,8 @@ Unity の Windows / macOS 向けビルドで、自ウィンドウの位置、サ
 
 Windows、macOS それぞれではコード例やアセットが見つかりましたが、統一的に扱えるものが無さそうだったため作成しました。
 
+https://twitter.com/i/status/1314440790945361920
+
 
 ## 利用法
 1. Unitypackage から自分の Unity プロジェクトにインポート
@@ -98,5 +100,12 @@ Unityで他のスクリプトから操作できるものです。
 - Xcode
   - macOS版 LibUniWinC.bundle を生成するプロジェクトがあります。
   - ビルドすると Unity フォルダ下の .bundle が上書きされます。
+
+
+## 謝辞
+macOS側のコードは かりばぁ さんの[Unity + Mac + Swift で透過最前面ウィンドウを作る](https://qiita.com/KRiver1/items/9ecf65759cf1349f56af)をベースにさせていただきました。  
+この場を借りて感謝を申し上げます。
+
+
 
 
