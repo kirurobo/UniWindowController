@@ -1,4 +1,10 @@
-using System;
+/**
+ * A sample script of UniWindowContoller
+ * 
+ * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +23,8 @@ namespace Kirurobo
         public Toggle transparentToggle;
         public Toggle topmostToggle;
         public Toggle dragMoveToggle;
+        public Toggle maximizedToggle;
+        public Dropdown transparentTypeDropdown;
         public Dropdown hitTestTypeDropdown;
         public Toggle clickThroughToggle;
         public Image pickedColorImage;
@@ -25,7 +33,9 @@ namespace Kirurobo
         public Button menuCloseButton;
         public RectTransform menuPanel;
 
-        // Use this for initialization
+        /// <summary>
+        /// 初期化
+        /// </summary>
         void Start()
         {
             // UniWindowController を探す
@@ -37,36 +47,28 @@ namespace Kirurobo
             // Toggleのチェック状態を、現在の状態に合わせる
             UpdateUI();
 
-            // Toggleを操作された際にはウィンドウに反映されるようにする
-            if (transparentToggle)
+            if (uniwinc)
             {
-                transparentToggle.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
-            }
-            if (topmostToggle)
-            {
-                topmostToggle.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
-            }
-            if (dragMoveToggle && uniwinDragMove)
-            {
-                dragMoveToggle.onValueChanged.AddListener(val => uniwinDragMove.enabled = val);
-            }
-            if (clickThroughToggle)
-            {
-                clickThroughToggle.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
-            }
+                // UIを操作された際にはウィンドウに反映されるようにする
+                transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
+                topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
+                maximizedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
+                dragMoveToggle?.onValueChanged.AddListener(val => uniwinDragMove.enabled = val);
+                clickThroughToggle?.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
 
-            if (hitTestTypeDropdown)
-            {
-                hitTestTypeDropdown.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
-            }
-            if (menuCloseButton)
-            {
-                menuCloseButton.onClick.AddListener(CloseMenu);
+                transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.transparentType = (UniWinCore.TransparentType)val);
+                hitTestTypeDropdown?.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
+                menuCloseButton?.onClick.AddListener(CloseMenu);
+
+#if !UNITY_WIN
+                // Windows でなければ、透過方法の選択は無効とする
+                if (transparentTypeDropdown) transparentTypeDropdown.interactable = false;
+#endif
             }
         }
 
         /// <summary>
-        /// 
+        /// 毎フレーム行う処理
         /// </summary>
         private void Update()
         {
@@ -170,6 +172,11 @@ namespace Kirurobo
                 if (topmostToggle)
                 {
                     topmostToggle.isOn = uniwinc.isTopmost;
+                }
+
+                if (maximizedToggle)
+                {
+                    maximizedToggle.isOn = uniwinc.isZoomed;
                 }
 
                 if (dragMoveToggle)

@@ -1,4 +1,11 @@
-﻿using System.Collections;
+﻿/**
+ * UniWindowDragMove.cs
+ * 
+ * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
+ */
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 

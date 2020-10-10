@@ -1,4 +1,11 @@
-﻿using System;
+﻿/**
+ * UniWinCore.cs
+ * 
+ * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
+ */
+
+using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -9,7 +16,7 @@ using UnityEditor;
 /// <summary>
 /// Windows / macOS のネイティブプラグインラッパー
 /// </summary>
-public class UniWinC : IDisposable
+public class UniWinCore : IDisposable
 {
     /// <summary>
     /// 透明化の方式
@@ -36,6 +43,9 @@ public class UniWinC : IDisposable
         public static extern bool IsTopmost();
 
         [DllImport("LibUniWinC")]
+        public static extern bool IsZoomed();
+
+        [DllImport("LibUniWinC")]
         public static extern bool AttachMyWindow();
 
         [DllImport("LibUniWinC")]
@@ -58,6 +68,9 @@ public class UniWinC : IDisposable
 
         [DllImport("LibUniWinC")]
         public static extern void SetTopmost(bool bEnabled);
+
+        [DllImport("LibUniWinC")]
+        public static extern void SetZoomed(bool bZoomed);
 
         [DllImport("LibUniWinC")]
         public static extern void SetPosition(float x, float y);
@@ -133,7 +146,7 @@ public class UniWinC : IDisposable
     /// <summary>
     /// ウィンドウ制御のコンストラクタ
     /// </summary>
-    public UniWinC()
+    public UniWinCore()
     {
         IsActive = false;
     }
@@ -141,12 +154,24 @@ public class UniWinC : IDisposable
     /// <summary>
     /// デストラクタ
     /// </summary>
-    ~UniWinC()
+    ~UniWinCore()
     {
         Dispose();
     }
 
+    /// <summary>
+    /// 終了時の処理
+    /// </summary>
     public void Dispose()
+    {
+        // 最後にウィンドウ状態を戻すとそれが目についてしまうので、現状必ずしも戻さないようコメントアウト
+        //DetachWindow();
+    }
+
+    /// <summary>
+    /// ウィンドウ状態を最初に戻して操作対象から解除
+    /// </summary>
+    public void DetachWindow()
     {
         LibUniWinC.DetachWindow();
     }
@@ -219,6 +244,24 @@ public class UniWinC : IDisposable
         LibUniWinC.SetClickThrough(isThrough);
 #endif
         this._isClickThrough = isThrough;
+    }
+
+    /// <summary>
+    /// ウィンドウを最大化（Macではズーム）する
+    /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
+    /// </summary>
+    public void SetZoomed(bool isZoomed)
+    {
+        LibUniWinC.SetZoomed(isZoomed);
+    }
+
+    /// <summary>
+    /// ウィンドウが最大化（Macではズーム）されているかを取得
+    /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
+    /// </summary>
+    public bool GetZoomed()
+    {
+        return LibUniWinC.IsZoomed();
     }
 
     /// <summary>

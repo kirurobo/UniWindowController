@@ -1,10 +1,7 @@
-# a Library of Unified Window Controller for macOS
+# Unified Window Controller for macOS
 
+### Author
+[Kirurobo](https://twitter.com/kirurobo)
 
-## Functions
-
-### SetTransparent(bool)
-透明化オン／オフ
-
-###
-
+### License
+[MIT](https://github.com/kirurobo/UniWindowController/blob/master/LICENSE)

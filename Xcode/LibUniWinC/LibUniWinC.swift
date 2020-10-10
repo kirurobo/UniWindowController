@@ -78,6 +78,10 @@ public class LibUniWinC : NSObject {
     @objc public static func isTopmost() -> Bool {
         return state.isTopmost
     }
+    
+    @objc public static func isZoomed() -> Bool {
+        return (targetWindow?.isZoomed ?? false)
+    }
 
     @objc public static func detachWindow() -> Void {
         // 別のウィンドウが選択済みだったら、元に戻す
@@ -214,6 +218,16 @@ public class LibUniWinC : NSObject {
         }
     }
 
+    /// ウィンドウを最大化
+    @objc public static func setZoomed(isZoomed: Bool) -> Void {
+        if (targetWindow != nil) {
+            if (targetWindow!.isZoomed != isZoomed) {
+                // 挙動がトグルとなっている
+                targetWindow!.zoom(nil)
+            }
+        }
+    }
+    
     /// ウィンドウの透過／非透過設定
     /// - Parameters:
     ///   - window: 対象ウィンドウ

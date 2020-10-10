@@ -28,6 +28,10 @@ UNIWINC_EXPORT BOOL IsTopmost() {
     return [LibUniWinC isTopmost];
 }
 
+UNIWINC_EXPORT BOOL IsZoomed() {
+    return [LibUniWinC isZoomed];
+}
+
 UNIWINC_EXPORT BOOL DetachWindow() {
     [LibUniWinC detachWindow];
     return true;
@@ -55,6 +59,10 @@ UNIWINC_EXPORT void SetBorderless(BOOL isBorderless) {
 
 UNIWINC_EXPORT void SetTopmost(BOOL isTopmost) {
     [LibUniWinC setTopmostWithIsTopmost:isTopmost];
+}
+
+UNIWINC_EXPORT void SetZoomed(BOOL isZoomed) {
+    [LibUniWinC setZoomedWithIsZoomed:isZoomed];
 }
 
 UNIWINC_EXPORT void SetClickThrough(BOOL isTransparent) {

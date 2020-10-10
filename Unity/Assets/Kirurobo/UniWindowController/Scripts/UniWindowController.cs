@@ -1,7 +1,8 @@
 /**
- * UniWindowController
+ * UniWindowController.cs
  * 
  * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
  */
 
 using System.Collections;
@@ -46,7 +47,7 @@ namespace Kirurobo
         /// <summary>
         /// Low level class
         /// </summary>
-        private UniWinC uniwinc = null;
+        private UniWinCore uniWinCore = null;
 
         /// <summary>
         /// Is this window receives mouse events
@@ -74,17 +75,28 @@ namespace Kirurobo
         /// </summary>
         public bool isTopmost
         {
-            get { return ((uniwinc == null) ? _isTopmost : _isTopmost = uniwinc.IsTopmost); }
+            get { return ((uniWinCore == null) ? _isTopmost : _isTopmost = uniWinCore.IsTopmost); }
             set { SetTopmost(value); }
         }
         [SerializeField, BoolProperty, Tooltip("Check to set topmost on startup")]
         private bool _isTopmost = false;
 
         /// <summary>
+        /// Is this window minimized
+        /// </summary>
+        public bool isZoomed
+        {
+            get { return ((uniWinCore == null) ? _isZoomed : _isZoomed = uniWinCore.GetZoomed()); }
+            set { SetZoomed(value); }
+        }
+        [SerializeField, BoolProperty, Tooltip("Unstable...")]
+        private bool _isZoomed = false;
+
+        /// <summary>
         /// 透過方式の指定
         /// </summary>
         [Tooltip("Select the method. *Only available on Windows")]
-        public UniWinC.TransparentType transparentType = UniWinC.TransparentType.Alpha;
+        public UniWinCore.TransparentType transparentType = UniWinCore.TransparentType.Alpha;
 
         /// <summary>
         /// Key color used when the transparent-type is ColorKey
@@ -140,8 +152,8 @@ namespace Kirurobo
         /// </summary>
         public Vector2 windowPosition
         {
-            get { return (uniwinc != null ? uniwinc.GetWindowPosition() : Vector2.zero); }
-            set { uniwinc?.SetWindowPosition(value); }
+            get { return (uniWinCore != null ? uniWinCore.GetWindowPosition() : Vector2.zero); }
+            set { uniWinCore?.SetWindowPosition(value); }
         }
 
         /// <summary>
@@ -149,8 +161,8 @@ namespace Kirurobo
         /// </summary>
         public Vector2 windowSize
         {
-            get { return (uniwinc != null ? uniwinc.GetWindowSize() : Vector2.zero); }
-            set { uniwinc?.SetWindowSize(value); }
+            get { return (uniWinCore != null ? uniWinCore.GetWindowSize() : Vector2.zero); }
+            set { uniWinCore?.SetWindowSize(value); }
         }
 
         // カメラの背景をアルファゼロの黒に置き換えるため、本来の背景を保存しておく変数
@@ -216,11 +228,11 @@ namespace Kirurobo
             colorPickerTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
             // ウィンドウ制御用のインスタンス作成
-            uniwinc = new UniWinC();
+            uniWinCore = new UniWinCore();
 
             // 透過方式の指定
-            uniwinc.SetTransparentType(transparentType);
-            uniwinc.SetKeyColor(keyColor);
+            uniWinCore.SetTransparentType(transparentType);
+            uniWinCore.SetKeyColor(keyColor);
         }
 
         void Start()
@@ -234,7 +246,7 @@ namespace Kirurobo
 #endif
             
             // 自ウィンドウを取得して開始
-            uniwinc.AttachMyWindow();
+            uniWinCore.AttachMyWindow();
 
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(PickColorCoroutine());
@@ -242,9 +254,9 @@ namespace Kirurobo
 
         void OnDestroy()
         {
-            if (uniwinc != null)
+            if (uniWinCore != null)
             {
-                uniwinc.Dispose();
+                uniWinCore.Dispose();
             }
         }
 
@@ -269,7 +281,7 @@ namespace Kirurobo
         /// <param name="isThrough"></param>
         void SetClickThrough(bool isThrough)
         {
-            uniwinc?.EnableClickThrough(isThrough);
+            uniWinCore?.EnableClickThrough(isThrough);
             _isClickThrough = isThrough;
         }
 
@@ -393,7 +405,7 @@ namespace Kirurobo
             if (!_isTransparent) return true;
 
             // LayeredWindowならばクリックスルーはOSに任せるため、ウィンドウ内ならtrueを返しておく
-            if (transparentType == UniWinC.TransparentType.ColorKey) return true;
+            if (transparentType == UniWinCore.TransparentType.ColorKey) return true;
 
             // 指定座標の描画結果を見て判断
             try   // WaitForEndOfFrame のタイミングで実行すればtryは無くても大丈夫な気はする
@@ -442,20 +454,20 @@ namespace Kirurobo
         /// </summary>
         private void UpdateWindow()
         {
-            if (uniwinc == null)
+            if (uniWinCore == null)
             {
-                uniwinc = new UniWinC();
+                uniWinCore = new UniWinCore();
             }
-            if (!uniwinc.IsActive)
+            if (!uniWinCore.IsActive)
             {
-                uniwinc.AttachMyWindow();
+                uniWinCore.AttachMyWindow();
             }
             else
             {
                 #if UNITY_EDITOR
                 // エディタではゲームビューが閉じられたりドッキングされたりするため、変化していれば対象ウィンドウを変更
                 // アクティブウィンドウが現在の対象と同じならばなにもおこらない
-                uniwinc.AttachMyActiveWindow();
+                uniWinCore.AttachMyActiveWindow();
                 #endif
             }
         }
@@ -485,7 +497,7 @@ namespace Kirurobo
             if (isTransparent)
             {
                 currentCamera.clearFlags = CameraClearFlags.SolidColor;
-                if (transparentType == UniWinC.TransparentType.ColorKey)
+                if (transparentType == UniWinCore.TransparentType.ColorKey)
                 {
                     currentCamera.backgroundColor = keyColor;
                 }
@@ -512,9 +524,9 @@ namespace Kirurobo
             _isTransparent = transparent;
             SetCameraBackground(transparent);
 #if !UNITY_EDITOR
-            if (uniwinc != null)
+            if (uniWinCore != null)
             {
-                uniwinc.EnableTransparent(transparent);
+                uniWinCore.EnableTransparent(transparent);
             }
 #endif
             UpdateClickThrough();
@@ -528,10 +540,23 @@ namespace Kirurobo
         private void SetTopmost(bool topmost)
         {
             //if (_isTopmost == topmost) return;
-            if (uniwinc == null) return;
+            if (uniWinCore == null) return;
 
-            uniwinc.EnableTopmost(topmost);
-            _isTopmost = uniwinc.IsTopmost;
+            uniWinCore.EnableTopmost(topmost);
+            _isTopmost = uniWinCore.IsTopmost;
+            StateChangedEvent();
+        }
+
+        /// <summary>
+        /// 最大化する
+        /// </summary>
+        /// <param name="zoomed"></param>
+        private void SetZoomed(bool zoomed)
+        {
+            if (uniWinCore == null) return;
+
+            uniWinCore.SetZoomed(zoomed);
+            _isZoomed = uniWinCore.GetZoomed();
             StateChangedEvent();
         }
 
@@ -542,9 +567,14 @@ namespace Kirurobo
         {
             if (Application.isPlaying)
             {
-                if (uniwinc != null)
+                if (uniWinCore != null)
                 {
-                    uniwinc.Dispose();
+                    // エディタだとウィンドウ状態を戻す
+                    // スタンドアローンだと戻した姿が見えてしまうためスキップ
+#if UNITY_EDITOR
+                    uniWinCore.DetachWindow();
+#endif
+                    uniWinCore.Dispose();
                 }
             }
         }
@@ -554,7 +584,7 @@ namespace Kirurobo
         /// </summary>
         public void Focus()
         {
-            if (uniwinc != null)
+            if (uniWinCore != null)
             {
                 //uniWin.SetFocus();
             }
