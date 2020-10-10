@@ -99,13 +99,13 @@ public class LibUniWinC : NSObject {
     /// ウィンドウを取得して準備
     @objc public static func attachMyWindow() -> Bool {
         // 自分のウィンドウを取得して利用開始
-        let window: NSWindow = findMyWindow()
-        setTargetWindow(window: window)
+        let window: NSWindow = _findMyWindow()
+        _setTargetWindow(window: window)
         
         return true
     }
     
-    private static func updateScreenSize() -> Void {
+    private static func _updateScreenSize() -> Void {
         // 参考 https://stackoverrun.com/ja/q/1746184
         primaryMonitorHeight = NSScreen.screens.map {$0.frame.origin.y + $0.frame.height}.max()!
     }
@@ -114,7 +114,7 @@ public class LibUniWinC : NSObject {
     /// 初期化処理
     private static func setup() -> Void {
         // 画面の高さを取得
-        updateScreenSize()
+        _updateScreenSize()
         
         // 解像度変化時に画面の高さを再取得
         NotificationCenter.default.addObserver(
@@ -123,20 +123,20 @@ public class LibUniWinC : NSObject {
             queue: OperationQueue.main
         ) {
             notification -> Void in
-            updateScreenSize()
+            _updateScreenSize()
         }
         
         state.isReady = true
     }
     
     /// 自分自身のウィンドウを取得
-    private static func findMyWindow() -> NSWindow {
+    private static func _findMyWindow() -> NSWindow {
         let myWindow: NSWindow = NSApp.orderedWindows[0]
         return myWindow
     }
 
     /// 対象のウィンドウを指定。それ以前にもし指定があればそれは元に戻す
-    private static func setTargetWindow(window: NSWindow) -> Void {
+    private static func _setTargetWindow(window: NSWindow) -> Void {
         // すでに同じウィンドウが選択されていれば、何もしない
         if (targetWindow == window) {
             return
@@ -267,7 +267,6 @@ public class LibUniWinC : NSObject {
     }
     
     /// Hide or show the border of the given window.
-    ///
     /// - Parameters:
     ///   - window: a window to show/hide
     ///   - isShow: boolean value to indicate show or hide
