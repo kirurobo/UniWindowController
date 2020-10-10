@@ -244,9 +244,9 @@ namespace Kirurobo
                 Screen.fullScreen = false;
             }
 #endif
-            
+
             // 自ウィンドウを取得して開始
-            uniWinCore.AttachMyWindow();
+            UpdateTargetWindow();
 
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(PickColorCoroutine());
@@ -263,6 +263,11 @@ namespace Kirurobo
         // Update is called once per frame
         void Update()
         {
+            if (uniWinCore == null || !uniWinCore.IsActive)
+            {
+                UpdateTargetWindow();
+            }
+
             // キー、マウス操作の下ウィンドウへの透過状態を更新
             UpdateClickThrough();
         }
@@ -452,15 +457,27 @@ namespace Kirurobo
         /// <summary>
         /// 自分のウィンドウハンドルが不確かならば探しなおす
         /// </summary>
-        private void UpdateWindow()
+        private void UpdateTargetWindow()
         {
             if (uniWinCore == null)
             {
                 uniWinCore = new UniWinCore();
             }
+
+            // ウィンドウがまだ取得できていなければ、取得の処理を行う
             if (!uniWinCore.IsActive)
             {
                 uniWinCore.AttachMyWindow();
+
+                // ウィンドウを取得できたら最初の値を設定
+                if (uniWinCore.IsActive)
+                {
+                    uniWinCore.SetTransparentType(transparentType);
+                    uniWinCore.SetKeyColor(keyColor);
+                    uniWinCore.EnableTransparent(_isTransparent);
+                    uniWinCore.EnableTopmost(_isTopmost);
+                    uniWinCore.EnableClickThrough(_isClickThrough);
+                }
             }
             else
             {
@@ -480,7 +497,7 @@ namespace Kirurobo
         {
             if (focus)
             {
-                UpdateWindow();
+                UpdateTargetWindow();
             }
         }
 

@@ -43,7 +43,7 @@ public class UniWinCore : IDisposable
         public static extern bool IsTopmost();
 
         [DllImport("LibUniWinC")]
-        public static extern bool IsZoomed();
+        public static extern bool IsMaximized();
 
         [DllImport("LibUniWinC")]
         public static extern bool AttachMyWindow();
@@ -70,7 +70,7 @@ public class UniWinCore : IDisposable
         public static extern void SetTopmost(bool bEnabled);
 
         [DllImport("LibUniWinC")]
-        public static extern void SetZoomed(bool bZoomed);
+        public static extern void SetMaximized(bool bZoomed);
 
         [DllImport("LibUniWinC")]
         public static extern void SetPosition(float x, float y);
@@ -252,7 +252,7 @@ public class UniWinCore : IDisposable
     /// </summary>
     public void SetZoomed(bool isZoomed)
     {
-        LibUniWinC.SetZoomed(isZoomed);
+        LibUniWinC.SetMaximized(isZoomed);
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ public class UniWinCore : IDisposable
     /// </summary>
     public bool GetZoomed()
     {
-        return LibUniWinC.IsZoomed();
+        return LibUniWinC.IsMaximized();
     }
 
     /// <summary>

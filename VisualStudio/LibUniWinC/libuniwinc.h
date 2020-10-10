@@ -18,6 +18,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API IsActive();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTransparent();
 UNIWINC_EXPORT BOOL UNIWINC_API IsBorderless();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTopmost();
+UNIWINC_EXPORT BOOL UNIWINC_API IsMaximized();
 
 UNIWINC_EXPORT BOOL UNIWINC_API AttachMyWindow();
 UNIWINC_EXPORT BOOL UNIWINC_API AttachMyOwnerWindow();
@@ -28,6 +29,7 @@ UNIWINC_EXPORT void UNIWINC_API SetTransparent(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetBorderless(const BOOL isBorderless);
 UNIWINC_EXPORT void UNIWINC_API SetTopmost(const BOOL isTopmost);
 UNIWINC_EXPORT void UNIWINC_API SetClickThrough(const BOOL isTransparent);
+UNIWINC_EXPORT void UNIWINC_API SetMaximized(const BOOL isZoomed);
 UNIWINC_EXPORT BOOL UNIWINC_API SetPosition(const float x, const float y);
 UNIWINC_EXPORT BOOL UNIWINC_API GetPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);

@@ -283,6 +283,14 @@ BOOL UNIWINC_API IsTopmost() {
 }
 
 /// <summary>
+/// 最大化しているか否かを返す
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API IsMaximized() {
+	return (hTargetWnd_ && IsZoomed(hTargetWnd_));
+}
+
+/// <summary>
 /// ウィンドウを元に戻して対象から解除
 /// </summary>
 /// <returns></returns>
@@ -482,6 +490,11 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 	bIsBorderless = bBorderless;
 }
 
+/// <summary>
+/// 最前面化／解除
+/// </summary>
+/// <param name="bTopmost"></param>
+/// <returns></returns>
 void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 	if (hTargetWnd_) {
 		SetWindowPos(
@@ -493,6 +506,23 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 	}
 
 	bIsTopmost = bTopmost;
+}
+
+/// <summary>
+/// 最大化／解除
+/// </summary>
+/// <param name="bZoomed"></param>
+/// <returns></returns>
+void UNIWINC_API SetMaximized(const BOOL bZoomed) {
+	if (hTargetWnd_) {
+		if (bZoomed) {
+			ShowWindow(hTargetWnd_, SW_MAXIMIZE);
+		}
+		else
+		{
+			ShowWindow(hTargetWnd_, SW_NORMAL);
+		}
+	}
 }
 
 void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
