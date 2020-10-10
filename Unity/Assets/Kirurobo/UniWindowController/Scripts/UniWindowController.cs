@@ -517,6 +517,29 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// 透過方法を変更
+        /// </summary>
+        /// <param name="type"></param>
+        public void SetTransparentType(UniWinCore.TransparentType type)
+        {
+            if (uniWinCore != null) {
+                // 透過中だったなら、一度解除して再透過
+                if (_isTransparent)
+                {
+                    SetTransparent(false);
+                    uniWinCore.SetTransparentType(type);
+                    SetTransparent(true);
+                }
+            }
+            else
+            {
+                uniWinCore.SetTransparentType(type);
+
+            }
+            transparentType = type;
+        }
+
+        /// <summary>
         /// 最前面を切替
         /// </summary>
         /// <param name="topmost"></param>

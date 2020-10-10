@@ -218,11 +218,11 @@ RectTransform:
   - {fileID: 924691080}
   - {fileID: 1794051685}
   m_Father: {fileID: 710011654}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10, y: -200}
+  m_AnchoredPosition: {x: 10, y: -160}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &22360609
@@ -1299,11 +1299,11 @@ RectTransform:
   - {fileID: 1430210944}
   - {fileID: 1797877552}
   m_Father: {fileID: 710011654}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10, y: -225}
+  m_AnchoredPosition: {x: 10, y: -180}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &626014315
@@ -1379,7 +1379,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &674017868
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1395,11 +1395,11 @@ RectTransform:
   - {fileID: 1998156787}
   - {fileID: 1015905572}
   m_Father: {fileID: 710011654}
-  m_RootOrder: 4
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10, y: -165}
+  m_AnchoredPosition: {x: 10, y: -225}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &674017869
@@ -1596,9 +1596,9 @@ RectTransform:
   - {fileID: 805460079}
   - {fileID: 511564870}
   - {fileID: 1882840610}
-  - {fileID: 674017868}
   - {fileID: 22360608}
   - {fileID: 626014314}
+  - {fileID: 674017868}
   - {fileID: 1402985462}
   - {fileID: 1373648102}
   - {fileID: 2020665903}
@@ -5063,22 +5063,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
         type: 3}
-      propertyPath: isHitTestEnabled
-      value: 0
+      propertyPath: hitTestType
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
         type: 3}
       propertyPath: _isTransparent
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
-        type: 3}
-      propertyPath: _isTopmost
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
-        type: 3}
-      propertyPath: _isZoomed
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

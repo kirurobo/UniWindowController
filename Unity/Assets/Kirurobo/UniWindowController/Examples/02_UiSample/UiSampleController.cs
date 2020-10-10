@@ -56,7 +56,7 @@ namespace Kirurobo
                 dragMoveToggle?.onValueChanged.AddListener(val => uniwinDragMove.enabled = val);
                 clickThroughToggle?.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
 
-                transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.transparentType = (UniWinCore.TransparentType)val);
+                transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.SetTransparentType((UniWinCore.TransparentType)val));
                 hitTestTypeDropdown?.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
                 menuCloseButton?.onClick.AddListener(CloseMenu);
 
@@ -199,6 +199,13 @@ namespace Kirurobo
                 {
                     dragMoveToggle.isOn = (uniwinDragMove && uniwinDragMove.isActiveAndEnabled);
                 }
+
+                if (transparentTypeDropdown)
+                {
+                    transparentTypeDropdown.value = (int)uniwinc.transparentType;
+                    transparentTypeDropdown.RefreshShownValue();
+                }
+
 
                 if (hitTestTypeDropdown)
                 {
