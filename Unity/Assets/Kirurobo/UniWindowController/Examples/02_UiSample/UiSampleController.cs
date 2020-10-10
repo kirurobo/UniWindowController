@@ -83,13 +83,29 @@ namespace Kirurobo
             {
                 ShowMenu();
             }
-            
-            // [Space]キーを押すと強制的にクリックスルーを解除
-            // 操作不能となったときの対応
-            // ただし自動判定が有効ならすぐ変化の可能性もある
-            if (Input.GetKeyUp(KeyCode.Space))
+
+            if (uniwinc)
             {
-                if (uniwinc) uniwinc.isClickThrough = false;
+                // [Space]キーを押すと強制的にクリックスルーを解除
+                // 操作不能となったときの対応
+                // ただし自動判定が有効ならすぐ変化の可能性もある
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    uniwinc.isClickThrough = false;
+                }
+
+                // ウィンドウサイズ変更のテスト。カーソルやジョイスティックで伸び縮み
+                Vector2 size = uniwinc.windowSize;
+                float deltaW = 0f;  // 横に伸ばす幅 [px]
+                float deltaH = 0f;  // 縦に伸ばす高さ [px]
+                const float step = 10f; // 1フレームでの変化量 [px]
+                deltaW = Input.GetAxis("Horizontal") * step;
+                deltaH = Input.GetAxis("Vertical") * step;
+
+                if (!Mathf.Approximately(deltaW, 0f) || !Mathf.Approximately(deltaH, 0f))
+                {
+                    uniwinc.windowSize += new Vector2(deltaW, deltaH);
+                }
             }
 
             // Quit or stop playing when pressed [ESC]
