@@ -10,6 +10,7 @@ Unity の Windows / macOS 向けビルドで、自ウィンドウの位置、サ
 
 Windows、macOS それぞれではコード例やアセットが見つかりましたが、統一的に扱えるものが無さそうだったため作成しました。
 
+<img src="https://user-images.githubusercontent.com/1019117/95654852-d6d31380-0b3d-11eb-8bf3-3608ee8e333e.png" width="480">
 https://twitter.com/i/status/1314440790945361920
 
 
@@ -28,6 +29,8 @@ https://twitter.com/i/status/1314440790945361920
   - 常に最前面やウィンドウ移動等は動作しますが、実行中にゲームビューを閉じたりドッキングの配置を変えることはお勧めしません。一応、ゲームビューにフォーカスを移すとウィンドウを再取得はします。
 - マウスでは良いのですが、タッチ操作には適切な対応がまだ定まっていません。
 - あまり動作検証をできている訳でもなく、安定して動くとは限りません。
+
+既知の問題については [Issues](https://github.com/kirurobo/UniWindowController/issues) もご覧ください。
 
 
 ## 動作環境
