@@ -79,7 +79,7 @@ public class LibUniWinC : NSObject {
         return state.isTopmost
     }
     
-    @objc public static func isZoomed() -> Bool {
+    @objc public static func isMaximized() -> Bool {
         return (targetWindow?.isZoomed ?? false)
     }
 
@@ -219,7 +219,7 @@ public class LibUniWinC : NSObject {
     }
 
     /// ウィンドウを最大化
-    @objc public static func setZoomed(isZoomed: Bool) -> Void {
+    @objc public static func setMaximized(isZoomed: Bool) -> Void {
         if (targetWindow != nil) {
             if (targetWindow!.isZoomed != isZoomed) {
                 // 挙動がトグルとなっている
