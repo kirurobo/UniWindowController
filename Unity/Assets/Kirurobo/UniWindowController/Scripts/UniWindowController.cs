@@ -89,20 +89,8 @@ namespace Kirurobo
             get { return ((uniWinCore == null) ? _isZoomed : _isZoomed = uniWinCore.GetZoomed()); }
             set { SetZoomed(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Unstable...")]
+        [SerializeField, BoolProperty, Tooltip("Experimental...")]
         private bool _isZoomed = false;
-
-        /// <summary>
-        /// 透過方式の指定
-        /// </summary>
-        [Tooltip("Select the method. *Only available on Windows")]
-        public UniWinCore.TransparentType transparentType = UniWinCore.TransparentType.Alpha;
-
-        /// <summary>
-        /// Key color used when the transparent-type is ColorKey
-        /// </summary>
-        [Tooltip("Will be used the next time the window becomes transparent")]
-        public Color32 keyColor = new Color32(0x01, 0x00, 0x01, 0x00);
 
         /// <summary>
         /// クリックスルー自動判定を行うか
@@ -120,7 +108,7 @@ namespace Kirurobo
         /// クリックスルー判定方法が不透明度の場合に使うしきい値
         /// カーソル下のアルファがこの値以上ならヒットとなる
         /// </summary>
-        [Tooltip("Available on the hit test type is Opacity")]
+        [Tooltip("Available on the hit test type is Opacity"), RangeAttribute(0f, 1f)]
         public float opacityThreshold = 0.1f;
 
         /// <summary>
@@ -132,7 +120,21 @@ namespace Kirurobo
         /// trueにしておくと、起動時にフルスクリーンだった場合は強制的に解除する
         /// 起動時のみ働きます
         /// </summary>
+        [Tooltip("Force windowed on startup")]
         public bool forceWindowed = false;
+
+        /// <summary>
+        /// 透過方式の指定
+        /// </summary>
+        [Header("Windows only")]
+        [Tooltip("Select the method. *Only available on Windows")]
+        public UniWinCore.TransparentType transparentType = UniWinCore.TransparentType.Alpha;
+
+        /// <summary>
+        /// Key color used when the transparent-type is ColorKey
+        /// </summary>
+        [Tooltip("Will be used the next time the window becomes transparent")]
+        public Color32 keyColor = new Color32(0x01, 0x00, 0x01, 0x00);
         
         /// <summary>
         /// Is the mouse pointer on an opaque pixel or an object
@@ -170,22 +172,14 @@ namespace Kirurobo
         private Color originalCameraBackground;
 
         /// <summary>
-        /// 描画の上にタッチがあればそのfingerIdが入る
-        /// </summary>
-        //[SerializeField, ReadOnly]
-        private int activeFingerId = -1;
-
-        /// <summary>
-        /// タッチがBeganとなったものを受け渡すためのリスト
-        /// PickColorCoroutine()実行のタイミングではどうもtouch.phaseがうまくとれないようなのでこれで渡してみる
-        /// </summary>
-        private Touch? firstTouch = null;
-
-        /// <summary>
         /// カメラのインスタンス
         /// </summary>
         private Camera currentCamera;
 
+        /// <summary>
+        /// カーソル下1px分の色が入るテクスチャ
+        /// </summary>
+        private Texture2D colorPickerTexture = null;
 
         /// <summary>
         /// ウィンドウ状態が変化したときに発生するイベント
@@ -193,10 +187,6 @@ namespace Kirurobo
         public event OnStateChangedDelegate OnStateChanged;
         public delegate void OnStateChangedDelegate();
 
-        /// <summary>
-        /// 表示されたテクスチャ
-        /// </summary>
-        private Texture2D colorPickerTexture = null;
 
 
         // Use this for initialization
@@ -229,10 +219,6 @@ namespace Kirurobo
 
             // ウィンドウ制御用のインスタンス作成
             uniWinCore = new UniWinCore();
-
-            // 透過方式の指定
-            uniWinCore.SetTransparentType(transparentType);
-            uniWinCore.SetKeyColor(keyColor);
         }
 
         void Start()
@@ -245,8 +231,6 @@ namespace Kirurobo
             }
 #endif
 
-            // 自ウィンドウを取得して開始
-            UpdateTargetWindow();
 
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(PickColorCoroutine());
@@ -263,6 +247,7 @@ namespace Kirurobo
         // Update is called once per frame
         void Update()
         {
+            // 自ウィンドウ取得ができていなければ、取得
             if (uniWinCore == null || !uniWinCore.IsActive)
             {
                 UpdateTargetWindow();
@@ -352,25 +337,6 @@ namespace Kirurobo
         {
             Vector2 mousePos;
             mousePos = Input.mousePosition;
-
-            //// コルーチン & WaitForEndOfFrame ではなく、OnPostRenderで呼ぶならば、MSAAによって上下反転しないといけない？
-            //if (QualitySettings.antiAliasing > 1) mousePos.y = camRect.height - mousePos.y;
-
-            // タッチ開始点が指定されれば、それを調べる
-            if (firstTouch != null)
-            {
-                Touch touch = (Touch)firstTouch;
-                Vector2 pos = touch.position;
-
-                firstTouch = null;
-
-                if (GetOnOpaquePixel(pos))
-                {
-                    onObject = true;
-                    activeFingerId = touch.fingerId;
-                    return;
-                }
-            }
 
             // マウス座標を調べる
             if (GetOnOpaquePixel(mousePos))
@@ -474,9 +440,9 @@ namespace Kirurobo
                 {
                     uniWinCore.SetTransparentType(transparentType);
                     uniWinCore.SetKeyColor(keyColor);
-                    uniWinCore.EnableTransparent(_isTransparent);
-                    uniWinCore.EnableTopmost(_isTopmost);
-                    uniWinCore.EnableClickThrough(_isClickThrough);
+                    SetTransparent(_isTransparent);
+                    SetTopmost(_isTopmost);
+                    SetClickThrough(_isClickThrough);
                 }
             }
             else

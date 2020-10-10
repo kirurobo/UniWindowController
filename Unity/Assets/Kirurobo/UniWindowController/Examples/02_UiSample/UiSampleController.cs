@@ -60,7 +60,7 @@ namespace Kirurobo
                 hitTestTypeDropdown?.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
                 menuCloseButton?.onClick.AddListener(CloseMenu);
 
-#if !UNITY_WIN
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
                 // Windows でなければ、透過方法の選択は無効とする
                 if (transparentTypeDropdown) transparentTypeDropdown.interactable = false;
 #endif
