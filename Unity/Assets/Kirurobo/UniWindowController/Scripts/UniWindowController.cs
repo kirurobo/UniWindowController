@@ -183,11 +183,15 @@ namespace Kirurobo
         private Texture2D colorPickerTexture = null;
 
         /// <summary>
-        /// HitTestType が Raycast の場合に使う layer mask
-        /// デフォルトでは Ignore Raycast を除外する
+        /// Raycastで使うマウスイベント情報
         /// </summary>
-        private int hitTestLayerMask; 
+        private PointerEventData pointerEventData;
 
+        /// <summary>
+        /// Raycast 時のレイヤーマスク
+        /// </summary>
+        private int hitTestLayerMask;
+        
         /// <summary>
         /// ウィンドウ状態が変化したときに発生するイベント
         /// </summary>
@@ -220,9 +224,12 @@ namespace Kirurobo
                 originalCameraBackground = currentCamera.backgroundColor;
 
             }
-
-            // Prepare the layer mask for hit testing
-            hitTestLayerMask = LayerMask.NameToLayer("Ignore Raycast");
+            
+            // マウスイベント情報
+            pointerEventData = new PointerEventData(EventSystem.current);
+            
+            // Ignore Raycast 以外を有効とするマスク
+            hitTestLayerMask = ~LayerMask.GetMask("Ignore Raycast");
 
             // マウス下描画色抽出用テクスチャを準備
             colorPickerTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -410,15 +417,31 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByRaycast()
         {
-            // uGUIの上と判定されれば、終了
-            if (EventSystem.current.IsPointerOverGameObject())
+            var position = Input.mousePosition;
+            
+            // // uGUIの上か否かを判定
+            var raycastResults = new List<RaycastResult>();
+            pointerEventData.position = position;
+            EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+            foreach (var result in raycastResults)
             {
-                onObject = true;
-                return;
+                // レイヤーマスクを考慮（Ignore Raycast 以外ならヒット）
+                if (((1 << result.gameObject.layer) & hitTestLayerMask) > 0)
+                {
+                    onObject = true;
+                    return;
+                }
             }
+            // レイヤーに関わらずヒットさせる場合は下記でよい
+            // // uGUIの上と判定されれば、終了
+            // if (EventSystem.current.IsPointerOverGameObject())
+            // {
+            //     onObject = true;
+            //     return;
+            // }
 
-            // Raycastで判定
-            Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
+            // 3Dオブジェクトの上か否かを判定
+            Ray ray = currentCamera.ScreenPointToRay(position);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, raycastMaxDepth))
             {
