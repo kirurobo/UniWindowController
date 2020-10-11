@@ -18,7 +18,7 @@ namespace Kirurobo
     public class UiSampleController : MonoBehaviour
     {
         private UniWindowController uniwinc;
-        private UniWindowDragMove uniwinDragMove;
+        private UniWindowMoveHandle uniWinMoveHandle;
 
         public Toggle transparentToggle;
         public Toggle topmostToggle;
@@ -42,7 +42,7 @@ namespace Kirurobo
             uniwinc = GameObject.FindObjectOfType<UniWindowController>();
             
             // UniWindowDragMove を探す
-            uniwinDragMove = GameObject.FindObjectOfType<UniWindowDragMove>();
+            uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();
             
             // Toggleのチェック状態を、現在の状態に合わせる
             UpdateUI();
@@ -53,12 +53,13 @@ namespace Kirurobo
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
                 maximizedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
-                dragMoveToggle?.onValueChanged.AddListener(val => uniwinDragMove.enabled = val);
                 clickThroughToggle?.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
 
                 transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.SetTransparentType((UniWinCore.TransparentType)val));
                 hitTestTypeDropdown?.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
                 menuCloseButton?.onClick.AddListener(CloseMenu);
+
+                if (uniWinMoveHandle) dragMoveToggle?.onValueChanged.AddListener(val => uniWinMoveHandle.enabled = val);
 
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
                 // Windows でなければ、透過方法の選択は無効とする
@@ -197,7 +198,7 @@ namespace Kirurobo
 
                 if (dragMoveToggle)
                 {
-                    dragMoveToggle.isOn = (uniwinDragMove && uniwinDragMove.isActiveAndEnabled);
+                    dragMoveToggle.isOn = (uniWinMoveHandle && uniWinMoveHandle.isActiveAndEnabled);
                 }
 
                 if (transparentTypeDropdown)

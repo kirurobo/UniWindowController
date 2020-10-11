@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
@@ -182,6 +183,12 @@ namespace Kirurobo
         private Texture2D colorPickerTexture = null;
 
         /// <summary>
+        /// HitTestType が Raycast の場合に使う layer mask
+        /// デフォルトでは Ignore Raycast を除外する
+        /// </summary>
+        private int hitTestLayerMask; 
+
+        /// <summary>
         /// ウィンドウ状態が変化したときに発生するイベント
         /// </summary>
         public event OnStateChangedDelegate OnStateChanged;
@@ -202,7 +209,7 @@ namespace Kirurobo
                 // もしメインカメラが見つからなければ、Findで探す
                 if (!currentCamera)
                 {
-                    currentCamera = FindObjectOfType<Camera>();
+                    currentCamera = GameObject.FindObjectOfType<Camera>();
                 }
             }
 
@@ -213,6 +220,9 @@ namespace Kirurobo
                 originalCameraBackground = currentCamera.backgroundColor;
 
             }
+
+            // Prepare the layer mask for hit testing
+            hitTestLayerMask = LayerMask.NameToLayer("Ignore Raycast");
 
             // マウス下描画色抽出用テクスチャを準備
             colorPickerTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -464,6 +474,12 @@ namespace Kirurobo
             if (focus)
             {
                 UpdateTargetWindow();
+
+                // フォーカスが当たった瞬間には、強制的にクリックスルーはオフにする
+                if (_isTransparent && isHitTestEnabled && transparentType != UniWinCore.TransparentType.ColorKey)
+                {
+                    SetClickThrough(false);
+                }
             }
         }
 
@@ -528,15 +544,15 @@ namespace Kirurobo
                 {
                     SetTransparent(false);
                     uniWinCore.SetTransparentType(type);
+                    transparentType = type;
                     SetTransparent(true);
                 }
             }
             else
             {
                 uniWinCore.SetTransparentType(type);
-
+                transparentType = type;
             }
-            transparentType = type;
         }
 
         /// <summary>

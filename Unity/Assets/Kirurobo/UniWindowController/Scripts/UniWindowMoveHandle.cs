@@ -1,0 +1,117 @@
+﻿/**
+ * UniWindowDragMove.cs
+ * 
+ * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
+ */
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+namespace  Kirurobo
+{
+    public class UniWindowMoveHandle : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+    {
+        private UniWindowController _uniwinc;
+
+        /// <summary>
+        /// ドラッグ中なら true
+        /// </summary>
+        public bool IsDragging
+        {
+            get { return _isDragging; }
+        }
+        private bool _isDragging = false;
+
+        /// <summary>
+        /// ドラッグ前には自動ヒットテストが有効だったかを記憶
+        /// </summary>
+        private bool _isHitTestEnabled;
+        
+        /// <summary>
+        /// ドラッグ開始時のウィンドウ内座標[px]
+        /// </summary>
+        private Vector2 _dragStartedPosition;
+        
+        // Start is called before the first frame update
+        void Start()
+        {
+            // シーン中の UniWindowController を取得
+            _uniwinc = GameObject.FindObjectOfType<UniWindowController>();
+            if (_uniwinc) _isHitTestEnabled = _uniwinc.isHitTestEnabled;
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+        }
+
+        /// <summary>
+        /// ドラッグ開始時の処理
+        /// </summary>
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            _dragStartedPosition = eventData.position;
+            
+            // _isDragging が false ならこれからドラッグ開始と判断
+            if (!_isDragging)
+            {
+                // ドラッグ中はヒットテストを無効にする
+                _isHitTestEnabled = _uniwinc.isHitTestEnabled;
+                _uniwinc.isHitTestEnabled = false;
+                _uniwinc.isClickThrough = false;
+            }
+            
+            _isDragging = true;
+        }
+
+        /// <summary>
+        /// ドラッグ終了時の処理
+        /// </summary>
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            EndDragging();
+        }
+
+        private void EndDragging()
+        {
+            if (_isDragging)
+            {
+                _uniwinc.isHitTestEnabled = _isHitTestEnabled; 
+            }
+            _isDragging = false;
+        }
+        
+        /// <summary>
+        /// 最大化時以外なら、マウスドラッグによってウィンドウを移動
+        /// </summary>
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!_uniwinc || !_isDragging) return;
+
+            // ドラッグでの移動が無効化されていた場合
+            if (!enabled)
+            {
+                EndDragging();
+                return;
+            }
+
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+
+            // フルスクリーンならウィンドウ移動は行わない
+            //  エディタだと true になってしまうようなので、エディタ以外でのみ確認
+#if !UNITY_EDITOR
+            if (Screen.fullScreen)
+            {
+                EndDragging();
+                return;
+            }
+#endif
+            
+            // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
+            _uniwinc.windowPosition += eventData.position - _dragStartedPosition;
+        }
+    }
+}
