@@ -28,6 +28,9 @@ public class LibUniWinC : NSObject {
         public var isTopmost: Bool = false
         public var isBorderless: Bool = false
         public var isTransparent: Bool = false
+        
+        // サイズ変更がなされると不正確となる。透過時にこれを使う
+        public var isZoomed: Bool = false
     }
     
     /// ウィンドウの初期状態を保持するクラス
@@ -129,7 +132,11 @@ public class LibUniWinC : NSObject {
     }
     
     @objc public static func isMaximized() -> Bool {
-        return (targetWindow?.isZoomed ?? false)
+        if (state.isTransparent) {
+            return state.isZoomed
+        } else {
+            return (targetWindow?.isZoomed ?? false)
+        }
     }
 
     @objc public static func detachWindow() -> Void {
@@ -337,11 +344,22 @@ public class LibUniWinC : NSObject {
     /// ウィンドウを最大化
     @objc public static func setMaximized(isZoomed: Bool) -> Void {
         if (targetWindow != nil) {
-            if (targetWindow!.isZoomed != isZoomed) {
-                // 挙動がトグルとなっている
-                targetWindow!.zoom(nil)
+            if (state.isTransparent) {
+                // 透過中なら、一度透過解除してから最大化を変更してみる
+                setTransparent(isTransparent: false)
+                if (targetWindow!.isZoomed != isZoomed) {
+                    targetWindow!.zoom(nil)
+                }
+                setTransparent(isTransparent: true)
+            } else {
+                // 透過していない場合の処理
+                if (targetWindow!.isZoomed != isZoomed) {
+                    // 挙動がトグルとなっている
+                    targetWindow!.zoom(nil)
+                }
             }
         }
+        state.isZoomed = isZoomed
     }
     
     /// ウィンドウの位置を設定
