@@ -131,8 +131,8 @@ namespace Kirurobo
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
-                    + "\nCursor:" + (uniwinc.cursorPosition - winPos)
-                    + "\nInput:" + (Vector2)Input.mousePosition
+                    + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
+                    + "\nUnity Cur.:" + (Vector2)Input.mousePosition
                     );
             }
         }

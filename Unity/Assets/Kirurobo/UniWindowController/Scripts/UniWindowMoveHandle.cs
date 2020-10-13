@@ -54,14 +54,11 @@ namespace  Kirurobo
         /// </summary>
         public void OnBeginDrag(PointerEventData eventData)
         {
-            // MacでRetinaサポートが有効だと挙動を変える
+            // Macだと挙動を変える
+            //  実際はRetinaサポートが有効のときだけだが、
             //  eventData.position の系と、ウィンドウ座標系でスケールが一致しなくなってしまう
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-            if (PlayerSettings.macRetinaSupport) {
-                _dragStartedPosition = _uniwinc.windowPosition - _uniwinc.cursorPosition;
-            } else {
-                _dragStartedPosition = eventData.position;
-            }
+            _dragStartedPosition = _uniwinc.windowPosition - _uniwinc.cursorPosition;
 #else
             _dragStartedPosition = eventData.position;
 #endif
@@ -122,13 +119,8 @@ namespace  Kirurobo
 #endif
 
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-            // MacでRetinaサポートが有効の場合、ネイティブプラグインでのカーソル位置取得・設定
-            if (PlayerSettings.macRetinaSupport) {
-                _uniwinc.windowPosition = _uniwinc.cursorPosition + _dragStartedPosition;
-            } else {
-                // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
-                _uniwinc.windowPosition += eventData.position - _dragStartedPosition;
-            }
+            // Macの場合、ネイティブプラグインでのカーソル位置取得・設定
+            _uniwinc.windowPosition = _uniwinc.cursorPosition + _dragStartedPosition;
 #else
             // Windowsなら、タッチ操作も対応させるために eventData.position を使用する
             // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
