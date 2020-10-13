@@ -30,22 +30,84 @@ public class LibUniWinC : NSObject {
         public var isTransparent: Bool = false
     }
     
+    private class OriginalWindowInfo {
+        /// 元々のStyleMaskをここに記憶
+        public var StyleMask: NSWindow.StyleMask = []
+        
+        /// 元々のCollectionBehavior
+        public var CollectionBehavior: NSWindow.CollectionBehavior = []
+
+        /// 元々のウィンドウLevel
+        public var Level: NSWindow.Level = NSWindow.Level.normal
+        
+        public var titlebarAppearsTransparent: Bool = false
+        public var titleVisibility: NSWindow.TitleVisibility = NSWindow.TitleVisibility.visible
+        public var backgroundColor: NSColor = NSColor.clear
+        public var isOpaque: Bool = true
+        public var hasShadow: Bool = true
+        public var contentViewWantsLayer: Bool = true
+        public var contentViewLayerIsOpaque: Bool = true
+        public var contentViewLayerBackgroundColor: CGColor? = CGColor.clear
+
+//        public init() {
+//            self.StyleMask = []
+//            self.CollectionBehavior = []
+//            self.Level = NSWindow.Level.normal
+//            self.titlebarAppearsTransparent = false
+//            self.titleVisibility = NSWindow.TitleVisibility.visible
+//
+//            window.backgroundColor = NSColor.clear
+//            window.isOpaque = true
+//            window.hasShadow = true
+//        }
+        
+        /// 指定ウィンドウの初期値を記憶
+        public func Store(window: NSWindow) -> Void {
+            self.CollectionBehavior = window.collectionBehavior
+            self.StyleMask = window.styleMask
+            self.Level = window.level
+            self.titlebarAppearsTransparent = window.titlebarAppearsTransparent
+            self.titleVisibility = window.titleVisibility
+            self.backgroundColor = window.backgroundColor
+            self.isOpaque = window.isOpaque
+            self.hasShadow = window.hasShadow
+            
+            if let view = window.contentView {
+                self.contentViewWantsLayer = view.wantsLayer
+                if let layer = view.layer {
+                    self.contentViewLayerIsOpaque = layer.isOpaque
+                    self.contentViewLayerBackgroundColor = layer.backgroundColor
+                }
+            }
+        }
+        
+        /// 指定ウィンドウの状態を初期値に戻す
+        public func Restore(window: NSWindow) -> Void {
+            window.collectionBehavior = self.CollectionBehavior
+            window.styleMask = self.StyleMask
+            window.level = self.Level
+            window.titlebarAppearsTransparent = self.titlebarAppearsTransparent
+            window.titleVisibility = self.titleVisibility
+            window.backgroundColor = self.backgroundColor
+            window.isOpaque = self.isOpaque
+            window.hasShadow = self.hasShadow
+            
+            window.contentView?.wantsLayer = self.contentViewWantsLayer
+            window.contentView?.layer?.isOpaque = self.contentViewLayerIsOpaque
+            window.contentView?.layer?.backgroundColor = self.contentViewLayerBackgroundColor
+        }
+    }
+    
     // MARK: - Static variables
     
     /// 操作対象となるウィンドウ。nilだと未指定
     private static var targetWindow: NSWindow? = nil
     
-    /// 元々のStyleMaskをここに記憶
-    private static var originalStyleMask: NSWindow.StyleMask = []
-    
-    /// 元々のCollectionBehavior
-    private static var originalCollectionBehavior: NSWindow.CollectionBehavior = []
-
-    /// 元々のウィンドウLevel
-    private static var originalLevel: NSWindow.Level = NSWindow.Level.normal
-    
-    /// 現在の設定を保持する
+    /// 現在の設定を保持する構造体
     private static var state: State = State()
+    
+    /// ウィンドウの初期状態を記憶するインスタンス
+    private static var orgWindowInfo: OriginalWindowInfo = OriginalWindowInfo()
     
     /// プライマリーモニターの高さ
     private static var primaryMonitorHeight: CGFloat = 0
@@ -89,10 +151,9 @@ public class LibUniWinC : NSObject {
             let center = NotificationCenter.default
             center.removeObserver(self)
             
-            targetWindow!.collectionBehavior = originalCollectionBehavior
-            targetWindow!.styleMask = originalStyleMask
-            targetWindow!.level = originalLevel
-            
+            // スタイルを初期状態に戻す
+            orgWindowInfo.Restore(window: targetWindow!)
+                        
             targetWindow = nil
         }
     }
@@ -100,9 +161,18 @@ public class LibUniWinC : NSObject {
     @objc public static func attachMyWindow() -> Bool {
         // 自分のウィンドウを取得して利用開始
         let window: NSWindow = _findMyWindow()
-        _setTargetWindow(window: window)
+        _attachWindow(window: window)
         
         return true
+    }
+    
+    /// ウィンドウに設定された内容を再適用
+    private static func _reapplyWindowStyles() -> Void {
+        if (targetWindow != nil) {
+            setTopmost(isTopmost: state.isTopmost)
+            setBorderless(isBorderless: state.isBorderless)
+            setTransparent(isTransparent: state.isTransparent)
+        }
     }
     
     private static func _updateScreenSize() -> Void {
@@ -125,6 +195,7 @@ public class LibUniWinC : NSObject {
             notification -> Void in
             _updateScreenSize()
         }
+
         
         state.isReady = true
     }
@@ -136,7 +207,7 @@ public class LibUniWinC : NSObject {
     }
 
     /// 対象のウィンドウを指定。それ以前にもし指定があればそれは元に戻す
-    private static func _setTargetWindow(window: NSWindow) -> Void {
+    private static func _attachWindow(window: NSWindow) -> Void {
         // すでに同じウィンドウが選択されていれば、何もしない
         if (targetWindow == window) {
             return
@@ -154,14 +225,10 @@ public class LibUniWinC : NSObject {
         targetWindow = window
         
         // 初期の状態を記録
-        originalCollectionBehavior = window.collectionBehavior
-        originalStyleMask = window.styleMask
-        originalLevel = window.level
+        orgWindowInfo.Store(window: window)
         
         // 設定を適用
-        setTransparent(isTransparent: state.isTransparent)
-        setBorderless(isBorderless: state.isBorderless)
-        setTopmost(isTopmost: state.isTopmost)
+        _reapplyWindowStyles()
     }
     
     /// ウィンドウ透過の方法を設定
@@ -182,7 +249,7 @@ public class LibUniWinC : NSObject {
         if let window: NSWindow = targetWindow {
             _setWindowTransparent(window: window, isTransparent: isTransparent)
             _setContentViewTransparent(window: window, isTransparent: isTransparent)
-            _setBorderAppearance(window: window, isShown: !isTransparent)
+            _setWindowBorderless(window: window, isBorderless: !isTransparent)
         }
         state.isTransparent = isTransparent
     }
@@ -191,7 +258,7 @@ public class LibUniWinC : NSObject {
     /// - Parameter isBorderless: trueなら透過ウィンドウにする
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
-            _setBorderAppearance(window: window, isShown: !isBorderless)
+            _setWindowBorderless(window: window, isBorderless: isBorderless)
         }
         state.isBorderless = isBorderless
     }
@@ -204,8 +271,8 @@ public class LibUniWinC : NSObject {
                 window.collectionBehavior = [.fullScreenAuxiliary]
                 window.level = NSWindow.Level.floating
             } else {
-                window.collectionBehavior = originalCollectionBehavior
-                window.level = originalLevel
+                window.collectionBehavior = orgWindowInfo.CollectionBehavior
+                window.level = orgWindowInfo.Level
             }
         }
         state.isTopmost = isTopmost
@@ -241,10 +308,10 @@ public class LibUniWinC : NSObject {
             
             //window.contentView?.wantsLayer = true
         } else {
-            window.styleMask = originalStyleMask
-            window.backgroundColor = NSColor.clear
-            window.isOpaque = true
-            window.hasShadow = true
+            window.styleMask = orgWindowInfo.StyleMask
+            window.backgroundColor = orgWindowInfo.backgroundColor
+            window.isOpaque = orgWindowInfo.isOpaque
+            window.hasShadow = orgWindowInfo.hasShadow
         }
     }
     
@@ -259,21 +326,21 @@ public class LibUniWinC : NSObject {
                 view.layer?.backgroundColor = CGColor.clear
                 view.layer?.isOpaque = false
             } else {
-                view.wantsLayer = false
-                view.layer?.backgroundColor = CGColor.clear
-                view.layer?.isOpaque = true
+                view.wantsLayer = orgWindowInfo.contentViewWantsLayer
+                view.layer?.backgroundColor = orgWindowInfo.contentViewLayerBackgroundColor
+                view.layer?.isOpaque = orgWindowInfo.contentViewLayerIsOpaque
             }
         }
     }
     
-    /// Hide or show the border of the given window.
+    /// ウィンドウ枠の除去／復帰
     /// - Parameters:
-    ///   - window: a window to show/hide
-    ///   - isShow: boolean value to indicate show or hide
-    private static func _setBorderAppearance(window: NSWindow, isShown: Bool) -> Void {
-        window.styleMask = isShown ? transparentStyleMask : [.borderless]
-        window.titlebarAppearsTransparent = !isShown
-        window.titleVisibility = isShown ? .visible : .hidden
+    ///   - window: 対象ウィンドウ
+    ///   - isBorderless: 枠なしにするか
+    private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
+        window.styleMask = isBorderless ? transparentStyleMask : orgWindowInfo.StyleMask
+        window.titlebarAppearsTransparent = isBorderless || orgWindowInfo.titlebarAppearsTransparent
+        window.titleVisibility = isBorderless ? .hidden : orgWindowInfo.titleVisibility
     }
     
     /// ウィンドウの位置を設定
@@ -352,9 +419,15 @@ public class LibUniWinC : NSObject {
     }
     
     /// 現在のカーソル座標を取得
-    /// - Returns: スクリーン座標
-    private static func _getCursorPosition() -> NSPoint {
-        return NSEvent.mouseLocation
+    /// - Parameters:
+    ///   - x: X座標
+    ///   - y: Y座標
+    /// - Returns: 成功すれば true
+    @objc public static func getCursorPosition(x: UnsafeMutablePointer<Float32>, y: UnsafeMutablePointer<Float32>) -> Bool {
+        let mousePos = NSEvent.mouseLocation
+        x.pointee = Float32(mousePos.x)
+        y.pointee = Float32(mousePos.y)
+        return true
     }
 
     /// カーソル位置を設定
@@ -362,7 +435,7 @@ public class LibUniWinC : NSObject {
     ///   - x: X座標
     ///   - y: Y座標
     /// - Returns: 成功すれば true
-    @objc public static func SetCursorPosition(x: Float32, y: Float32) -> Bool {
+    @objc public static func setCursorPosition(x: Float32, y: Float32) -> Bool {
         let position = NSMakePoint(CGFloat(x), CGFloat(y))
         let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
                                 mouseCursorPosition: position, mouseButton: .left)

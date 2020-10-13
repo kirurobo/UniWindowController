@@ -85,6 +85,12 @@ public class UniWinCore : IDisposable
         public static extern bool GetSize(out float x, out float y);
 
         [DllImport("LibUniWinC")]
+        public static extern void SetCursorPosition(float x, float y);
+
+        [DllImport("LibUniWinC")]
+        public static extern bool GetCursorPosition(out float x, out float y);
+
+        [DllImport("LibUniWinC")]
         public static extern void SetTransparentType(Int32 type);
 
         [DllImport("LibUniWinC")]
@@ -302,6 +308,26 @@ public class UniWinCore : IDisposable
         Vector2 size = Vector2.zero;
         LibUniWinC.GetSize(out size.x, out size.y);
         return size;
+    }
+
+    /// <summary>
+    /// Set the mouse pointer position.
+    /// </summary>
+    /// <param name="position">Position.</param>
+    public void SetCursorPosition(Vector2 position)
+    {
+        LibUniWinC.SetCursorPosition(position.x, position.y);
+    }
+
+    /// <summary>
+    /// Get the mouse pointer position.
+    /// </summary>
+    /// <returns>The position.</returns>
+    public Vector2 GetCursorPosition()
+    {
+        Vector2 pos = Vector2.zero;
+        LibUniWinC.GetCursorPosition(out pos.x, out pos.y);
+        return pos;
     }
 
     /// <summary>

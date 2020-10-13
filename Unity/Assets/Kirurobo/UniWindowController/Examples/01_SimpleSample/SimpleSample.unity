@@ -443,6 +443,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: UniWindowController
       objectReference: {fileID: 0}
+    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
+        type: 3}
+      propertyPath: _isTransparent
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
+        type: 3}
+      propertyPath: _isTopmost
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e893aefd93740714b999573b02916984, type: 3}
 --- !u!1 &2084589444

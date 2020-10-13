@@ -85,6 +85,14 @@ UNIWINC_EXPORT BOOL GetSize(Float32* width, Float32* height) {
     return [LibUniWinC getSizeWithWidth:width height:height];
 }
 
+UNIWINC_EXPORT BOOL SetCursorPosition(Float32 x, Float32 y) {
+    return [LibUniWinC setCursorPositionWithX:x y:y];
+}
+
+UNIWINC_EXPORT BOOL GetCursorPosition(Float32* x, Float32* y) {
+    return [LibUniWinC getCursorPositionWithX:x y:y];
+}
+
 UNIWINC_EXPORT void SetTransparentType(SInt32 type) {
     [LibUniWinC setTransparentTypeWithType: type];
 }

@@ -168,6 +168,15 @@ namespace Kirurobo
             set { uniWinCore?.SetWindowSize(value); }
         }
 
+        /// <summary>
+        /// マウスカーソル座標を取得・設定
+        /// </summary>
+        public Vector2 cursorPosition
+        {
+            get { return (uniWinCore != null ? uniWinCore.GetCursorPosition() : Vector2.zero); }
+            set { uniWinCore?.SetCursorPosition(value); }
+        }
+
         // カメラの背景をアルファゼロの黒に置き換えるため、本来の背景を保存しておく変数
         private CameraClearFlags originalCameraClearFlags;
         private Color originalCameraBackground;

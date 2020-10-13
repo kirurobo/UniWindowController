@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.3</string>
+	<string>0.4.1</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
@@ -41,7 +41,7 @@
 	<key>DTXcodeBuild</key>
 	<string>12A7300</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.10</string>
+	<string>10.11</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2019-2020 kirurobo. All rights reserved.</string>
 </dict>

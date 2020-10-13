@@ -127,10 +127,12 @@ namespace Kirurobo
         {
             if (uniwinc)
             {
+                var winPos = uniwinc.windowPosition;
                 OutputMessage(
-                    "Window"
-                    + "\nPos.: " + uniwinc.windowPosition
+                    "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
+                    + "\nCursor:" + (uniwinc.cursorPosition - winPos)
+                    + "\nInput:" + (Vector2)Input.mousePosition
                     );
             }
         }
@@ -147,9 +149,7 @@ namespace Kirurobo
 
                 if (uniwinc)
                 {
-                    var pos = uniwinc.windowPosition;
-                    var size = uniwinc.windowSize;
-                    OutputMessage("Window\nPos.:" + pos + "Size:" + size);
+                    OutputMessage("Focused");
                 }
                 else
                 {

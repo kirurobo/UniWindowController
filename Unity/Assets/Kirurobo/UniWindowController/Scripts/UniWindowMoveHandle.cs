@@ -53,7 +53,8 @@ namespace  Kirurobo
         /// </summary>
         public void OnBeginDrag(PointerEventData eventData)
         {
-            _dragStartedPosition = eventData.position;
+            //_dragStartedPosition = eventData.position;
+            _dragStartedPosition = _uniwinc.windowPosition - _uniwinc.cursorPosition;
             
             // _isDragging が false ならこれからドラッグ開始と判断
             if (!_isDragging)
@@ -109,9 +110,13 @@ namespace  Kirurobo
                 return;
             }
 #endif
-            
-            // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
-            _uniwinc.windowPosition += eventData.position - _dragStartedPosition;
+
+            //// スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
+            //_uniwinc.windowPosition += eventData.position - _dragStartedPosition;
+
+            /// OSのマウスカーソル位置によるウィンドウ移動
+            /// eventData.position だと画面の倍率（150%など）で位置が異なってしまうようなので
+            _uniwinc.windowPosition = _uniwinc.cursorPosition + _dragStartedPosition;
         }
     }
 }
