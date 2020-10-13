@@ -97,9 +97,13 @@ Unityで他のスクリプトから操作できるものです。
 
 
 ## ソースのフォルダ構成
+利用するだけならば、Release にある unitypackage をダウンロードしていただけばよく、このリポジトリをクローンする必要はありません。  
+ソースを見たい／ビルドしたい方は、このようになっています。
+
 - Unity
   - Unity のプロジェクトです。
   - ビルド済みの DLL、bundle も既に含みます。
+  - ここの内容が unitypackage としてリリースにあります。
 - VisualStudio
   - Windows版 x86, x64 の LibUniWinC.dll を生成するソリューションがあります。
   - Release でビルドすると Unity フォルダ下の DLL が上書きされます。
