@@ -32,6 +32,11 @@ public class UniWinC : IDisposable
         }
 
         public static Vector2 zero = new Vector2(0, 0);
+
+        override public string ToString()
+        {
+            return x + ", " + y;
+        }
     }
 
     /// <summary>
@@ -56,6 +61,20 @@ public class UniWinC : IDisposable
     /// ウィンドウ透過方式
     /// </summary>
     public TransparentType TransparentMode = TransparentType.Alpha;
+
+    /// <summary>
+    /// マウスカーソル位置を取得・設定
+    /// </summary>
+    public Vector2 cursorPosition {
+        get {
+            Vector2 pos = Vector2.zero;
+            GetCursorPosition(out pos.x, out pos.y);
+            return pos;
+        }
+        set {
+            SetCursorPosition(value.x, value.y);
+        }
+    }
 
 
     [DllImport("LibUniWinC.dll")]
@@ -85,6 +104,11 @@ public class UniWinC : IDisposable
     [DllImport("LibUniWinC.dll")]
     public static extern bool GetSize(out float width, out float height);
 
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool SetCursorPosition(float x, float y);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool GetCursorPosition(out float x, out float y);
 
     // for development & testing. Windows only.
     [DllImport("LibUniWinC.dll")]

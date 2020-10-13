@@ -38,6 +38,7 @@ namespace TestLibUniWinC
                 pos.x, pos.y, size.x, size.y, clientSize.Width, clientSize.Height,
                 hwnd.ToInt32(), this.Handle.ToInt32(), pid, myPid);
 
+
             Console.WriteLine(message);
             textBoxMessage.Text = message;
         }

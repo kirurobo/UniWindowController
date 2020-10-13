@@ -35,9 +35,13 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetSize(float* width, float* height);
 
+// Mouse pointer
+UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);
+UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
+
+// Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
 UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
 
-// Windows only
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();

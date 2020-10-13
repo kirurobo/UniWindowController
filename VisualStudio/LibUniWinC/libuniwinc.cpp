@@ -636,3 +636,38 @@ BOOL  UNIWINC_API GetSize(float* width, float* height) {
 	}
 	return FALSE;
 }
+
+/// <summary>
+/// マウスカーソル座標を取得
+/// </summary>
+/// <param name="x">ウィンドウ左端座標 [px]</param>
+/// <param name="y">プライマリー画面下端を原点とし、上が正のY座標 [px]</param>
+/// <returns>成功すれば true</returns>
+BOOL UNIWINC_API GetCursorPosition(float* x, float* y) {
+	*x = 0;
+	*y = 0;
+
+	POINT pos;
+	if (GetCursorPos(&pos)) {
+		*x = (float)pos.x;
+		*y = (float)(nPrimaryMonitorHeight - pos.y - 1);	// 左下基準とする
+		return TRUE;
+	}
+	return FALSE;
+
+}
+
+/// <summary>
+/// マウスカーソル座標を設定
+/// </summary>
+/// <param name="x">ウィンドウ左端座標 [px]</param>
+/// <param name="y">プライマリー画面下端を原点とし、上が正のY座標 [px]</param>
+/// <returns>成功すれば true</returns>
+BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
+	POINT pos;
+
+	pos.x = (int)x;
+	pos.y = nPrimaryMonitorHeight - (int)y - 1;
+
+	return SetCursorPos(pos.x, pos.y);
+}
