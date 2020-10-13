@@ -63,7 +63,8 @@ namespace Kirurobo
 
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
                 // Windows でなければ、透過方法の選択は無効とする
-                if (transparentTypeDropdown) transparentTypeDropdown.interactable = false;
+                //if (transparentTypeDropdown) transparentTypeDropdown.interactable = false;
+                if (transparentTypeDropdown) transparentTypeDropdown.enabled = false;
 #endif
             }
         }
