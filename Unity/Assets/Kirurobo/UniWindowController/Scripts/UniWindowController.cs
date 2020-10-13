@@ -259,7 +259,7 @@ namespace Kirurobo
 
 
             // マウスカーソル直下の色を取得するコルーチンを開始
-            StartCoroutine(PickColorCoroutine());
+            StartCoroutine(HitTestCoroutine());
         }
 
         void OnDestroy()
@@ -314,6 +314,7 @@ namespace Kirurobo
 
             if (_isClickThrough)
             {
+                // ここまでクリックスルー状態だったら、ヒットしたときだけ戻す
                 if (hit)
                 {
                     SetClickThrough(false);
@@ -321,6 +322,7 @@ namespace Kirurobo
             }
             else
             {
+                // ここまでクリックスルーでなければ、透明かつヒットしなかったときだけクリックスルーとする
                 if (isTransparent && !hit)
                 {
                     SetClickThrough(true);
@@ -329,15 +331,24 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// OnPostRenderではGUI描画前になってしまうため、コルーチンを用意
+        /// コルーチンでカーソル下の色、またはRaycastによるヒットテストを繰り返す
+        /// WaitForEndOfFrame() を使うためにコルーチンとしている
         /// </summary>
         /// <returns></returns>
-        private IEnumerator PickColorCoroutine()
+        private IEnumerator HitTestCoroutine()
         {
             while (Application.isPlaying)
             {
                 yield return new WaitForEndOfFrame();
 
+                // Windowsの場合、単色での透過ならばヒットテストはOSに任せるため、常にヒット
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+                if (transparentType == UniWinCore.TransparentType.ColorKey)
+                {
+                    onObject = true;
+                }
+                else
+#endif
                 if (hitTestType == HitTestType.Opacity)
                 {
                     HitTestByOpaquePixel();

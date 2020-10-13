@@ -7,7 +7,7 @@ using System.Reflection;
 namespace Kirurobo
 {
     /// <summary>
-    /// WindowControllerのためのUnityエディタカスタマイズ
+    /// UniWindowControllerのためのエディタカスタマイズ部分
     /// </summary>
     [CustomEditor(typeof(UniWindowController))]
     public class UniWindowControllerEditor : Editor

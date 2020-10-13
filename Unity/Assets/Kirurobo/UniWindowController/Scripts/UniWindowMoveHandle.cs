@@ -7,6 +7,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -53,9 +54,18 @@ namespace  Kirurobo
         /// </summary>
         public void OnBeginDrag(PointerEventData eventData)
         {
-            //_dragStartedPosition = eventData.position;
-            _dragStartedPosition = _uniwinc.windowPosition - _uniwinc.cursorPosition;
-            
+            // MacでRetinaサポートが有効だと挙動を変える
+            //  eventData.position の系と、ウィンドウ座標系でスケールが一致しなくなってしまう
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+            if (PlayerSettings.macRetinaSupport) {
+                _dragStartedPosition = _uniwinc.windowPosition - _uniwinc.cursorPosition;
+            } else {
+                _dragStartedPosition = eventData.position;
+            }
+#else
+            _dragStartedPosition = eventData.position;
+#endif
+        
             // _isDragging が false ならこれからドラッグ開始と判断
             if (!_isDragging)
             {
@@ -111,12 +121,19 @@ namespace  Kirurobo
             }
 #endif
 
-            //// スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
-            //_uniwinc.windowPosition += eventData.position - _dragStartedPosition;
-
-            /// OSのマウスカーソル位置によるウィンドウ移動
-            /// eventData.position だと画面の倍率（150%など）で位置が異なってしまうようなので
-            _uniwinc.windowPosition = _uniwinc.cursorPosition + _dragStartedPosition;
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+            // MacでRetinaサポートが有効の場合、ネイティブプラグインでのカーソル位置取得・設定
+            if (PlayerSettings.macRetinaSupport) {
+                _uniwinc.windowPosition = _uniwinc.cursorPosition + _dragStartedPosition;
+            } else {
+                // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
+                _uniwinc.windowPosition += eventData.position - _dragStartedPosition;
+            }
+#else
+            // Windowsなら、タッチ操作も対応させるために eventData.position を使用する
+            // スクリーンポジションが開始時の位置と一致させる分だけウィンドウを移動
+            _uniwinc.windowPosition += eventData.position - _dragStartedPosition;
+#endif
         }
     }
 }
