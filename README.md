@@ -10,8 +10,14 @@ Unity の Windows / macOS 向けビルドで、自ウィンドウの位置、サ
 
 Windows、macOS それぞれではコード例やアセットが見つかりましたが、統一的に扱えるものが無さそうだったため作成しました。
 
-<img src="https://user-images.githubusercontent.com/1019117/95654852-d6d31380-0b3d-11eb-8bf3-3608ee8e333e.png" width="480">
+![uniwinc](https://user-images.githubusercontent.com/1019117/96070514-5284e580-0edb-11eb-8a4d-d990a0a028a8.gif)  
 https://twitter.com/i/status/1314440790945361920
+
+
+## ダウンロード
+https://github.com/kirurobo/UniWindowController/releases に .unitypackage ファイルがあります。
+
+また、アプリとしてビルドしたサンプルも置いています。
 
 
 ## 利用法
