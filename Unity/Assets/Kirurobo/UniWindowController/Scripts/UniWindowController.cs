@@ -590,11 +590,11 @@ namespace Kirurobo
                     transparentType = type;
                     SetTransparent(true);
                 }
-            }
-            else
-            {
-                uniWinCore.SetTransparentType(type);
-                transparentType = type;
+                else
+                {
+                    uniWinCore.SetTransparentType(type);
+                    transparentType = type;
+                }
             }
         }
 
