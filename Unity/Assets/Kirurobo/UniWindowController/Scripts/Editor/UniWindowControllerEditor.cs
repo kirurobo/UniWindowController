@@ -12,6 +12,8 @@ namespace Kirurobo
     [CustomEditor(typeof(UniWindowController))]
     public class UniWindowControllerEditor : Editor
     {
+        SerializedProperty pickedColor;
+        
         private EditorWindow gameViewWindow;
 
         private bool isWarningDismissed = false;
@@ -19,6 +21,8 @@ namespace Kirurobo
         void OnEnable()
         {
             LoadSettings();
+
+            pickedColor = serializedObject.FindProperty("pickedColor");
         }
 
         void OnDisable()
@@ -40,6 +44,15 @@ namespace Kirurobo
         {
             base.OnInspectorGUI();
 
+            // カーソル下の色が得られていれば、その透明度を参考として表示
+            if (pickedColor != null)
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.LabelField("Picked Alpha", pickedColor.colorValue.a.ToString("P0"));
+                EditorGUI.EndDisabledGroup();
+            }
+
+            // 以下は Project Settings 関連
             EditorGUILayout.Space();
 
             bool enableValidation = EditorGUILayout.Foldout(!isWarningDismissed, "Player Settings validation");
