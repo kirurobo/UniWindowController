@@ -1,4 +1,4 @@
-/**
+/*
  * UniWindowController.cs
  * 
  * Author: Kirurobo http://twitter.com/kirurobo
@@ -117,17 +117,25 @@ namespace Kirurobo
         /// </summary>
         private float raycastMaxDepth = 100.0f;
 
+        
+        /// <summary>
+        /// trueにしておくと、ウィンドウ透過時にカメラ背景を単色の黒透明に自動で変更します
+        /// </summary>
+        [Header("Advanced settings")]
+        [Tooltip("Change camera background when the window is transparent")]
+        public bool autoSwitchCameraBackground = true;
+
         /// <summary>
         /// trueにしておくと、起動時にフルスクリーンだった場合は強制的に解除する
         /// 起動時のみ働きます
         /// </summary>
         [Tooltip("Force windowed on startup")]
-        public bool forceWindowed = false;
+        public bool forceWindowed = true;
 
         /// <summary>
         /// 透過方式の指定
         /// </summary>
-        [Header("Windows only")]
+        [Header("For Windows only")]
         [Tooltip("Select the method. *Only available on Windows")]
         public UniWinCore.TransparentType transparentType = UniWinCore.TransparentType.Alpha;
 
@@ -140,7 +148,7 @@ namespace Kirurobo
         /// <summary>
         /// Is the mouse pointer on an opaque pixel or an object
         /// </summary>
-        [Header("Status")]
+        [Header("State")]
         [SerializeField, ReadOnly, Tooltip("Is the mouse pointer on an opaque pixel? (Read only)")]
         private bool onObject = true;
         
@@ -212,7 +220,13 @@ namespace Kirurobo
         // Use this for initialization
         void Awake()
         {
-            Input.simulateMouseWithTouches = false;
+            // フルスクリーン強制解除。エディタでは何もしない
+#if !UNITY_EDITOR
+            if (forceWindowed && Screen.fullScreen)
+            {
+                Screen.fullScreen = false;
+            }
+#endif
 
             if (!currentCamera)
             {
@@ -249,15 +263,6 @@ namespace Kirurobo
 
         void Start()
         {
-            // フルスクリーン強制解除。エディタでは何もしない
-#if !UNITY_EDITOR
-            if (forceWindowed && Screen.fullScreen)
-            {
-                Screen.fullScreen = false;
-            }
-#endif
-
-
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
         }
@@ -532,8 +537,8 @@ namespace Kirurobo
         /// <param name="isTransparent"></param>
         void SetCameraBackground(bool isTransparent)
         {
-            // カメラが特定できていなければ何もしない
-            if (!currentCamera) return;
+            // カメラが特定できていないか、自動切替をしない場合は、何もしない
+            if (!currentCamera || !autoSwitchCameraBackground) return;
 
             // 透過するならカメラの背景を透明色に変更
             if (isTransparent)

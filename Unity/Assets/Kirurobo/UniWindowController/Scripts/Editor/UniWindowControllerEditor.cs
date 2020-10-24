@@ -1,4 +1,10 @@
-using System.Collections;
+/*
+ * UniWindowControllerEditor.cs
+ * 
+ * Author: Kirurobo http://twitter.com/kirurobo
+ * License: MIT
+ */
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -126,16 +132,19 @@ namespace Kirurobo
             // 警告メッセージのリスト
             List<string> warnings = new List<string>();
 
+            // バックグラウンドでも実行する。クリックスルー切替などで必要
             if (!PlayerSettings.runInBackground)
             {
                 warnings.Add("'Run in background' is highly recommended.");
             }
 
+            // サイズ変更可能なウィンドウとする。必須ではないがウィンドウ枠無効時にサイズも変わるので変更可能である方が自然
             if (!PlayerSettings.resizableWindow)
             {
                 warnings.Add("'Resizable window' is recommended.");
             }
 
+            // フルスクリーンでなくウィンドウとする
 #if UNITY_2018_1_OR_NEWER
             // Unity 2018 からはフルスクリーン指定の仕様が変わった
             if (PlayerSettings.fullScreenMode != FullScreenMode.Windowed)
@@ -149,6 +158,13 @@ namespace Kirurobo
             }
 #endif
 
+            // フルスクリーンとウィンドウの切替を無効とする
+            if (PlayerSettings.allowFullscreenSwitch)
+            {
+                warnings.Add("Disallow fullscreen switch.");
+            }
+            
+            // Windowsでは Use DXGI Flip Mode Swapchain を無効にしないと透過できない
             // ↓Unity 2019.1.6未満だと useFlipModelSwapchain は無いはず
             //    なので除外のため書き連ねてあるが、ここまでサポートしなくて良い気もする。
 #if UNITY_2019_1_6
@@ -181,6 +197,7 @@ namespace Kirurobo
 #endif
             PlayerSettings.runInBackground = true;
             PlayerSettings.resizableWindow = true;
+            PlayerSettings.allowFullscreenSwitch = false;
 
 #if UNITY_2019_1_6
 #elif UNITY_2019_1_5

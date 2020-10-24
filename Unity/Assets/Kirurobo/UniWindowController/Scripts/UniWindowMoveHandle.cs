@@ -42,6 +42,8 @@ namespace  Kirurobo
             // シーン中の UniWindowController を取得
             _uniwinc = GameObject.FindObjectOfType<UniWindowController>();
             if (_uniwinc) _isHitTestEnabled = _uniwinc.isHitTestEnabled;
+
+            Input.simulateMouseWithTouches = false;
         }
 
         // Update is called once per frame
