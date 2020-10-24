@@ -5491,18 +5491,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
         type: 3}
-      propertyPath: forceWindowed
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
-        type: 3}
       propertyPath: hitTestType
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
         type: 3}
       propertyPath: _isTransparent
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2416199871598626843, guid: e893aefd93740714b999573b02916984, type: 3}

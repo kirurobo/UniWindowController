@@ -126,11 +126,14 @@ namespace Kirurobo
         public bool autoSwitchCameraBackground = true;
 
         /// <summary>
-        /// trueにしておくと、起動時にフルスクリーンだった場合は強制的に解除する
+        /// trueにしておくと、起動時にフルスクリーンだった場合は強制的に解除します
+        ///
+        /// 起動時のダイアログでフルスクリーンにしてしまった場合でもウィンドウモードにするためのものです
         /// 起動時のみ働きます
+        /// Macの場合、フルスクリーン状態を強制解除しても別画面になったままであまり有効ではなさそうです
         /// </summary>
         [Tooltip("Force windowed on startup")]
-        public bool forceWindowed = true;
+        public bool forceWindowed = false;
 
         /// <summary>
         /// 透過方式の指定

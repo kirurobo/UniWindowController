@@ -223,6 +223,22 @@ public class LibUniWinC : NSObject {
         
         // 設定を適用
         _reapplyWindowStyles()
+        
+        // フルスクリーン移行時に再適用
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didEnterFullScreenNotification,
+            object: nil,
+            queue: OperationQueue.main) { notification -> Void in
+            _reapplyWindowStyles()
+        }
+        
+        // フルスクリーンから復帰時に再適用
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didExitFullScreenNotification,
+            object: nil,
+            queue: OperationQueue.main) { notification -> Void in
+            _reapplyWindowStyles()
+        }
     }
     
     /// ウィンドウの透過／非透過設定
