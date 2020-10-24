@@ -24,6 +24,10 @@ namespace Kirurobo
         public Toggle topmostToggle;
         public Toggle dragMoveToggle;
         public Toggle maximizedToggle;
+        public Button widthDownButton;
+        public Button widthUpButton;
+        public Button heightDownButton;
+        public Button heightUpButton;
         public Dropdown transparentTypeDropdown;
         public Dropdown hitTestTypeDropdown;
         public Toggle clickThroughToggle;
@@ -53,6 +57,12 @@ namespace Kirurobo
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
                 maximizedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
+
+                widthDownButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(-100, 0));
+                widthUpButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(+100, 0));
+                heightDownButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(0, -100));
+                heightUpButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(0, +100));
+                
                 clickThroughToggle?.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
 
                 transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.SetTransparentType((UniWinCore.TransparentType)val));
@@ -64,11 +74,12 @@ namespace Kirurobo
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
                 // Windows でなければ、透過方法の選択は無効とする
                 //if (transparentTypeDropdown) transparentTypeDropdown.interactable = false;
-                if (transparentTypeDropdown) transparentTypeDropdown.enabled = false;
+                //if (transparentTypeDropdown) transparentTypeDropdown.enabled = false;
+                if (transparentTypeDropdown) transparentTypeDropdown.gameObject.SetActive(false);
 #endif
             }
         }
-
+        
         /// <summary>
         /// 毎フレーム行う処理
         /// </summary>
@@ -94,19 +105,6 @@ namespace Kirurobo
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
                     uniwinc.isClickThrough = false;
-                }
-
-                // ウィンドウサイズ変更のテスト。カーソルやジョイスティックで伸び縮み
-                Vector2 size = uniwinc.windowSize;
-                float deltaW = 0f;  // 横に伸ばす幅 [px]
-                float deltaH = 0f;  // 縦に伸ばす高さ [px]
-                const float step = 10f; // 1フレームでの変化量 [px]
-                deltaW = Input.GetAxis("Horizontal") * step;
-                deltaH = Input.GetAxis("Vertical") * step;
-
-                if (!Mathf.Approximately(deltaW, 0f) || !Mathf.Approximately(deltaH, 0f))
-                {
-                    uniwinc.windowSize += new Vector2(deltaW, deltaH);
                 }
             }
 
