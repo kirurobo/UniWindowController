@@ -5,6 +5,7 @@
  * License: MIT
  */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +20,12 @@ namespace Kirurobo
     {
         private UniWindowController uniwinc;
         private UniWindowMoveHandle uniWinMoveHandle;
+
+        private float mouseMoveSS = 0f;           // Sum of mouse trajectory squares. [px^2]
+        private float mouseMoveSSThreshold = 16f; // Click (not dragging) threshold. [px^2]
+        private Vector3 lastMousePosition;        // Right clicked position.
+        private float touchDuration = 0f;
+        private float touchDurationThreshold = 0.5f; // Long tap time threshold. [s]
 
         public Toggle transparentToggle;
         public Toggle topmostToggle;
@@ -91,12 +98,52 @@ namespace Kirurobo
             // 動作確認のためウィンドウ位置・サイズを表示
             ShowWindowMetrics();
 
-            // 右クリックでメニューを表示
+            // マウス右ボタンクリックでメニューを表示させる。閾値以下の移動ならクリックとみなす。
             if (Input.GetMouseButtonDown(1))
             {
-                ShowMenu();
+                lastMousePosition = Input.mousePosition;
+                touchDuration = 0f;
+            }
+            if (Input.GetMouseButton(1))
+            {
+                mouseMoveSS += (Input.mousePosition - lastMousePosition).sqrMagnitude;
+            }
+            if (Input.GetMouseButtonUp(1))
+            {
+                if (mouseMoveSS < mouseMoveSSThreshold)
+                {
+                    ShowMenu(lastMousePosition);
+                }
+                mouseMoveSS = 0f;
+                touchDuration = 0f;
+            }
+            
+            // ロングタッチでもメニューを表示させる
+            if (Input.touchSupported && (Input.touchCount > 0))
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    lastMousePosition = Input.mousePosition;
+                    touchDuration = 0f;
+                }
+                if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+                {
+                    mouseMoveSS += touch.deltaPosition.sqrMagnitude;
+                    touchDuration += touch.deltaTime;
+                }
+                if (touch.phase == TouchPhase.Ended)
+                {
+                    if ((mouseMoveSS < mouseMoveSSThreshold) && (touchDuration >= touchDurationThreshold))
+                    {
+                        ShowMenu(lastMousePosition);
+                    }
+                    mouseMoveSS = 0f;
+                    touchDuration = 0f;
+                }
             }
 
+            // サンプルとしての処理
             if (uniwinc)
             {
                 // [Space]キーを押すと強制的にクリックスルーを解除
@@ -158,13 +205,32 @@ namespace Kirurobo
             }
         }
 
-        private void ShowMenu()
+        /// <summary>
+        /// 指定した座標にコンテキストメニューを表示する
+        /// </summary>
+        /// <param name="position"></param>
+        private void ShowMenu(Vector2 position)
         {
             if (menuPanel)
             {
+                Vector2 pos = position;
+                float w = menuPanel.rect.width;
+                float h = menuPanel.rect.height;
+
+                // 指定座標に左上角が来る前提で位置調整
+                pos.y += Mathf.Max(h - pos.y, 0f);   // 下にはみ出していれば上に寄せる
+                pos.x -= Mathf.Max(pos.x - Screen.width + w, 0f);    // 右にはみ出していれば左に寄せる
+
+                menuPanel.anchorMin = Vector2.zero;
+                menuPanel.anchorMax = Vector2.zero;
+                menuPanel.anchoredPosition = pos;
                 menuPanel.gameObject.SetActive(true);
             }
         }
+        
+        /// <summary>
+        /// コンテキストメニューを閉じる
+        /// </summary>
         private void CloseMenu()
         {
             if (menuPanel)
