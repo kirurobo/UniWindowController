@@ -5,6 +5,7 @@
  * License: MIT
  */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -624,6 +625,7 @@ namespace Kirurobo
         /// 最大化する
         /// </summary>
         /// <param name="zoomed"></param>
+        [Obsolete]
         private void SetZoomed(bool zoomed)
         {
             if (uniWinCore == null) return;
@@ -634,7 +636,27 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// 終了時にはウィンドウプロシージャを戻す処理が必要
+        /// 接続されているモニタ数を取得
+        /// </summary>
+        /// <returns></returns>
+        public int GetMonitorCount()
+        {
+            if (uniWinCore == null) return 0;
+            return uniWinCore.GetMonitorCount();
+        }
+
+        /// <summary>
+        /// 接続されているモニタ数を取得
+        /// </summary>
+        /// <returns></returns>
+        public bool FitToMonitor(int monitorIndex)
+        {
+            if (uniWinCore == null) return false;
+            return uniWinCore.FitToMonitor(monitorIndex);
+        }
+
+        /// <summary>
+        /// 終了時にはウィンドウ状態を戻す処理が必要
         /// </summary>
         void OnApplicationQuit()
         {

@@ -85,6 +85,15 @@ public class UniWinCore : IDisposable
         public static extern bool GetSize(out float x, out float y);
 
         [DllImport("LibUniWinC")]
+        public static extern Int32 GetCurrentMonitor();
+
+        [DllImport("LibUniWinC")]
+        public static extern Int32 GetMonitorCount();
+
+        [DllImport("LibUniWinC")]
+        public static extern bool GetMonitorRectangle(Int32 index, out float x, out float y, out float width, out float height);
+
+        [DllImport("LibUniWinC")]
         public static extern void SetCursorPosition(float x, float y);
 
         [DllImport("LibUniWinC")]
@@ -256,6 +265,7 @@ public class UniWinCore : IDisposable
     /// ウィンドウを最大化（Macではズーム）する
     /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
     /// </summary>
+    [Obsolete]
     public void SetZoomed(bool isZoomed)
     {
         LibUniWinC.SetMaximized(isZoomed);
@@ -265,6 +275,7 @@ public class UniWinCore : IDisposable
     /// ウィンドウが最大化（Macではズーム）されているかを取得
     /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
     /// </summary>
+    [Obsolete]
     public bool GetZoomed()
     {
         return LibUniWinC.IsMaximized();
@@ -350,7 +361,64 @@ public class UniWinCore : IDisposable
         ChromakeyColor = color;
     }
 
+    /// <summary>
+    /// Get the monitor index where the window is located
+    /// </summary>
+    /// <returns>Monitor index</returns>
+    public int GetCurrentMonitor()
+    {
+        return LibUniWinC.GetCurrentMonitor();
+    }
+    
+    /// <summary>
+    /// Get the number of connected monitors
+    /// </summary>
+    /// <returns>Count</returns>
+    public int GetMonitorCount()
+    {
+        return LibUniWinC.GetMonitorCount();
+    }
 
+    /// <summary>
+    /// Fit the window to specified monitor
+    /// </summary>
+    /// <param name="monitorIndex"></param>
+    /// <returns></returns>
+    public bool FitToMonitor(int monitorIndex)
+    {
+        float x, y, width, height;
+        if (LibUniWinC.GetMonitorRectangle(monitorIndex, out x, out y, out width, out height))
+        {
+            LibUniWinC.SetPosition(x, y);
+            LibUniWinC.SetSize(width, height);
+            return true;
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// モニタ一覧を出力
+    /// </summary>
+    [Obsolete]
+    public static void DebugMonitorInfo()
+    {
+        int monitors = LibUniWinC.GetMonitorCount();
+
+        int currentMonitorIndex = LibUniWinC.GetCurrentMonitor();
+
+        string message = "Current monitor: " + currentMonitorIndex + "\r\n";
+
+        for (int i = 0; i < monitors; i++)
+        {
+            float x, y, w, h;
+            bool result = LibUniWinC.GetMonitorRectangle(i, out x, out y, out w, out h);
+            message += String.Format(
+                "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4}\r\n",
+                i, x, y, w, h
+            );
+        }
+        Debug.Log(message);
+    }
 
     // Not implemented
 

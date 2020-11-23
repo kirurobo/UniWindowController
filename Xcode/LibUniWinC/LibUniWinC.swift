@@ -106,10 +106,13 @@ public class LibUniWinC : NSObject {
     /// プライマリーモニターの高さ
     private static var primaryMonitorHeight: CGFloat = 0
     
+    private static var monitorCount: Int = 0
+    private static var monitorRectangles: [CGRect] = []
+    private static var monitorIndices: [Int] = []
+
     
     // MARK: - Methods
 
-    
     /// 準備完了かどうかを返す
     /// - Returns: 準備完了ならtrue
     @objc public static func isActive() -> Bool {
@@ -172,8 +175,32 @@ public class LibUniWinC : NSObject {
     private static func _updateScreenSize() -> Void {
         // 参考 https://stackoverrun.com/ja/q/1746184
         primaryMonitorHeight = NSScreen.screens.map {$0.frame.origin.y + $0.frame.height}.max()!
+        
+        // モニタの状態も更新
+        _updateMonitorRectangles()
     }
     
+    private static func _updateMonitorRectangles() -> Void {
+        // モニタ数
+        monitorCount = NSScreen.screens.count
+        
+        // 一旦消去
+        monitorRectangles.removeAll()
+        monitorIndices.removeAll()
+        
+        // 現在のスクリーン情報を記憶
+        for i in 0..<monitorCount {
+            let screen = NSScreen.screens[i]
+            monitorRectangles.append(screen.visibleFrame)
+            monitorIndices.append(i)
+        }
+        
+        // 左上の画面が0、右下が最大となるようソート
+        monitorIndices = monitorIndices.sorted(by: {
+            (monitorRectangles[$0].minX < monitorRectangles[$1].minX)
+                || (monitorRectangles[$0].minX == monitorRectangles[$1].minX && monitorRectangles[$0].maxY < monitorRectangles[$1].maxY)
+        })
+    }
     
     /// 初期化処理
     private static func setup() -> Void {
@@ -330,7 +357,16 @@ public class LibUniWinC : NSObject {
     /// - Parameter isBorderless: trueなら透過ウィンドウにする
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
-            _setWindowBorderless(window: window, isBorderless: isBorderless)
+            if (isMaximized()) {
+                ////  最大化状態なら、一度解除して枠を変更して再度最大化
+                ////   ↑枠の分の隙間をなくせるかと思ったが、枠なしで最大化しても意味ないようだった
+                //setMaximized(isZoomed: false)
+                _setWindowBorderless(window: window, isBorderless: isBorderless)
+                //setMaximized(isZoomed: true)
+            } else {
+                // 最大化されていなければ、そのままウィンドウ枠を変更
+                _setWindowBorderless(window: window, isBorderless: isBorderless)
+            }
         }
         state.isBorderless = isBorderless
     }
@@ -362,11 +398,21 @@ public class LibUniWinC : NSObject {
         if (targetWindow != nil) {
             if (state.isTransparent) {
                 // 透過中なら、一度透過解除してから最大化を変更してみる
+                //   最大化前のウィンドウサイズが記憶されるが、透過のままだと挙動が直感に反するため
                 setTransparent(isTransparent: false)
                 if (targetWindow!.isZoomed != isZoomed) {
                     targetWindow!.zoom(nil)
                 }
                 setTransparent(isTransparent: true)
+                if (isZoomed) {
+                    // 透明化状態で zoom() をしてもウィンドウ枠の分小さくなってしまっていたため画面サイズにリサイズ
+                    let monitorIndex = getCurrentMonitor()
+                    let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
+                    var frame = targetWindow!.frame
+                    frame.size.width = CGFloat(rect.width)
+                    frame.size.height = CGFloat(rect.height)
+                    targetWindow?.setFrame(frame, display: true)
+                }
             } else {
                 // 透過していない場合の処理
                 if (targetWindow!.isZoomed != isZoomed) {
@@ -450,6 +496,81 @@ public class LibUniWinC : NSObject {
         let currentSize = targetWindow!.frame.size
         width.pointee = Float32(currentSize.width)
         height.pointee = Float32(currentSize.height)
+        return true
+    }
+    
+    /// 現在有効な画面数を取得
+    /// - Returns: 画面数
+    @objc public static func getCurrentMonitor() -> Int32 {
+        var primaryMonitorIndex: Int = 0
+        
+        // ウィンドウ未取得ならプライマリモニタの番号を返す
+        if (targetWindow == nil) {
+            for i in 0..<monitorCount {
+                let screen = NSScreen.screens[monitorIndices[i]]
+                let sf = screen.visibleFrame
+                
+                //　原点にあるモニタはプライマリモニタと判定
+                if (sf.minX == 0 && sf.minY == 0) {
+                    primaryMonitorIndex = i
+                    break;
+                }
+            }
+            return Int32(primaryMonitorIndex)
+        }
+        
+        // 現在のウィンドウの中心座標を取得
+        let frame = targetWindow!.frame;
+        let cx: CGFloat = (frame.minX + frame.maxX) / 2.0
+        let cy: CGFloat = (frame.minY + frame.maxY) / 2.0
+        
+        for i in 0..<monitorCount {
+            let screen = NSScreen.screens[monitorIndices[i]]
+            let sf = screen.visibleFrame
+            
+            // ウィンドウ中心を含む画面があればその画面番号を返す
+            if (sf.minX <= cx && cx <= sf.maxX && sf.minY <= cy && cy <= sf.maxY) {
+                return Int32(i)
+            }
+            
+            //　原点にあるモニタはプライマリモニタと判定
+            if (sf.minX == 0 && sf.minY == 0) {
+                primaryMonitorIndex = i
+            }
+        }
+        return Int32(primaryMonitorIndex)
+    }
+
+    /// 現在有効な画面数を取得
+    /// - Returns: 画面数
+    @objc public static func getMonitorCount() -> Int32 {
+        // NOTE: UnityにあるScreenやDisplayとは異なるため、Monitorという言葉にした
+        return Int32(monitorCount)
+    }
+    
+    /// 指定した画面の位置、サイズを取得
+    /// - Parameters:
+    ///   - monitorIndex: 画面の番号
+    ///   - x: X座標
+    ///   - y: Y座標
+    ///   - width: ウィンドウ幅
+    ///   - height: ウィンドウ高さ
+    /// - Returns: 成功すれば true
+    @objc public static func getMonitorRectangle(
+        monitorIndex: Int32,
+        x: UnsafeMutablePointer<Float32>, y: UnsafeMutablePointer<Float32>,
+        width: UnsafeMutablePointer<Float32>, height: UnsafeMutablePointer<Float32>
+    ) -> Bool {
+        // 存在しないスクリーン番号ならば false で終了
+        if (monitorIndex < 0 || monitorIndex >= monitorCount || monitorIndex >= NSScreen.screens.count) {
+            return false
+        }
+        
+        let frame = NSScreen.screens[monitorIndices[Int(monitorIndex)]].visibleFrame
+        x.pointee = Float32(frame.minX)
+        y.pointee = Float32(frame.minY)
+        width.pointee = Float32(frame.width)
+        height.pointee = Float32(frame.height)
         return true
     }
     

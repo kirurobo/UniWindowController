@@ -15,6 +15,24 @@
 			<key>requirement</key>
 			<string>identifier "com.apple.dt.runtime.swiftAppKit" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Ryota Sakamoto (Q8T2P8EN2T)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
 		</dict>
+		<key>Frameworks/libswiftCloudKit.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			gmHZ6EtjZXwLmOROWLvNh5atYzU=
+			</data>
+			<key>requirement</key>
+			<string>identifier "com.apple.dt.runtime.swiftCloudKit" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Ryota Sakamoto (Q8T2P8EN2T)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		</dict>
+		<key>Frameworks/libswiftContacts.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			zvewrNbJbl2qZ9pt9xS1I5WzYos=
+			</data>
+			<key>requirement</key>
+			<string>identifier "com.apple.dt.runtime.swiftContacts" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Ryota Sakamoto (Q8T2P8EN2T)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		</dict>
 		<key>Frameworks/libswiftCore.dylib</key>
 		<dict>
 			<key>cdhash</key>
@@ -59,6 +77,15 @@
 			</data>
 			<key>requirement</key>
 			<string>identifier "com.apple.dt.runtime.swiftCoreImage" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Ryota Sakamoto (Q8T2P8EN2T)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		</dict>
+		<key>Frameworks/libswiftCoreLocation.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			LS0s9RQWGhqotiG8hBJ7hQR77Qw=
+			</data>
+			<key>requirement</key>
+			<string>identifier "com.apple.dt.runtime.swiftCoreLocation" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Ryota Sakamoto (Q8T2P8EN2T)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
 		</dict>
 		<key>Frameworks/libswiftDarwin.dylib</key>
 		<dict>

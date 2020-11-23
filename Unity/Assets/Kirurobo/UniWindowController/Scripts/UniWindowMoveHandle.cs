@@ -18,6 +18,11 @@ namespace  Kirurobo
         private UniWindowController _uniwinc;
 
         /// <summary>
+        /// ウィンドウが最大化されているときは移動を無効にするか
+        /// </summary>
+        public bool disableOnZoomed = true;
+
+        /// <summary>
         /// ドラッグ中なら true
         /// </summary>
         public bool IsDragging
@@ -25,6 +30,11 @@ namespace  Kirurobo
             get { return _isDragging; }
         }
         private bool _isDragging = false;
+
+        private bool IsEnabled
+        {
+            get { return enabled && (!disableOnZoomed || !(_uniwinc && _uniwinc.isZoomed)); }
+        }
 
         /// <summary>
         /// ドラッグ前には自動ヒットテストが有効だったかを記憶
@@ -57,6 +67,11 @@ namespace  Kirurobo
         /// </summary>
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+            
             // Macだと挙動を変える
             //  実際はRetinaサポートが有効のときだけだが、
             //  eventData.position の系と、ウィンドウ座標系でスケールが一致しなくなってしまう
@@ -103,7 +118,7 @@ namespace  Kirurobo
             if (!_uniwinc || !_isDragging) return;
 
             // ドラッグでの移動が無効化されていた場合
-            if (!enabled)
+            if (!IsEnabled)
             {
                 EndDragging();
                 return;

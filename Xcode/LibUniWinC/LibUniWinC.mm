@@ -85,6 +85,18 @@ UNIWINC_EXPORT BOOL GetSize(Float32* width, Float32* height) {
     return [LibUniWinC getSizeWithWidth:width height:height];
 }
 
+UNIWINC_EXPORT SInt32 GetCurrentMonitor() {
+    return [LibUniWinC getCurrentMonitor];
+}
+
+UNIWINC_EXPORT BOOL GetMonitorCount() {
+    return [LibUniWinC getMonitorCount];
+}
+
+UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32* y, Float32* width, Float32* height) {
+    return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
+}
+
 UNIWINC_EXPORT BOOL SetCursorPosition(Float32 x, Float32 y) {
     return [LibUniWinC setCursorPositionWithX:x y:y];
 }
