@@ -38,9 +38,9 @@
             // 
             this.buttonCheck.Location = new System.Drawing.Point(22, 12);
             this.buttonCheck.Name = "buttonCheck";
-            this.buttonCheck.Size = new System.Drawing.Size(75, 23);
+            this.buttonCheck.Size = new System.Drawing.Size(115, 23);
             this.buttonCheck.TabIndex = 0;
-            this.buttonCheck.Text = "Check";
+            this.buttonCheck.Text = "Window Info.";
             this.buttonCheck.UseVisualStyleBackColor = true;
             this.buttonCheck.Click += new System.EventHandler(this.buttonCheck_Click);
             // 
@@ -60,7 +60,7 @@
             // checkBoxTransparent
             // 
             this.checkBoxTransparent.AutoSize = true;
-            this.checkBoxTransparent.Location = new System.Drawing.Point(103, 16);
+            this.checkBoxTransparent.Location = new System.Drawing.Point(156, 16);
             this.checkBoxTransparent.Name = "checkBoxTransparent";
             this.checkBoxTransparent.Size = new System.Drawing.Size(85, 16);
             this.checkBoxTransparent.TabIndex = 2;
@@ -71,7 +71,7 @@
             // checkBoxTopmost
             // 
             this.checkBoxTopmost.AutoSize = true;
-            this.checkBoxTopmost.Location = new System.Drawing.Point(194, 16);
+            this.checkBoxTopmost.Location = new System.Drawing.Point(247, 16);
             this.checkBoxTopmost.Name = "checkBoxTopmost";
             this.checkBoxTopmost.Size = new System.Drawing.Size(68, 16);
             this.checkBoxTopmost.TabIndex = 2;

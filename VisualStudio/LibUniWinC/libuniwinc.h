@@ -8,11 +8,17 @@
 #define UNIWINC_EXPORT extern "C" __declspec(dllimport)
 #endif
 
+
+// このライブラリで扱える最大モニタ数
+#define UNIWINC_MAX_MONITORCOUNT 32
+
+// 透過方式
 enum TransparentType : int {
 	None = 0,
 	Alpha = 1,
 	ColorKey = 2
 };
+
 
 UNIWINC_EXPORT BOOL UNIWINC_API IsActive();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTransparent();
@@ -34,6 +40,11 @@ UNIWINC_EXPORT BOOL UNIWINC_API SetPosition(const float x, const float y);
 UNIWINC_EXPORT BOOL UNIWINC_API GetPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetSize(float* width, float* height);
+UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
+
+// Monitor Info.
+UNIWINC_EXPORT INT32 UNIWINC_API GetMonitorCount();
+UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height);
 
 // Mouse pointer
 UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);

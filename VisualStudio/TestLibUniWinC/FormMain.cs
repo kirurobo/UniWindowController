@@ -22,6 +22,33 @@ namespace TestLibUniWinC
         private void Form1_Shown(object sender, EventArgs e)
         {
             uniwinc = new UniWinC();
+
+            //  モニタ一覧を表示
+            PrintMonitorInfo();
+        }
+
+        /// <summary>
+        /// 現在接続されているモニタを列挙
+        /// </summary>
+        private void PrintMonitorInfo()
+        {
+            int monitors = UniWinC.GetMonitorCount();
+
+            int currentMonitorIndex = UniWinC.GetCurrentMonitor();
+
+            string message = "Current monitor: " + currentMonitorIndex + "\r\n";
+
+            for (int i = 0; i < monitors; i++)
+            {
+                float x, y, w, h;
+                bool result = UniWinC.GetMonitorRectangle(i, out x, out y, out w, out h);
+                message += String.Format(
+                    "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4}\r\n",
+                    i, x, y, w, h
+                    );
+            }
+            Console.WriteLine(message);
+            textBoxMessage.Text = message;
         }
 
         private void buttonCheck_Click(object sender, EventArgs e)

@@ -18,6 +18,9 @@ static BOOL bIsClickThrough = FALSE;
 static COLORREF dwKeyColor = 0x00000000;		// AABBGGRR
 static TransparentType nTransparentType = TransparentType::Alpha;
 static TransparentType nCurrentTransparentType = TransparentType::Alpha;
+static int nMonitorCount = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
+static RECT pMonitorRect[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsの順番で保持した、各画面のRECT
+static int pMonitorIndices[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
 
 
 void attachWindow(const HWND hWnd);
@@ -55,6 +58,7 @@ void attachWindow(const HWND hWnd) {
 	}
 
 	// とりあえずこのタイミングで画面サイズも更新
+	//   本来は画面解像度変更時に更新したい。ウィンドウプロシージャ
 	updateScreenSize();
 
 	// ウィンドウを選択
@@ -108,6 +112,61 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 		//	hTargetWnd_ = hWnd;
 		//	return FALSE;
 		//}
+	}
+
+	return TRUE;
+}
+
+/// <summary>
+/// モニタ情報取得時のコールバック
+/// EnumDisplayMonitors()で呼ばれる。その際は最初にnMonitorCountが0にセットされるものとする。
+/// </summary>
+/// <param name="hMon"></param>
+/// <param name="hDc"></param>
+/// <param name="lpRect"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
+BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lParam)
+{
+	// 最大取り扱いモニタ数に達したら探索終了
+	if (nMonitorCount >= UNIWINC_MAX_MONITORCOUNT) return FALSE;
+
+	// RECTを記憶
+	pMonitorRect[nMonitorCount] = *lpRect;
+
+	// インデックスを一旦登場順で保存
+	pMonitorIndices[nMonitorCount] = nMonitorCount;
+
+	// モニタ数カウント
+	nMonitorCount++;
+
+	return TRUE;
+}
+
+/// <summary>
+/// 接続モニタ数とそれらのサイズ一覧を取得
+/// </summary>
+/// <returns>成功ならTRUE</returns>
+BOOL updateMonitorRectangles() {
+	//  カウントするため一時的に0に戻す
+	nMonitorCount = 0;
+
+	// モニタを列挙してRECTを保存
+	if (!EnumDisplayMonitors(NULL, NULL, monitorEnumProc, NULL)) {
+		return FALSE;
+	}
+
+	// モニタの位置でインデックスをバブルソート
+	for (int i = 0; i < (nMonitorCount - 1); i++) {
+		for (int j = (nMonitorCount - 1); j > i; j--) {
+			RECT pr = pMonitorRect[pMonitorIndices[j - 1]];
+			RECT cr = pMonitorRect[pMonitorIndices[j]];
+			if (pr.left >  cr.left || ((pr.left == cr.left) && (pr.bottom > cr.bottom))) {
+				int wk = pMonitorIndices[j - 1];
+				pMonitorIndices[j - 1] = pMonitorIndices[j];
+				pMonitorIndices[j] = wk;
+			}
+		}
 	}
 
 	return TRUE;
@@ -213,6 +272,9 @@ void updateScreenSize() {
 	szVirtualScreen.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 	szVirtualScreen.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	nPrimaryMonitorHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	// モニタ解像度一覧も更新。nPrimaryMonitorHeightを使うため、その取得より後に実行する。
+	updateMonitorRectangles();
 }
 
 /// <summary>
@@ -244,7 +306,7 @@ DWORD UNIWINC_API GetMyProcessId() {
 }
 
 
-
+// ==================================================================
 // Public functions
 
 /// <summary>
@@ -525,6 +587,11 @@ void UNIWINC_API SetMaximized(const BOOL bZoomed) {
 	}
 }
 
+/// <summary>
+/// クリックスルー（マウス操作無効化）を設定／解除
+/// </summary>
+/// <param name="bTransparent"></param>
+/// <returns></returns>
 void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 	if (hTargetWnd_) {
 		if (bTransparent) {
@@ -615,7 +682,6 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 	);
 }
 
-
 /// <summary>
 /// ウィンドウサイズを取得
 /// </summary>
@@ -630,11 +696,92 @@ BOOL  UNIWINC_API GetSize(float* width, float* height) {
 
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		*width = (float)(rect.right - rect.left);
-		*height = (float)(rect.bottom - rect.top);
+		*width = (float)(rect.right - rect.left);	// +1 は不要なよう
+		*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
 		return TRUE;
 	}
 	return FALSE;
+}
+
+/// <summary>
+/// このウィンドウが現在表示されているモニタ番号を取得
+/// </summary>
+/// <returns></returns>
+INT32 UNIWINC_API GetCurrentMonitor() {
+	int primaryIndex = 0;
+
+	//  ウィンドウ未取得ならプライマリモニタを探す
+	if (hTargetWnd_ == NULL) {
+		for (int i = 0; i < nMonitorCount; i++) {
+			RECT mr = pMonitorRect[pMonitorIndices[i]];
+
+			// 原点にあるモニタはプライマリと判定
+			if (mr.left == 0 && mr.top == 0) {
+				primaryIndex = i;
+				break;
+			}
+		}
+		return primaryIndex;
+	}
+
+	// 現在のウィンドウの中心座標を取得
+	RECT rect;
+	GetWindowRect(hTargetWnd_, &rect);
+	LONG cx = (rect.right - 1 + rect.left) / 2;
+	LONG cy = (rect.bottom - 1 + rect.top) / 2;
+
+	// ウィンドウの中央が含まれているモニタを検索
+	for (int i = 0; i < nMonitorCount; i++) {
+		RECT mr = pMonitorRect[pMonitorIndices[i]];
+
+		// ウィンドウ中心が入っていればその画面番号を返して終了
+		if (mr.left <= cx && cx < mr.right && mr.top <= cy && cy < mr.bottom) {
+			return i;
+		}
+
+		// 原点にあるモニタはプライマリと判定
+		if (mr.left == 0 && mr.top == 0) {
+			primaryIndex = i;
+		}
+	}
+
+	// 判定できなければプライマリモニタの画面番号を返す
+	return primaryIndex;
+}
+
+
+/// <summary>
+/// 接続されているモニタ数を取得
+/// </summary>
+/// <returns>モニタ数</returns>
+INT32  UNIWINC_API GetMonitorCount() {
+	//// SM_CMONITORS では表示されているモニタのみ対象となる（EnumDisplayとは異なる）
+	//return GetSystemMetrics(SM_CMONITORS);
+	return nMonitorCount;
+}
+
+/// <summary>
+/// モニタの位置、サイズを取得
+/// </summary>
+/// <param name="width">幅 [px]</param>
+/// <param name="height">高さ [px]</param>
+/// <returns>成功すれば true</returns>
+BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height) {
+	*x = 0;
+	*y = 0;
+	*width = 0;
+	*height = 0;
+
+	if (monitorIndex < 0 || monitorIndex >= nMonitorCount) {
+		return FALSE;
+	}
+
+	RECT rect = pMonitorRect[pMonitorIndices[monitorIndex]];
+	*x = (float)(rect.left);
+	*y = (float)(nPrimaryMonitorHeight - rect.bottom);		// 左下基準とする
+	*width = (float)(rect.right - rect.left);
+	*height = (float)(rect.bottom - rect.top);
+	return TRUE;
 }
 
 /// <summary>

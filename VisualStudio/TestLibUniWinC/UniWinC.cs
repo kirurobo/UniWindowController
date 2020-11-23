@@ -105,6 +105,15 @@ public class UniWinC : IDisposable
     public static extern bool GetSize(out float width, out float height);
 
     [DllImport("LibUniWinC.dll")]
+    public static extern int GetCurrentMonitor();
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern int GetMonitorCount();
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool GetMonitorRectangle(int monitorIndex, out float x, out float y, out float width, out float height);
+
+    [DllImport("LibUniWinC.dll")]
     public static extern bool SetCursorPosition(float x, float y);
 
     [DllImport("LibUniWinC.dll")]
@@ -169,7 +178,7 @@ public class UniWinC : IDisposable
     public void SetWindowPosition(Vector2 position)
     {
         if (!IsActive) return;
-        //SetPosition(position);
+        SetPosition(position.x, position.y);
     }
 
     /// <summary>
