@@ -265,7 +265,6 @@ public class UniWinCore : IDisposable
     /// ウィンドウを最大化（Macではズーム）する
     /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
     /// </summary>
-    [Obsolete]
     public void SetZoomed(bool isZoomed)
     {
         LibUniWinC.SetMaximized(isZoomed);
@@ -275,7 +274,6 @@ public class UniWinCore : IDisposable
     /// ウィンドウが最大化（Macではズーム）されているかを取得
     /// 最大化された後にサイズ変更がされることもあり、現状、確実には動作しない可能性があります
     /// </summary>
-    [Obsolete]
     public bool GetZoomed()
     {
         return LibUniWinC.IsMaximized();

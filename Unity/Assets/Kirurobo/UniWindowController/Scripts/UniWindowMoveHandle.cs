@@ -20,6 +20,7 @@ namespace  Kirurobo
         /// <summary>
         /// ウィンドウが最大化されているときは移動を無効にするか
         /// </summary>
+        [Tooltip("Disable drag-move when the window is zoomed (maximized).")]
         public bool disableOnZoomed = true;
 
         /// <summary>

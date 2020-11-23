@@ -255,11 +255,11 @@ namespace Kirurobo
                 {
                     topmostToggle.isOn = uniwinc.isTopmost;
                 }
-
-                if (maximizedToggle)
-                {
-                    maximizedToggle.isOn = uniwinc.isZoomed;
-                }
+                //
+                // if (maximizedToggle)
+                // {
+                //     maximizedToggle.isOn = uniwinc.isZoomed;
+                // }
 
                 if (dragMoveToggle)
                 {
@@ -330,6 +330,12 @@ namespace Kirurobo
                         pickedColorText.text = $"Color picker is disabled";
                         pickedColorText.color = Color.gray;
                     }
+                }
+                
+                // 最大化状態も、UI以外の要因での変化があるため頻繁に更新
+                if (maximizedToggle)
+                {
+                    maximizedToggle.isOn = uniwinc.isZoomed;
                 }
             }
         }

@@ -625,7 +625,6 @@ namespace Kirurobo
         /// 最大化する
         /// </summary>
         /// <param name="zoomed"></param>
-        [Obsolete]
         private void SetZoomed(bool zoomed)
         {
             if (uniWinCore == null) return;
