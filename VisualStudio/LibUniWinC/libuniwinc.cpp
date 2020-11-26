@@ -23,11 +23,14 @@ static RECT pMonitorRect[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsÇÃèáî
 static int pMonitorIndices[UNIWINC_MAX_MONITORCOUNT];	// Ç±ÇÃÉâÉCÉuÉâÉäì∆é©ÇÃÉÇÉjÉ^î‘çÜÇÉLÅ[Ç∆ÇµÇΩÅAEnumDisplayMonitorsÇ≈ÇÃèáî‘
 static HHOOK hHook = NULL;
 static WCHAR pwstrPathBuffer[UNIWINC_MAX_PATHBUFFER];
+static FileDropHandler hFileDropHandler = nullptr;
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
 void refreshWindow();
 void updateScreenSize();
+void BeginHook();
+void EndHook();
 
 
 /// <summary>
@@ -44,6 +47,9 @@ void detachWindow()
 		SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
 
 		refreshWindow();
+
+		// Unhook if exist
+		EndHook();
 	}
 	hTargetWnd_ = NULL;
 }
@@ -824,37 +830,70 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 // Shell32
 
 
-
+/// <summary>
+/// Callback when received WM_DROPFILE message
+/// </summary>
+/// <param name="nCode"></param>
+/// <param name="wParam"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
 LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
-	if ((nCode == 0) && (hTargetWnd_ != NULL)) {
-		// lParam is a pointer to an MSG structure for WH_GETMESSAGE
-		MSG* msg = (MSG*)lParam;
+	if (nCode < 0) {
+		return CallNextHookEx(NULL, nCode, wParam, lParam);
+	}
 
-		if (msg->hwnd == hTargetWnd_) {
-			if (msg->message == WM_DROPFILES)
-			{
-				HDROP hDrop = (HDROP)msg->wParam;
-				UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	// lParam is a pointer to an MSG structure for WH_GETMESSAGE
+	LPMSG msg = (LPMSG)lParam;
 
-				UINT bufferIndex = 0;
+	if (msg->message == WM_DROPFILES) {
+
+		if (hTargetWnd_ != NULL && msg->hwnd == hTargetWnd_) {
+			HDROP hDrop = (HDROP)msg->wParam;
+			UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+
+			if (num > 0) {
+				// Retrieve total buffer size
+				UINT bufferSize = 0;
 				for (UINT i = 0; i < num; i++) {
-					UINT cch = UNIWINC_MAX_PATHBUFFER - bufferIndex;
-					UINT size = DragQueryFile(hDrop, i, pwstrPathBuffer + bufferIndex, cch);
-					if (bufferIndex + size >= UNIWINC_MAX_PATHBUFFER) {
-						break;
+					UINT size = DragQueryFile(hDrop, i, NULL, 0);
+					bufferSize += size + sizeof(L'\n');		// Add a delimiter size
+				}
+				bufferSize++;
+
+				// Allocate buffer
+				LPWSTR buffer;
+				buffer = new (std::nothrow)WCHAR[bufferSize];
+
+				if (buffer != NULL) {
+					// Retrieve file paths
+					UINT bufferIndex = 0;
+					for (UINT i = 0; i < num; i++) {
+						UINT cch = bufferSize - 1 - bufferIndex;
+						UINT size = DragQueryFile(hDrop, i, buffer + bufferIndex, cch);
+						bufferIndex += size;
+						buffer[bufferIndex] = L'\n';	// Delimiter of each path
+						bufferIndex++;
 					}
-					bufferIndex += size;
-					pwstrPathBuffer[bufferIndex] = '\n';	// Delimiter of each path
-					bufferIndex++;
+					buffer[bufferIndex] = NULL;
+
+					// Do callback function
+					if (hFileDropHandler != nullptr) {
+						hFileDropHandler(buffer);
+					}
+
+					delete[] buffer;
 				}
-				if (bufferIndex < UNIWINC_MAX_PATHBUFFER) {
-					pwstrPathBuffer[bufferIndex] = '\0';	// End of the string
-				}
-				DragFinish(hDrop);
 			}
+
+			DragFinish(hDrop);
 		}
+		return TRUE;
+	}
+	else if (msg->message == WM_DISPLAYCHANGE) {
+		updateScreenSize();
 	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
+
 }
 
 /// <summary>
@@ -890,7 +929,7 @@ void EndHook() {
 /// This method is not implemented in user32.dll
 /// </summary>
 /// <returns>Previous window procedure</returns>
-BOOL UNIWINC_API EnableDragAndDrop(const BOOL bEnabled)
+BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 {
 	if (hTargetWnd_ == NULL) return FALSE;
 
@@ -902,5 +941,14 @@ BOOL UNIWINC_API EnableDragAndDrop(const BOOL bEnabled)
 	else if (!bEnabled && hHook != NULL) {
 		EndHook();
 	}
+
+	return TRUE;
 }
 
+void UNIWINC_API RegisterFileDropCallback(FileDropHandler callback) {
+	hFileDropHandler = callback;
+}
+
+void UNIWINC_API UnregisterFileDropCallback() {
+	hFileDropHandler = nullptr;
+}

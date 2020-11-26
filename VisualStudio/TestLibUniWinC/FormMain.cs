@@ -23,6 +23,12 @@ namespace TestLibUniWinC
         {
             uniwinc = new UniWinC();
 
+            UniWinC.RegisterFileDropCallback(msg => {
+                Console.Write(msg);
+                Console.WriteLine(msg.Length); textBoxMessage.Text = msg;
+            });
+            UniWinC.SetAllowDrop(true);
+
             //  モニタ一覧を表示
             PrintMonitorInfo();
         }
@@ -83,6 +89,11 @@ namespace TestLibUniWinC
         private void FormMain_Resize(object sender, EventArgs e)
         {
             Console.WriteLine("Resized!");
+        }
+
+        private void buttonShowMonitorInfo_Click(object sender, EventArgs e)
+        {
+            PrintMonitorInfo();
         }
     }
 }

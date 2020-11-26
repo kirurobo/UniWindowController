@@ -6,3 +6,4 @@
 #include <windows.h>
 #include <dwmapi.h>
 #include <shellapi.h>
+#include <new>

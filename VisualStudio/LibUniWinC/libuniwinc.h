@@ -23,6 +23,8 @@ enum TransparentType : int {
 	ColorKey = 2
 };
 
+using FileDropHandler = void(*)(LPWSTR);
+
 
 UNIWINC_EXPORT BOOL UNIWINC_API IsActive();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTransparent();
@@ -54,9 +56,13 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, fl
 UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);
 UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 
+// File drop
+UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
+UNIWINC_EXPORT void UNIWINC_API RegisterFileDropCallback(FileDropHandler callback);
+UNIWINC_EXPORT void UNIWINC_API UnregisterFileDropCallback();
+
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
 UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
-
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();
