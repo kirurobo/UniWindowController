@@ -9,10 +9,14 @@
 #endif
 
 
-// このライブラリで扱える最大モニタ数
+// Maximum monitor number that this library could be handle
 #define UNIWINC_MAX_MONITORCOUNT 32
 
-// 透過方式
+// Size of a buffer to keep dropped file paths
+#define UNIWINC_MAX_PATHBUFFER 2048
+
+
+// Methods to transparent the window
 enum TransparentType : int {
 	None = 0,
 	Alpha = 1,

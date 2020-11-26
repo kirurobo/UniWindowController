@@ -21,7 +21,8 @@ static TransparentType nCurrentTransparentType = TransparentType::Alpha;
 static int nMonitorCount = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
 static RECT pMonitorRect[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsの順番で保持した、各画面のRECT
 static int pMonitorIndices[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
-
+static HHOOK hHook = NULL;
+static WCHAR pwstrPathBuffer[UNIWINC_MAX_PATHBUFFER];
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -818,3 +819,88 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 
 	return SetCursorPos(pos.x, pos.y);
 }
+
+// ==================================================================
+// Shell32
+
+
+
+LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+	if ((nCode == 0) && (hTargetWnd_ != NULL)) {
+		// lParam is a pointer to an MSG structure for WH_GETMESSAGE
+		MSG* msg = (MSG*)lParam;
+
+		if (msg->hwnd == hTargetWnd_) {
+			if (msg->message == WM_DROPFILES)
+			{
+				HDROP hDrop = (HDROP)msg->wParam;
+				UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+
+				UINT bufferIndex = 0;
+				for (UINT i = 0; i < num; i++) {
+					UINT cch = UNIWINC_MAX_PATHBUFFER - bufferIndex;
+					UINT size = DragQueryFile(hDrop, i, pwstrPathBuffer + bufferIndex, cch);
+					if (bufferIndex + size >= UNIWINC_MAX_PATHBUFFER) {
+						break;
+					}
+					bufferIndex += size;
+					pwstrPathBuffer[bufferIndex] = '\n';	// Delimiter of each path
+					bufferIndex++;
+				}
+				if (bufferIndex < UNIWINC_MAX_PATHBUFFER) {
+					pwstrPathBuffer[bufferIndex] = '\0';	// End of the string
+				}
+				DragFinish(hDrop);
+			}
+		}
+	}
+	return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+/// <summary>
+/// Set the hook
+/// </summary>
+void BeginHook() {
+	if (hTargetWnd_ == NULL) return;
+
+	// Return if the hook is already set
+	if (hHook != NULL) return;
+
+	//HMODULE hMod = GetModuleHandle(NULL);
+	DWORD dwThreadId = GetCurrentThreadId();
+
+	hHook = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
+}
+
+/// <summary>
+/// Unset the hook
+/// </summary>
+void EndHook() {
+	if (hTargetWnd_ == NULL) return;
+
+	// Return if the hook is not set
+	if (hHook == NULL) return;
+
+	UnhookWindowsHookEx(hHook);
+	hHook = NULL;
+}
+
+/// <summary>
+/// Set window procedure.
+/// This method is not implemented in user32.dll
+/// </summary>
+/// <returns>Previous window procedure</returns>
+BOOL UNIWINC_API EnableDragAndDrop(const BOOL bEnabled)
+{
+	if (hTargetWnd_ == NULL) return FALSE;
+
+	DragAcceptFiles(hTargetWnd_, bEnabled);
+
+	if (bEnabled && hHook == NULL) {
+		BeginHook();
+	}
+	else if (!bEnabled && hHook != NULL) {
+		EndHook();
+	}
+}
+
