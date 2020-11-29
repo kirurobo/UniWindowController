@@ -25,7 +25,6 @@ namespace TestLibUniWinC
 
             UniWinC.RegisterFileDropCallback(msg => {
                 Console.Write(msg);
-                Console.WriteLine(msg.Length); textBoxMessage.Text = msg;
             });
             UniWinC.SetAllowDrop(true);
 

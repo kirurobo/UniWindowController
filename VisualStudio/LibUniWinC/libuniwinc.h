@@ -23,7 +23,8 @@ enum TransparentType : int {
 	ColorKey = 2
 };
 
-using FileDropHandler = void(*)(LPWSTR);
+// Actually, the argument type is UTF-8 byte array with \0 ended
+using FileDropHandler = void(*)(WCHAR*);
 
 
 UNIWINC_EXPORT BOOL UNIWINC_API IsActive();

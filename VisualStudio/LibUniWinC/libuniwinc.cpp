@@ -878,7 +878,7 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 					// Do callback function
 					if (hFileDropHandler != nullptr) {
-						hFileDropHandler(buffer);
+						hFileDropHandler((WCHAR*)buffer);	// Charset of this project must be set U
 					}
 
 					delete[] buffer;
