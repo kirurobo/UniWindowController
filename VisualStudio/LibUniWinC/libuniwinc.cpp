@@ -945,10 +945,12 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 	return TRUE;
 }
 
-void UNIWINC_API RegisterFileDropCallback(FileDropHandler callback) {
+BOOL UNIWINC_API RegisterFileDropCallback(FileDropHandler callback) {
 	hFileDropHandler = callback;
+	return TRUE;
 }
 
-void UNIWINC_API UnregisterFileDropCallback() {
+BOOL UNIWINC_API UnregisterFileDropCallback() {
 	hFileDropHandler = nullptr;
+	return TRUE;
 }

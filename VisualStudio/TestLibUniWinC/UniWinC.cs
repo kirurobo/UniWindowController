@@ -122,10 +122,10 @@ public class UniWinC : IDisposable
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void FileDropped([MarshalAs(UnmanagedType.LPWStr)]string files);
     [DllImport("LibUniWinC.dll")]
-    public static extern void RegisterFileDropCallback([MarshalAs(UnmanagedType.FunctionPtr)] FileDropped callback);
+    public static extern bool RegisterFileDropCallback([MarshalAs(UnmanagedType.FunctionPtr)] FileDropped callback);
 
     [DllImport("LibUniWinC.dll")]
-    public static extern void UnregisterFileDropCallback();
+    public static extern bool UnregisterFileDropCallback();
 
     [DllImport("LibUniWinC.dll")]
     public static extern bool SetAllowDrop(bool enabled);

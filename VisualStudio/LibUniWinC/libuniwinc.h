@@ -58,8 +58,8 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
-UNIWINC_EXPORT void UNIWINC_API RegisterFileDropCallback(FileDropHandler callback);
-UNIWINC_EXPORT void UNIWINC_API UnregisterFileDropCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterFileDropCallback(FileDropHandler callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterFileDropCallback();
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
