@@ -15,7 +15,6 @@ protocol FileDroppedDelegate {
 class OverlayView: NSView {
     // Reference: https://stackoverflow.com/questions/31657523/get-file-path-using-drag-and-drop-swift-macos
     
-    var pathsString: String = ""
     var enabled = true
 
     public func setEnabled(enabled: Bool) {
@@ -26,21 +25,26 @@ class OverlayView: NSView {
         self.registerForDraggedTypes(
             [NSPasteboard.PasteboardType.URL, NSPasteboard.PasteboardType.fileURL]
         )
+        
+        //self.autoresizingMask = [.minXMargin, .minYMargin, .maxXMargin, .maxYMargin]
     }
     
     public func fitToSuperView() -> Void {
-        if (superview == nil) {
+        guard let parent = superview
+        else {
             return
         }
         
+        self.translatesAutoresizingMaskIntoConstraints = false
+        
         // Fit to the parent frame
         let constraints = [
-            self.centerXAnchor.constraint(equalTo: superview!.centerXAnchor),
-            self.centerYAnchor.constraint(equalTo: superview!.centerYAnchor),
-            self.widthAnchor.constraint(equalTo: superview!.widthAnchor),
-            self.heightAnchor.constraint(equalTo: superview!.heightAnchor)
+            self.topAnchor.constraint(equalTo: parent.topAnchor, constant: 0),
+            self.leftAnchor.constraint(equalTo: parent.leftAnchor, constant: 0),
+            self.rightAnchor.constraint(equalTo: parent.rightAnchor, constant: 0),
+            self.bottomAnchor.constraint(equalTo: parent.bottomAnchor, constant: 0)
         ]
-        NSLayoutConstraint.activate(constraints)
+        parent.addConstraints(constraints)
     }
     
     required init?(coder: NSCoder) {
@@ -49,7 +53,7 @@ class OverlayView: NSView {
     }
     
     override init(frame: NSRect) {
-        super.init(frame: frame)
+        super.init(frame: NSRect(x: 0, y: 0, width: frame.width, height: frame.height))
         setup()
     }
     
@@ -66,8 +70,7 @@ class OverlayView: NSView {
             return false
         }
         
-        guard
-            let urls = sender.draggingPasteboard.propertyList(
+        guard let urls = sender.draggingPasteboard.propertyList(
                 forType: NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")
             ) as? NSArray
         else {
@@ -77,47 +80,39 @@ class OverlayView: NSView {
         // Make new-line separated string
         let files: String = urls.componentsJoined(by: "¥n")
         
-        guard let ustr = files.data(using: .utf8)
-        else {
+        let count = files.utf16.count
+        if (count <= 0) {
             return false
         }
         
-        let buffer = UnsafeMutablePointer<uint8>.allocate(capacity: ustr.count + 1)
-        for i in 0..<ustr.count {
-            buffer[i] = ustr[i]
-            //buffer[i] = wchar_t.zero
+        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: count + 1)
+        var i = 0
+        for c in files.utf16 {
+            buffer[i] = c
+            i += 1
         }
-        buffer[ustr.count] = uint8.zero
+        buffer[count] = uint16.zero     // End of the string
         
         // Do callback
         LibUniWinC.fileDropCallback?(buffer)
         
         buffer.deallocate()
-        
-        // Store file paths
-        self.pathsString = files
         return true
     }
     
     override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-
-        // Drawing code here.
-        NSColor.red.set()
-        let figure = NSBezierPath()
-        figure.move(to: dirtyRect.origin)
-        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height))
-        figure.line(to: NSMakePoint(dirtyRect.width - 5, dirtyRect.height))
-        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height - 5))
-        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height))
-        figure.lineWidth = 2
-        figure.stroke()
-    }
-}
-
-extension String {
-    func withWideChars<Result>(_ body: (UnsafePointer<wchar_t>) -> Result) -> Result {
-        let unicodestr = self.unicodeScalars.map { wchar_t(bitPattern: $0.value) } + [0]
-        return unicodestr.withUnsafeBufferPointer { body($0.baseAddress!) }
+        //super.draw(dirtyRect)
+        
+// for debugging
+//        // Drawing code here.
+//        NSColor.red.set()
+//        let figure = NSBezierPath()
+//        figure.move(to: dirtyRect.origin)
+//        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height))
+//        figure.line(to: NSMakePoint(dirtyRect.width - 5, dirtyRect.height))
+//        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height - 5))
+//        figure.line(to: NSMakePoint(dirtyRect.width, dirtyRect.height))
+//        figure.lineWidth = 2
+//        figure.stroke()
     }
 }

@@ -90,9 +90,6 @@ public class LibUniWinC : NSObject {
             window.contentView?.layer?.backgroundColor = self.contentViewLayerBackgroundColor
         }
     }
-    
-    /// Callback function with wchar_t pointer
-    public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
 
     
     // MARK: - Static variables
@@ -106,9 +103,12 @@ public class LibUniWinC : NSObject {
     /// ウィンドウの初期状態を記憶するインスタンス
     private static var orgWindowInfo: OriginalWindowInfo = OriginalWindowInfo()
     
+    
+    /// Callback function with wchar_t pointer
+    public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
+    
     /// Sub view to implement file dropping
     private static var overlayView: OverlayView? = nil
-    
     public static var fileDropCallback: stringCallback? = nil
     
     /// プライマリーモニターの高さ
@@ -285,7 +285,7 @@ public class LibUniWinC : NSObject {
         // Add a subview to handle file dropping
         overlayView = OverlayView(frame: window.frame)
         window.contentView?.addSubview(overlayView!)
-        //overlayView?.fitToSuperView()
+        overlayView?.fitToSuperView()
     }
     
     /// ウィンドウの透過／非透過設定
@@ -590,8 +590,7 @@ public class LibUniWinC : NSObject {
         x.pointee = Float32(frame.minX)
         y.pointee = Float32(frame.minY)
         width.pointee = Float32(frame.width)
-        //height.pointee = Float32(frame.height)
-        height.pointee = Float32(fileDropCallback.debugDescription.count)
+        height.pointee = Float32(frame.height)
         return true
     }
     

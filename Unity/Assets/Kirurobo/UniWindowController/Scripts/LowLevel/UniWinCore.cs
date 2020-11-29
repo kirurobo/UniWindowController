@@ -356,7 +356,7 @@ public class UniWinCore : IDisposable
         LibUniWinC.SetAllowDrop(enabled);
     }
 
-    private void _fileDroppedCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
+    private void _fileDroppedCallback([MarshalAs(UnmanagedType.LPUTF8Str)] string paths)
     {
         Debug.Log(paths);
         char[] delimiters = {'\n', '\r', '\t', '\0'};
