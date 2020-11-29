@@ -13,9 +13,11 @@ protocol FileDroppedDelegate {
 }
 
 class OverlayView: NSView {
-    // Reference: https://stackoverflow.com/questions/31657523/get-file-path-using-drag-and-drop-swift-macos
+    // References:
+    // https://qiita.com/ohbashunsuke/items/8b9d6dc07408091690c6
+    // https://stackoverflow.com/questions/31657523/get-file-path-using-drag-and-drop-swift-macos
     
-    var enabled = true
+    var enabled = false
 
     public func setEnabled(enabled: Bool) {
         self.enabled = enabled
@@ -25,8 +27,6 @@ class OverlayView: NSView {
         self.registerForDraggedTypes(
             [NSPasteboard.PasteboardType.URL, NSPasteboard.PasteboardType.fileURL]
         )
-        
-        //self.autoresizingMask = [.minXMargin, .minYMargin, .maxXMargin, .maxYMargin]
     }
     
     public func fitToSuperView() -> Void {
@@ -34,10 +34,9 @@ class OverlayView: NSView {
         else {
             return
         }
-        
-        self.translatesAutoresizingMaskIntoConstraints = false
-        
+                
         // Fit to the parent frame
+        self.translatesAutoresizingMaskIntoConstraints = false
         let constraints = [
             self.topAnchor.constraint(equalTo: parent.topAnchor, constant: 0),
             self.leftAnchor.constraint(equalTo: parent.leftAnchor, constant: 0),
@@ -58,10 +57,10 @@ class OverlayView: NSView {
     }
     
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        if (self.enabled) {
-            return .copy
+        if (enabled) {
+            return .link
         } else {
-            return .generic
+            return []
         }
     }
     

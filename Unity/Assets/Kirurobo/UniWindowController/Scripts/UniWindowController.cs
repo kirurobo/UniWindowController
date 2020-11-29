@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -95,15 +96,15 @@ namespace Kirurobo
         private bool _isZoomed = false;
 
         /// <summary>
-        /// Is this window minimized
+        /// Enable / disable accepting file drop
         /// </summary>
-        public bool isFileDropEnabled
+        public bool allowDropFile
         {
-            get { return _isFileDropEnabled; }
+            get { return _allowDropFile; }
             set { SetAllowDrop(value); }
         }
         [SerializeField, BoolProperty, Tooltip("Experimental...")]
-        private bool _isFileDropEnabled = false;
+        private bool _allowDropFile = false;
 
         /// <summary>
         /// クリックスルー自動判定を行うか
@@ -521,6 +522,7 @@ namespace Kirurobo
                     SetTransparent(_isTransparent);
                     SetTopmost(_isTopmost);
                     SetClickThrough(_isClickThrough);
+                    SetAllowDrop(_allowDropFile);
                 }
             }
             else
@@ -655,7 +657,7 @@ namespace Kirurobo
             if (uniWinCore == null) return;
 
             uniWinCore.SetAllowDrop(enabled);
-            _isFileDropEnabled = enabled;
+            _allowDropFile = enabled;
             StateChangedEvent();
         }
 

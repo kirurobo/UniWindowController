@@ -518,6 +518,9 @@ public class LibUniWinC : NSObject {
         height.pointee = Float32(currentSize.height)
         return true
     }
+
+    
+    // MARK: - Display Info.
     
     /// 現在有効な画面数を取得
     /// - Returns: 画面数
@@ -594,6 +597,9 @@ public class LibUniWinC : NSObject {
         return true
     }
     
+    
+    // MARK: - File drop
+    
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
         overlayView?.setEnabled(enabled: enabled)
         return true
@@ -608,6 +614,9 @@ public class LibUniWinC : NSObject {
         fileDropCallback = nil
         return true
     }
+    
+    
+    // MARK: - Mouser curosor
     
     /// 現在のカーソル座標を取得
     /// - Parameters:
