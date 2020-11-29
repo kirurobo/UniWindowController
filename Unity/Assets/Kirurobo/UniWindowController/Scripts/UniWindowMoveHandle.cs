@@ -1,4 +1,4 @@
-﻿/**
+﻿/*
  * UniWindowDragMove.cs
  * 
  * Author: Kirurobo http://twitter.com/kirurobo

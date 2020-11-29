@@ -91,6 +91,9 @@ public class LibUniWinC : NSObject {
         }
     }
     
+    /// Callback function with wchar_t pointer
+    public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
+
     
     // MARK: - Static variables
     
@@ -102,6 +105,11 @@ public class LibUniWinC : NSObject {
     
     /// ウィンドウの初期状態を記憶するインスタンス
     private static var orgWindowInfo: OriginalWindowInfo = OriginalWindowInfo()
+    
+    /// Sub view to implement file dropping
+    private static var overlayView: OverlayView? = nil
+    
+    public static var fileDropCallback: stringCallback? = nil
     
     /// プライマリーモニターの高さ
     private static var primaryMonitorHeight: CGFloat = 0
@@ -150,6 +158,12 @@ public class LibUniWinC : NSObject {
             
             // スタイルを初期状態に戻す
             orgWindowInfo.Restore(window: targetWindow!)
+            
+            // Remove the subview
+            if (overlayView != nil) {
+                targetWindow?.contentView?.willRemoveSubview(overlayView!)
+                overlayView = nil
+            }
                         
             targetWindow = nil
         }
@@ -173,7 +187,7 @@ public class LibUniWinC : NSObject {
     }
     
     private static func _updateScreenSize() -> Void {
-        // 参考 https://stackoverrun.com/ja/q/1746184
+        // Reference: https://stackoverrun.com/ja/q/1746184
         primaryMonitorHeight = NSScreen.screens.map {$0.frame.origin.y + $0.frame.height}.max()!
         
         // モニタの状態も更新
@@ -203,7 +217,7 @@ public class LibUniWinC : NSObject {
     }
     
     /// 初期化処理
-    private static func setup() -> Void {
+    private static func _setup() -> Void {
         // 画面の高さを取得
         _updateScreenSize()
         
@@ -217,7 +231,6 @@ public class LibUniWinC : NSObject {
             _updateScreenSize()
         }
 
-        
         state.isReady = true
     }
     
@@ -239,7 +252,7 @@ public class LibUniWinC : NSObject {
         
         // 初期処理
         if (!state.isReady) {
-            setup()
+            _setup()
         }
 
         // 対象を設定
@@ -255,17 +268,24 @@ public class LibUniWinC : NSObject {
         NotificationCenter.default.addObserver(
             forName: NSWindow.didEnterFullScreenNotification,
             object: nil,
-            queue: OperationQueue.main) { notification -> Void in
-            _reapplyWindowStyles()
+            queue: OperationQueue.main)
+        {
+            notification -> Void in _reapplyWindowStyles()
         }
         
         // フルスクリーンから復帰時に再適用
         NotificationCenter.default.addObserver(
             forName: NSWindow.didExitFullScreenNotification,
             object: nil,
-            queue: OperationQueue.main) { notification -> Void in
-            _reapplyWindowStyles()
+            queue: OperationQueue.main)
+        {
+            notification -> Void in _reapplyWindowStyles()
         }
+        
+        // Add a subview to handle file dropping
+        overlayView = OverlayView(frame: window.frame)
+        window.contentView?.addSubview(overlayView!)
+        //overlayView?.fitToSuperView()
     }
     
     /// ウィンドウの透過／非透過設定
@@ -570,7 +590,23 @@ public class LibUniWinC : NSObject {
         x.pointee = Float32(frame.minX)
         y.pointee = Float32(frame.minY)
         width.pointee = Float32(frame.width)
-        height.pointee = Float32(frame.height)
+        //height.pointee = Float32(frame.height)
+        height.pointee = Float32(fileDropCallback.debugDescription.count)
+        return true
+    }
+    
+    @objc public static func setAllowDrop(enabled: Bool) -> Bool {
+        overlayView?.setEnabled(enabled: enabled)
+        return true
+    }
+
+    @objc public static func registerFileDropCallback(callback: @escaping stringCallback) -> Bool {
+        fileDropCallback = callback
+        return true
+    }
+    
+    @objc public static func unregisterFileDropCallback() -> Bool {
+        fileDropCallback = nil
         return true
     }
     

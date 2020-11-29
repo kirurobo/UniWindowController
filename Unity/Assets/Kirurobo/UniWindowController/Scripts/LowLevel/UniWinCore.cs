@@ -1,4 +1,4 @@
-﻿/**
+﻿/*
  * UniWinCore.cs
  * 
  * Author: Kirurobo http://twitter.com/kirurobo
@@ -6,7 +6,7 @@
  */
 
 using System;
-using System.Reflection;
+using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -28,6 +28,7 @@ public class UniWinCore : IDisposable
         ColorKey = 2,
     }
     
+    #region Native functions
     protected class LibUniWinC
     {
         [DllImport("LibUniWinC")]
@@ -83,15 +84,27 @@ public class UniWinCore : IDisposable
 
         [DllImport("LibUniWinC")]
         public static extern bool GetSize(out float x, out float y);
+        
+        [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+        public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
 
         [DllImport("LibUniWinC")]
-        public static extern Int32 GetCurrentMonitor();
+        public static extern bool RegisterFileDropCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
 
         [DllImport("LibUniWinC")]
-        public static extern Int32 GetMonitorCount();
+        public static extern bool UnregisterFileDropCallback();
 
         [DllImport("LibUniWinC")]
-        public static extern bool GetMonitorRectangle(Int32 index, out float x, out float y, out float width, out float height);
+        public static extern bool SetAllowDrop(bool enabled);
+
+        [DllImport("LibUniWinC")]
+        public static extern int GetCurrentMonitor();
+
+        [DllImport("LibUniWinC")]
+        public static extern int GetMonitorCount();
+
+        [DllImport("LibUniWinC")]
+        public static extern bool GetMonitorRectangle(int index, out float x, out float y, out float width, out float height);
 
         [DllImport("LibUniWinC")]
         public static extern void SetCursorPosition(float x, float y);
@@ -100,11 +113,12 @@ public class UniWinCore : IDisposable
         public static extern bool GetCursorPosition(out float x, out float y);
 
         [DllImport("LibUniWinC")]
-        public static extern void SetTransparentType(Int32 type);
+        public static extern void SetTransparentType(int type);
 
         [DllImport("LibUniWinC")]
-        public static extern void SetKeyColor(UInt32 colorref);
+        public static extern void SetKeyColor(uint colorref);
     }
+    #endregion
 
 
 #if UNITY_EDITOR
@@ -157,7 +171,10 @@ public class UniWinCore : IDisposable
     private Color32 ChromakeyColor = new Color32(1, 0, 1, 0);
 
 
+    public delegate void FileDropCallback(string[] files);
 
+
+    #region Constructor or destructor
     /// <summary>
     /// ウィンドウ制御のコンストラクタ
     /// </summary>
@@ -181,7 +198,12 @@ public class UniWinCore : IDisposable
     {
         // 最後にウィンドウ状態を戻すとそれが目についてしまうので、現状必ずしも戻さないようコメントアウト
         //DetachWindow();
+        
+        LibUniWinC.UnregisterFileDropCallback();
     }
+    #endregion
+
+    #region Find, attach or detach 
 
     /// <summary>
     /// ウィンドウ状態を最初に戻して操作対象から解除
@@ -208,6 +230,9 @@ public class UniWinCore : IDisposable
 #else
         LibUniWinC.AttachMyWindow();
 #endif
+        // Add file drop handler
+        LibUniWinC.RegisterFileDropCallback(_fileDroppedCallback);
+
         IsActive = LibUniWinC.IsActive();
         return IsActive;
     }
@@ -223,6 +248,10 @@ public class UniWinCore : IDisposable
         IsActive = LibUniWinC.IsActive();
         return IsActive;
     }
+    
+    #endregion
+    
+    #region About window status
     
     /// <summary>
     /// 透過を設定／解除
@@ -318,7 +347,31 @@ public class UniWinCore : IDisposable
         LibUniWinC.GetSize(out size.x, out size.y);
         return size;
     }
+    
+    #endregion
 
+    #region About file dropping
+    public void SetAllowDrop(bool enabled)
+    {
+        LibUniWinC.SetAllowDrop(enabled);
+    }
+
+    private void _fileDroppedCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
+    {
+        Debug.Log(paths);
+        char[] delimiters = {'\n', '\r', '\t', '\0'};
+        string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+
+        if (files.Length > 0)
+        {
+            //OnFileDropped?.Invoke(files);
+        }
+    }
+
+    public event FileDropCallback OnFileDropped;
+    #endregion
+
+    #region About mouse cursor
     /// <summary>
     /// Set the mouse pointer position.
     /// </summary>
@@ -339,6 +392,14 @@ public class UniWinCore : IDisposable
         return pos;
     }
 
+    // Not implemented
+    public static bool GetCursorVisible()
+    {
+        return true;
+    }
+    #endregion
+
+    #region for Windows only
     /// <summary>
     /// 透過方法を指定（Windowsのみ対応）
     /// </summary>
@@ -358,7 +419,9 @@ public class UniWinCore : IDisposable
         LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
         ChromakeyColor = color;
     }
+    #endregion
 
+    #region About monitors
     /// <summary>
     /// Get the monitor index where the window is located
     /// </summary>
@@ -417,11 +480,6 @@ public class UniWinCore : IDisposable
         }
         Debug.Log(message);
     }
+    #endregion
 
-    // Not implemented
-
-    public static bool GetCursorVisible()
-    {
-        return true;
-    }
 }

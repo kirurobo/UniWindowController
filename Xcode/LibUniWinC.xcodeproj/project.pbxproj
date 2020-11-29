@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		731C6C6E25724025002E9709 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731C6C6D25724025002E9709 /* OverlayView.swift */; };
 		73575EF522BE0AB300E9F019 /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73575EF422BE0AB300E9F019 /* LibUniWinC.swift */; };
 		73575EF922BE18B200E9F019 /* LibUniWinC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 73575EF822BE18B200E9F019 /* LibUniWinC.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7306572424F1F87900FAB8BC /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		731C6C6D25724025002E9709 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		73575EF422BE0AB300E9F019 /* LibUniWinC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibUniWinC.swift; sourceTree = "<group>"; };
 		73575EF822BE18B200E9F019 /* LibUniWinC.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibUniWinC.mm; sourceTree = "<group>"; };
 		73DFCB7722B8ED3300DA41F2 /* LibUniWinC.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibUniWinC.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -53,6 +55,7 @@
 				73575EF422BE0AB300E9F019 /* LibUniWinC.swift */,
 				73575EF822BE18B200E9F019 /* LibUniWinC.mm */,
 				7306572424F1F87900FAB8BC /* README.md */,
+				731C6C6D25724025002E9709 /* OverlayView.swift */,
 			);
 			path = LibUniWinC;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				731C6C6E25724025002E9709 /* OverlayView.swift in Sources */,
 				73575EF922BE18B200E9F019 /* LibUniWinC.mm in Sources */,
 				73575EF522BE0AB300E9F019 /* LibUniWinC.swift in Sources */,
 			);
@@ -285,8 +289,8 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				MARKETING_VERSION = 0.4.1;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 0.5.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.libuniwinc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -313,8 +317,8 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				MARKETING_VERSION = 0.4.1;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 0.5.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.libuniwinc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

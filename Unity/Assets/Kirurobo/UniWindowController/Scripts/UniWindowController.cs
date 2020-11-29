@@ -95,6 +95,17 @@ namespace Kirurobo
         private bool _isZoomed = false;
 
         /// <summary>
+        /// Is this window minimized
+        /// </summary>
+        public bool isFileDropEnabled
+        {
+            get { return _isFileDropEnabled; }
+            set { SetAllowDrop(value); }
+        }
+        [SerializeField, BoolProperty, Tooltip("Experimental...")]
+        private bool _isFileDropEnabled = false;
+
+        /// <summary>
         /// クリックスルー自動判定を行うか
         /// 行なわない場合は isClickThrough を自分で変更可
         /// </summary>
@@ -217,8 +228,12 @@ namespace Kirurobo
         /// ウィンドウ状態が変化したときに発生するイベント
         /// </summary>
         public event OnStateChangedDelegate OnStateChanged;
+
         public delegate void OnStateChangedDelegate();
 
+        public event OnFileDroppedDelegate OnFileDropped;
+
+        public delegate void OnFileDroppedDelegate(string[] files);
 
 
         // Use this for initialization
@@ -263,6 +278,7 @@ namespace Kirurobo
 
             // ウィンドウ制御用のインスタンス作成
             uniWinCore = new UniWinCore();
+            uniWinCore.OnFileDropped += (files) => { OnFileDropped?.Invoke(files); };
         }
 
         void Start()
@@ -631,6 +647,15 @@ namespace Kirurobo
 
             uniWinCore.SetZoomed(zoomed);
             _isZoomed = uniWinCore.GetZoomed();
+            StateChangedEvent();
+        }
+
+        private void SetAllowDrop(bool enabled)
+        {
+            if (uniWinCore == null) return;
+
+            uniWinCore.SetAllowDrop(enabled);
+            _isFileDropEnabled = enabled;
             StateChangedEvent();
         }
 

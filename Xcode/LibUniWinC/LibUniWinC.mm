@@ -12,6 +12,10 @@
 #import <Foundation/Foundation.h>
 #import "LibUniWinC-Swift.h"
 
+// Actually the argument type is wchar_t*
+using StringCallback = void(* _Nonnull)(const void* _Nonnull);
+
+
 UNIWINC_EXPORT BOOL IsActive() {
     return [LibUniWinC isActive];
 }
@@ -89,12 +93,24 @@ UNIWINC_EXPORT SInt32 GetCurrentMonitor() {
     return [LibUniWinC getCurrentMonitor];
 }
 
-UNIWINC_EXPORT BOOL GetMonitorCount() {
+UNIWINC_EXPORT SInt32 GetMonitorCount() {
     return [LibUniWinC getMonitorCount];
 }
 
 UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32* y, Float32* width, Float32* height) {
     return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
+}
+
+UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
+    return [LibUniWinC setAllowDropWithEnabled: enabled];
+}
+
+UNIWINC_EXPORT BOOL RegisterFileDropCallback(StringCallback callback) {
+    return [LibUniWinC registerFileDropCallbackWithCallback: callback];
+}
+
+UNIWINC_EXPORT BOOL UnregisterFileDropCallback() {
+    return [LibUniWinC unregisterFileDropCallback];
 }
 
 UNIWINC_EXPORT BOOL SetCursorPosition(Float32 x, Float32 y) {
