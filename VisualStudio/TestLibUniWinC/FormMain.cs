@@ -26,7 +26,6 @@ namespace TestLibUniWinC
             UniWinC.RegisterFileDropCallback(msg => {
                 Console.Write(msg);
             });
-            UniWinC.SetAllowDrop(true);
 
             //  モニタ一覧を表示
             PrintMonitorInfo();
@@ -93,6 +92,11 @@ namespace TestLibUniWinC
         private void buttonShowMonitorInfo_Click(object sender, EventArgs e)
         {
             PrintMonitorInfo();
+        }
+
+        private void checkBoxAllowDrop_CheckedChanged(object sender, EventArgs e)
+        {
+            UniWinC.SetAllowDrop(checkBoxAllowDrop.Checked);
         }
     }
 }

@@ -8,6 +8,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Kirurobo;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -171,7 +172,7 @@ public class UniWinCore : IDisposable
     private Color32 ChromakeyColor = new Color32(1, 0, 1, 0);
 
 
-    public delegate void FileDropCallback(string[] files);
+    public delegate void DropFilesDelegate(string[] files);
 
 
     #region Constructor or destructor
@@ -232,6 +233,7 @@ public class UniWinCore : IDisposable
 #endif
         // Add file drop handler
         LibUniWinC.RegisterFileDropCallback(_fileDroppedCallback);
+        Debug.Log("Registered ");
 
         IsActive = LibUniWinC.IsActive();
         return IsActive;
@@ -358,17 +360,21 @@ public class UniWinCore : IDisposable
 
     private void _fileDroppedCallback([MarshalAs(UnmanagedType.LPUTF8Str)] string paths)
     {
-        Debug.Log(paths);
         char[] delimiters = {'\n', '\r', '\t', '\0'};
         string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
 
         if (files.Length > 0)
         {
-            OnFileDropped?.Invoke(files);
+            Debug.Log("UniWinCore._fileDroppedCallback");
+            foreach (var file in files)
+            {
+                Debug.Log(file);
+            }
+            //if (OnDropFilesHandler != null) OnDropFilesHandler.Invoke(files);
         }
     }
 
-    public event FileDropCallback OnFileDropped;
+    public event DropFilesDelegate OnDropFilesHandler;
     #endregion
 
     #region About mouse cursor

@@ -232,9 +232,9 @@ namespace Kirurobo
 
         public delegate void OnStateChangedDelegate();
 
-        public event OnFileDroppedDelegate OnFileDropped;
+        public event OnDropFilesDelegate OnDropFiles;
 
-        public delegate void OnFileDroppedDelegate(string[] files);
+        public delegate void OnDropFilesDelegate(string[] files);
 
 
         // Use this for initialization
@@ -279,7 +279,15 @@ namespace Kirurobo
 
             // ウィンドウ制御用のインスタンス作成
             uniWinCore = new UniWinCore();
-            uniWinCore.OnFileDropped += (files) => { OnFileDropped?.Invoke(files); };
+            uniWinCore.OnDropFilesHandler += (files) =>
+            {
+                foreach (var file in files)
+                {
+                    Debug.Log(file);
+                }
+
+                //OnDropFiles?.Invoke(files);
+            };
         }
 
         void Start()

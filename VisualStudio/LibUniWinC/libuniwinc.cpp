@@ -15,6 +15,7 @@ static BOOL bIsTransparent = FALSE;
 static BOOL bIsBorderless= FALSE;
 static BOOL bIsTopmost = FALSE;
 static BOOL bIsClickThrough = FALSE;
+static BOOL bAllowDropFile = FALSE;
 static COLORREF dwKeyColor = 0x00000000;		// AABBGGRR
 static TransparentType nTransparentType = TransparentType::Alpha;
 static TransparentType nCurrentTransparentType = TransparentType::Alpha;
@@ -82,6 +83,7 @@ void attachWindow(const HWND hWnd) {
 		SetBorderless(bIsBorderless);
 		SetTopmost(bIsTopmost);
 		SetClickThrough(bIsClickThrough);
+		SetAllowDrop(bAllowDropFile);
 	}
 }
 
@@ -933,19 +935,22 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 {
 	if (hTargetWnd_ == NULL) return FALSE;
 
-	DragAcceptFiles(hTargetWnd_, bEnabled);
+	bAllowDropFile = bEnabled;
+	DragAcceptFiles(hTargetWnd_, bAllowDropFile);
 
 	if (bEnabled && hHook == NULL) {
 		BeginHook();
 	}
-	else if (!bEnabled && hHook != NULL) {
-		EndHook();
-	}
+	//else if (!bEnabled && hHook != NULL) {
+	//	EndHook();
+	//}
 
 	return TRUE;
 }
 
 BOOL UNIWINC_API RegisterFileDropCallback(FileDropHandler callback) {
+	if (callback == nullptr) return FALSE;
+
 	hFileDropHandler = callback;
 	return TRUE;
 }
