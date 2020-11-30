@@ -364,7 +364,7 @@ public class UniWinCore : IDisposable
 
         if (files.Length > 0)
         {
-            //OnFileDropped?.Invoke(files);
+            OnFileDropped?.Invoke(files);
         }
     }
 
