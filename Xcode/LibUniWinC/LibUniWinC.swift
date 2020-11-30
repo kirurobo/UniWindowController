@@ -22,6 +22,8 @@ import Cocoa
 @objcMembers
 public class LibUniWinC : NSObject {
     
+    // MARK: - Internal structs and classes
+    
     // 現在の設定を保持する構造体
     private struct State {
         public var isReady: Bool = false
@@ -119,7 +121,7 @@ public class LibUniWinC : NSObject {
     private static var monitorIndices: [Int] = []
 
     
-    // MARK: - Methods
+    // MARK: - Properties
 
     /// 準備完了かどうかを返す
     /// - Returns: 準備完了ならtrue
@@ -149,122 +151,113 @@ public class LibUniWinC : NSObject {
             return (targetWindow?.isZoomed ?? false)
         }
     }
-
-    @objc public static func detachWindow() -> Void {
-        // 別のウィンドウが選択済みだったら、元に戻す
-        if (targetWindow != nil) {
-            let center = NotificationCenter.default
-            center.removeObserver(self)
-            
-            // スタイルを初期状態に戻す
-            orgWindowInfo.Restore(window: targetWindow!)
-            
-            // Remove the subview
-            if (overlayView != nil) {
-                targetWindow?.contentView?.willRemoveSubview(overlayView!)
-                overlayView = nil
-            }
-                        
-            targetWindow = nil
-        }
-    }
-    /// ウィンドウを取得して準備
-    @objc public static func attachMyWindow() -> Bool {
-        // 自分のウィンドウを取得して利用開始
-        let window: NSWindow = _findMyWindow()
-        _attachWindow(window: window)
-        
-        return true
-    }
     
-    /// ウィンドウに設定された内容を再適用
-    private static func _reapplyWindowStyles() -> Void {
-        if (targetWindow != nil) {
-            setTopmost(isTopmost: state.isTopmost)
-            setBorderless(isBorderless: state.isBorderless)
-            setTransparent(isTransparent: state.isTransparent)
-        }
-    }
+    // MARK: - Initialize, window handling
     
-    private static func _updateScreenSize() -> Void {
-        // Reference: https://stackoverrun.com/ja/q/1746184
-        primaryMonitorHeight = NSScreen.screens.map {$0.frame.origin.y + $0.frame.height}.max()!
-        
-        // モニタの状態も更新
-        _updateMonitorRectangles()
-    }
-    
-    private static func _updateMonitorRectangles() -> Void {
-        // モニタ数
-        monitorCount = NSScreen.screens.count
-        
-        // 一旦消去
-        monitorRectangles.removeAll()
-        monitorIndices.removeAll()
-        
-        // 現在のスクリーン情報を記憶
-        for i in 0..<monitorCount {
-            let screen = NSScreen.screens[i]
-            monitorRectangles.append(screen.visibleFrame)
-            monitorIndices.append(i)
-        }
-        
-        // 左上の画面が0、右下が最大となるようソート
-        monitorIndices = monitorIndices.sorted(by: {
-            (monitorRectangles[$0].minX < monitorRectangles[$1].minX)
-                || (monitorRectangles[$0].minX == monitorRectangles[$1].minX && monitorRectangles[$0].maxY < monitorRectangles[$1].maxY)
-        })
-    }
-    
-    /// 初期化処理
+    /// Initialize
     private static func _setup() -> Void {
-        // 画面の高さを取得
-        _updateScreenSize()
+        // Get the screen size
+        _updateScreenInfo()
         
-        // 解像度変化時に画面の高さを再取得
+        // Prepare notification to refresh the screen size
         NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: NSApplication.shared,
             queue: OperationQueue.main
         ) {
             notification -> Void in
-            _updateScreenSize()
+            _updateScreenInfo()
         }
 
+        // Flag as initialized
         state.isReady = true
     }
     
-    /// 自分自身のウィンドウを取得
+    /// Retrieve current monitor settings
+    private static func _updateScreenInfo() -> Void {
+        // Reference: https://stackoverrun.com/ja/q/1746184
+        primaryMonitorHeight = NSScreen.screens.map {$0.frame.origin.y + $0.frame.height}.max()!
+        
+        // Get the number of monitors
+        monitorCount = NSScreen.screens.count
+        
+        // Clear the list
+        monitorRectangles.removeAll()
+        monitorIndices.removeAll()
+        
+        // Get each screen rectangle
+        for i in 0..<monitorCount {
+            let screen = NSScreen.screens[i]
+            monitorRectangles.append(screen.visibleFrame)
+            monitorIndices.append(i)
+        }
+        
+        // Sort the list so that the top left monitor is at the zero
+        monitorIndices = monitorIndices.sorted(by: {
+            (monitorRectangles[$0].minX < monitorRectangles[$1].minX)
+                || (monitorRectangles[$0].minX == monitorRectangles[$1].minX && monitorRectangles[$0].maxY < monitorRectangles[$1].maxY)
+        })
+    }
+
+    /// Find my own window
     private static func _findMyWindow() -> NSWindow {
         let myWindow: NSWindow = NSApp.orderedWindows[0]
         return myWindow
     }
 
-    /// 対象のウィンドウを指定。それ以前にもし指定があればそれは元に戻す
+    /// Detach from the window
+    @objc public static func detachWindow() -> Void {
+        if (targetWindow != nil) {
+            let center = NotificationCenter.default
+            center.removeObserver(self)
+            
+            // Restore the original style
+            orgWindowInfo.Restore(window: targetWindow!)
+            
+            // Remove the subview
+            if (overlayView != nil) {
+                overlayView?.removeFromSuperview()
+                overlayView = nil
+            }
+                        
+            targetWindow = nil
+        }
+    }
+    
+    /// Attach to my main window
+    @objc public static func attachMyWindow() -> Bool {
+        let window: NSWindow = _findMyWindow()
+        _attachWindow(window: window)
+        
+        return true
+    }
+
+    /// Set the target window
+    /// Restore the former winodw if exist
     private static func _attachWindow(window: NSWindow) -> Void {
-        // すでに同じウィンドウが選択されていれば、何もしない
+        // Do nothing if the same window is the target
         if (targetWindow == window) {
             return
         }
         
-        // 過去に対象だったウィンドウを解除
+        // Release the former window if exist
         detachWindow()
         
-        // 初期処理
+        // Initialize when the first call
         if (!state.isReady) {
             _setup()
         }
 
-        // 対象を設定
+        // Set to the target
         targetWindow = window
         
-        // 初期の状態を記録
+        // Store the original state
         orgWindowInfo.Store(window: window)
         
-        // 設定を適用
+        // Apply the state
         _reapplyWindowStyles()
         
-        // フルスクリーン移行時に再適用
+        // Reapply the state at fullscreen
         NotificationCenter.default.addObserver(
             forName: NSWindow.didEnterFullScreenNotification,
             object: nil,
@@ -273,7 +266,7 @@ public class LibUniWinC : NSObject {
             notification -> Void in _reapplyWindowStyles()
         }
         
-        // フルスクリーンから復帰時に再適用
+        // Reapply the state at the end of fullscreen
         NotificationCenter.default.addObserver(
             forName: NSWindow.didExitFullScreenNotification,
             object: nil,
@@ -281,12 +274,31 @@ public class LibUniWinC : NSObject {
         {
             notification -> Void in _reapplyWindowStyles()
         }
+    }
+    
+    /// Create an overlay view to handle file dropping
+    private static func _setupOverlayView() -> Void {
+        guard let window = targetWindow
+        else {
+            return
+        }
         
         // Add a subview to handle file dropping
         overlayView = OverlayView(frame: window.frame)
         window.contentView?.addSubview(overlayView!)
         overlayView?.fitToSuperView()
     }
+        
+    /// Apply current window state
+    private static func _reapplyWindowStyles() -> Void {
+        if (targetWindow != nil) {
+            setTopmost(isTopmost: state.isTopmost)
+            setBorderless(isBorderless: state.isBorderless)
+            setTransparent(isTransparent: state.isTransparent)
+        }
+    }
+
+    // MARK: - Functions to get or set the window state
     
     /// ウィンドウの透過／非透過設定
     /// - Parameters:
@@ -601,6 +613,10 @@ public class LibUniWinC : NSObject {
     // MARK: - File drop
     
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
+        if (overlayView == nil) {
+            _setupOverlayView()
+        }
+        
         overlayView?.setEnabled(enabled: enabled)
         return true
     }

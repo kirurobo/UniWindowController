@@ -17,7 +17,18 @@ class OverlayView: NSView {
     // https://qiita.com/ohbashunsuke/items/8b9d6dc07408091690c6
     // https://stackoverflow.com/questions/31657523/get-file-path-using-drag-and-drop-swift-macos
     
+    /// Temporaly enable or disable file dropping
     var enabled = false
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+    
+    override init(frame: NSRect) {
+        super.init(frame: NSRect(x: 0, y: 0, width: frame.width, height: frame.height))
+        setup()
+    }
 
     public func setEnabled(enabled: Bool) {
         self.enabled = enabled
@@ -27,8 +38,11 @@ class OverlayView: NSView {
         self.registerForDraggedTypes(
             [NSPasteboard.PasteboardType.URL, NSPasteboard.PasteboardType.fileURL]
         )
+        
+        self.wantsLayer = false
     }
     
+    /// Set constraints to fit the window
     public func fitToSuperView() -> Void {
         guard let parent = superview
         else {
@@ -46,16 +60,7 @@ class OverlayView: NSView {
         parent.addConstraints(constraints)
     }
     
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
-    }
-    
-    override init(frame: NSRect) {
-        super.init(frame: NSRect(x: 0, y: 0, width: frame.width, height: frame.height))
-        setup()
-    }
-    
+    /// Set the visual when dragging
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         if (enabled) {
             return .link
@@ -64,6 +69,7 @@ class OverlayView: NSView {
         }
     }
     
+    /// Get the paths and perform the callback
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         if (!self.enabled) {
             return false
@@ -102,7 +108,7 @@ class OverlayView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         //super.draw(dirtyRect)
         
-// for debugging
+        // for debugging
 //        // Drawing code here.
 //        NSColor.red.set()
 //        let figure = NSBezierPath()
