@@ -40,6 +40,16 @@ class OverlayView: NSView {
         )
         
         self.wantsLayer = false
+        self.needsDisplay = false
+    }
+    
+    override public var acceptsFirstResponder: Bool { return false }
+    override public var canBecomeKeyView: Bool { return false }
+    override public var isOpaque: Bool { return false }
+    
+    /// Need to return nil to send keystrokes to the Unity view when the window is transparent
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return nil
     }
     
     /// Set constraints to fit the window
