@@ -7,24 +7,26 @@
 static HWND hTargetWnd_ = NULL;
 static WINDOWINFO originalWindowInfo;
 static WINDOWPLACEMENT originalWindowPlacement;
-static SIZE originaiBorderSize;
-static POINT ptVirtualScreen;
-static SIZE szVirtualScreen;
-static int nPrimaryMonitorHeight;
-static BOOL bIsTransparent = FALSE;
-static BOOL bIsBorderless= FALSE;
-static BOOL bIsTopmost = FALSE;
-static BOOL bIsClickThrough = FALSE;
-static BOOL bAllowDropFile = FALSE;
-static COLORREF dwKeyColor = 0x00000000;		// AABBGGRR
-static TransparentType nTransparentType = TransparentType::Alpha;
-static TransparentType nCurrentTransparentType = TransparentType::Alpha;
-static int nMonitorCount = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
-static RECT pMonitorRect[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsの順番で保持した、各画面のRECT
-static int pMonitorIndices[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
-static HHOOK hHook = NULL;
-static WCHAR pwstrPathBuffer[UNIWINC_MAX_PATHBUFFER];
-static FileDropHandler hFileDropHandler = nullptr;
+static SIZE szOriginaiBorder_;
+static POINT ptVirtualScreen_;
+static SIZE szVirtualScreen_;
+static INT nPrimaryMonitorHeight_;
+static BOOL bIsTransparent_ = FALSE;
+static BOOL bIsBorderless_ = FALSE;
+static BOOL bIsTopmost_ = FALSE;
+static BOOL bIsClickThrough_ = FALSE;
+static BOOL bAllowDropFile_ = FALSE;
+static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
+static TransparentType nTransparentType_ = TransparentType::Alpha;
+static TransparentType nCurrentTransparentType_ = TransparentType::Alpha;
+static INT nMonitorCount_ = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
+static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsの順番で保持した、各画面のRECT
+static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
+static WNDPROC lpMyWndProc_ = NULL;
+static WNDPROC lpOriginalWndProc_ = NULL;
+static HHOOK hHook_ = NULL;
+static DropFilesCallback hDropFilesHandler_ = nullptr;
+static DisplayChangedCallback hDisplayChangedHandler_ = nullptr;
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -32,6 +34,8 @@ void refreshWindow();
 void updateScreenSize();
 void BeginHook();
 void EndHook();
+void CreateCustomWindowProcedure();
+void DestroyCustomWindowProcedure();
 
 
 /// <summary>
@@ -40,17 +44,22 @@ void EndHook();
 void detachWindow()
 {
 	if (hTargetWnd_) {
-		SetTransparent(false);
-		
-		SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
-		SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo.dwExStyle);
+		// Restore the original window procedure
+		DestroyCustomWindowProcedure();
 
-		SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
+		//// Unhook if exist
+		//EndHook();
 
-		refreshWindow();
+		if (IsWindow(hTargetWnd_)) {
+			SetTransparent(false);
 
-		// Unhook if exist
-		EndHook();
+			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
+			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo.dwExStyle);
+
+			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
+
+			refreshWindow();
+		}
 	}
 	hTargetWnd_ = NULL;
 }
@@ -66,24 +75,26 @@ void attachWindow(const HWND hWnd) {
 	}
 
 	// とりあえずこのタイミングで画面サイズも更新
-	//   本来は画面解像度変更時に更新したい。ウィンドウプロシージャ
+	//   本来は画面解像度変更時に更新したい。ウィンドウプロシージャでどう？
 	updateScreenSize();
 
-	// ウィンドウを選択
+	// Set the target
 	hTargetWnd_ = hWnd;
 
 	if (hWnd) {
-		// 初期状態を記憶しておく
+		// Save the original state
 		GetWindowInfo(hWnd, &originalWindowInfo);
 		GetWindowPlacement(hWnd, &originalWindowPlacement);
 
+		// Apply current settings
+		SetTransparent(bIsTransparent_);
+		SetBorderless(bIsBorderless_);
+		SetTopmost(bIsTopmost_);
+		SetClickThrough(bIsClickThrough_);
+		SetAllowDrop(bAllowDropFile_);
 
-		// 既に設定があれば適用
-		SetTransparent(bIsTransparent);
-		SetBorderless(bIsBorderless);
-		SetTopmost(bIsTopmost);
-		SetClickThrough(bIsClickThrough);
-		SetAllowDrop(bAllowDropFile);
+		// Replace the window procedure
+		CreateCustomWindowProcedure();
 	}
 }
 
@@ -138,16 +149,16 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lParam)
 {
 	// 最大取り扱いモニタ数に達したら探索終了
-	if (nMonitorCount >= UNIWINC_MAX_MONITORCOUNT) return FALSE;
+	if (nMonitorCount_ >= UNIWINC_MAX_MONITORCOUNT) return FALSE;
 
 	// RECTを記憶
-	pMonitorRect[nMonitorCount] = *lpRect;
+	pMonitorRect_[nMonitorCount_] = *lpRect;
 
 	// インデックスを一旦登場順で保存
-	pMonitorIndices[nMonitorCount] = nMonitorCount;
+	pMonitorIndices_[nMonitorCount_] = nMonitorCount_;
 
 	// モニタ数カウント
-	nMonitorCount++;
+	nMonitorCount_++;
 
 	return TRUE;
 }
@@ -158,7 +169,7 @@ BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lPar
 /// <returns>成功ならTRUE</returns>
 BOOL updateMonitorRectangles() {
 	//  カウントするため一時的に0に戻す
-	nMonitorCount = 0;
+	nMonitorCount_ = 0;
 
 	// モニタを列挙してRECTを保存
 	if (!EnumDisplayMonitors(NULL, NULL, monitorEnumProc, NULL)) {
@@ -166,14 +177,14 @@ BOOL updateMonitorRectangles() {
 	}
 
 	// モニタの位置でインデックスをバブルソート
-	for (int i = 0; i < (nMonitorCount - 1); i++) {
-		for (int j = (nMonitorCount - 1); j > i; j--) {
-			RECT pr = pMonitorRect[pMonitorIndices[j - 1]];
-			RECT cr = pMonitorRect[pMonitorIndices[j]];
+	for (int i = 0; i < (nMonitorCount_ - 1); i++) {
+		for (int j = (nMonitorCount_ - 1); j > i; j--) {
+			RECT pr = pMonitorRect_[pMonitorIndices_[j - 1]];
+			RECT cr = pMonitorRect_[pMonitorIndices_[j]];
 			if (pr.left >  cr.left || ((pr.left == cr.left) && (pr.bottom > cr.bottom))) {
-				int wk = pMonitorIndices[j - 1];
-				pMonitorIndices[j - 1] = pMonitorIndices[j];
-				pMonitorIndices[j] = wk;
+				int wk = pMonitorIndices_[j - 1];
+				pMonitorIndices_[j - 1] = pMonitorIndices_[j];
+				pMonitorIndices_[j] = wk;
 			}
 		}
 	}
@@ -210,7 +221,7 @@ void enableTransparentBySetLayered()
 	LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 	exstyle |= WS_EX_LAYERED;
 	SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
-	SetLayeredWindowAttributes(hTargetWnd_, dwKeyColor, 0xFF, LWA_COLORKEY);
+	SetLayeredWindowAttributes(hTargetWnd_, dwKeyColor_, 0xFF, LWA_COLORKEY);
 }
 
 /// <summary>
@@ -272,18 +283,25 @@ BOOL compareRect(const RECT rcA, const RECT rcB) {
 }
 
 /// <summary>
-/// 現在の画面サイズを取得
+/// Update current monitor information
 /// </summary>
 /// <returns></returns>
 void updateScreenSize() {
-	ptVirtualScreen.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-	ptVirtualScreen.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-	szVirtualScreen.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	szVirtualScreen.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-	nPrimaryMonitorHeight = GetSystemMetrics(SM_CYSCREEN);
+	ptVirtualScreen_.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	ptVirtualScreen_.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	szVirtualScreen_.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	szVirtualScreen_.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	nPrimaryMonitorHeight_ = GetSystemMetrics(SM_CYSCREEN);
 
-	// モニタ解像度一覧も更新。nPrimaryMonitorHeightを使うため、その取得より後に実行する。
+	// Update the monitor resolution list.
+	//   To use the nPrimaryMonitorHeight, do this after its acquisition.
 	updateMonitorRectangles();
+
+	// Do callback
+	if (hDisplayChangedHandler_ != nullptr) {
+		INT32 count = GetMonitorCount();
+		hDisplayChangedHandler_(count);
+	}
 }
 
 /// <summary>
@@ -293,7 +311,7 @@ void updateScreenSize() {
 /// <param name="y"></param>
 /// <returns></returns>
 LONG calcFlippedY(LONG y) {
-	return (nPrimaryMonitorHeight - y);
+	return (nPrimaryMonitorHeight_ - y);
 }
 
 // Windows only
@@ -334,7 +352,7 @@ BOOL UNIWINC_API IsActive() {
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsTransparent() {
-	return bIsTransparent;
+	return bIsTransparent_;
 }
 
 /// <summary>
@@ -342,7 +360,7 @@ BOOL UNIWINC_API IsTransparent() {
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsBorderless() {
-	return bIsBorderless;
+	return bIsBorderless_;
 }
 
 /// <summary>
@@ -350,7 +368,7 @@ BOOL UNIWINC_API IsBorderless() {
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsTopmost() {
-	return bIsTopmost;
+	return bIsTopmost_;
 }
 
 /// <summary>
@@ -410,15 +428,15 @@ BOOL UNIWINC_API AttachMyActiveWindow() {
 /// <param name="type"></param>
 /// <returns></returns>
 void UNIWINC_API SetTransparentType(const TransparentType type) {
-	if (bIsTransparent) {
+	if (bIsTransparent_) {
 		// 透明化状態であれば、一度解除してから設定
 		SetTransparent(FALSE);
-		nTransparentType = type;
+		nTransparentType_ = type;
 		SetTransparent(TRUE);
 	}
 	else {
 		// 透明化状態でなければ、そのまま設定
-		nTransparentType = type;
+		nTransparentType_ = type;
 	}
 }
 
@@ -428,15 +446,15 @@ void UNIWINC_API SetTransparentType(const TransparentType type) {
 /// <param name="color">透過する色</param>
 /// <returns></returns>
 void UNIWINC_API SetKeyColor(const COLORREF color) {
-	if (bIsTransparent && (nTransparentType == TransparentType::ColorKey)) {
+	if (bIsTransparent_ && (nTransparentType_ == TransparentType::ColorKey)) {
 		// 透明化状態であれば、一度解除してから設定
 		SetTransparent(FALSE);
-		dwKeyColor = color;
+		dwKeyColor_ = color;
 		SetTransparent(TRUE);
 	}
 	else {
 		// 透明化状態でなければ、そのまま設定
-		dwKeyColor = color;
+		dwKeyColor_ = color;
 	}
 }
 
@@ -448,12 +466,12 @@ void UNIWINC_API SetKeyColor(const COLORREF color) {
 void UNIWINC_API SetTransparent(const BOOL bTransparent) {
 	if (hTargetWnd_) {
 		if (bTransparent) {
-			switch (nTransparentType)
+			switch (nTransparentType_)
 			{
-			case Alpha:
+			case TransparentType::Alpha:
 				enableTransparentByDWM();
 				break;
-			case ColorKey:
+			case TransparentType::ColorKey:
 				enableTransparentBySetLayered();
 				break;
 			default:
@@ -461,12 +479,12 @@ void UNIWINC_API SetTransparent(const BOOL bTransparent) {
 			}
 		}
 		else {
-			switch (nCurrentTransparentType)
+			switch (nCurrentTransparentType_)
 			{
-			case Alpha:
+			case TransparentType::Alpha:
 				disableTransparentByDWM();
 				break;
-			case ColorKey:
+			case TransparentType::ColorKey:
 				disableTransparentBySetLayered();
 				break;
 			default:
@@ -475,11 +493,11 @@ void UNIWINC_API SetTransparent(const BOOL bTransparent) {
 		}
 
 		// 戻す方法を決めるため、透明化が変更された時のタイプを記憶
-		nCurrentTransparentType = nTransparentType;
+		nCurrentTransparentType_ = nTransparentType_;
 	}
 
 	// 透明化状態を記憶
-	bIsTransparent = bTransparent;
+	bIsTransparent_ = bTransparent;
 }
 
 
@@ -558,7 +576,7 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 	}
 
 	// 枠無しかを記憶
-	bIsBorderless = bBorderless;
+	bIsBorderless_ = bBorderless;
 }
 
 /// <summary>
@@ -576,7 +594,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 		);
 	}
 
-	bIsTopmost = bTopmost;
+	bIsTopmost_ = bTopmost;
 }
 
 /// <summary>
@@ -613,13 +631,13 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 		{
 			LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_TRANSPARENT;
-			if (!bIsTransparent && !(originalWindowInfo.dwExStyle & WS_EX_LAYERED)) {
+			if (!bIsTransparent_ && !(originalWindowInfo.dwExStyle & WS_EX_LAYERED)) {
 				exstyle &= ~WS_EX_LAYERED;
 			}
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
 		}
 	}
-	bIsClickThrough = bTransparent;
+	bIsClickThrough_ = bTransparent;
 }
 
 /// <summary>
@@ -636,7 +654,7 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 	GetWindowRect(hTargetWnd_, &rect);
 
 	// 引数の y はCocoa相当の座標系でウィンドウ左下なので、変換
-	int newY = (nPrimaryMonitorHeight - (int)y) - (rect.bottom - rect.top);
+	int newY = (nPrimaryMonitorHeight_ - (int)y) - (rect.bottom - rect.top);
 
 	return SetWindowPos(
 		hTargetWnd_, NULL,
@@ -661,7 +679,7 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
 		*x = (float)rect.left;
-		*y = (float)(nPrimaryMonitorHeight - rect.bottom);	// 左下基準とする
+		*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);	// 左下基準とする
 		return TRUE;
 	}
 	return FALSE;
@@ -721,8 +739,8 @@ INT32 UNIWINC_API GetCurrentMonitor() {
 
 	//  ウィンドウ未取得ならプライマリモニタを探す
 	if (hTargetWnd_ == NULL) {
-		for (int i = 0; i < nMonitorCount; i++) {
-			RECT mr = pMonitorRect[pMonitorIndices[i]];
+		for (int i = 0; i < nMonitorCount_; i++) {
+			RECT mr = pMonitorRect_[pMonitorIndices_[i]];
 
 			// 原点にあるモニタはプライマリと判定
 			if (mr.left == 0 && mr.top == 0) {
@@ -740,8 +758,8 @@ INT32 UNIWINC_API GetCurrentMonitor() {
 	LONG cy = (rect.bottom - 1 + rect.top) / 2;
 
 	// ウィンドウの中央が含まれているモニタを検索
-	for (int i = 0; i < nMonitorCount; i++) {
-		RECT mr = pMonitorRect[pMonitorIndices[i]];
+	for (int i = 0; i < nMonitorCount_; i++) {
+		RECT mr = pMonitorRect_[pMonitorIndices_[i]];
 
 		// ウィンドウ中心が入っていればその画面番号を返して終了
 		if (mr.left <= cx && cx < mr.right && mr.top <= cy && cy < mr.bottom) {
@@ -766,7 +784,7 @@ INT32 UNIWINC_API GetCurrentMonitor() {
 INT32  UNIWINC_API GetMonitorCount() {
 	//// SM_CMONITORS では表示されているモニタのみ対象となる（EnumDisplayとは異なる）
 	//return GetSystemMetrics(SM_CMONITORS);
-	return nMonitorCount;
+	return nMonitorCount_;
 }
 
 /// <summary>
@@ -781,17 +799,43 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 	*width = 0;
 	*height = 0;
 
-	if (monitorIndex < 0 || monitorIndex >= nMonitorCount) {
+	if (monitorIndex < 0 || monitorIndex >= nMonitorCount_) {
 		return FALSE;
 	}
 
-	RECT rect = pMonitorRect[pMonitorIndices[monitorIndex]];
+	RECT rect = pMonitorRect_[pMonitorIndices_[monitorIndex]];
 	*x = (float)(rect.left);
-	*y = (float)(nPrimaryMonitorHeight - rect.bottom);		// 左下基準とする
+	*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// 左下基準とする
 	*width = (float)(rect.right - rect.left);
 	*height = (float)(rect.bottom - rect.top);
 	return TRUE;
 }
+
+/// <summary>
+/// Register the callback fucnction called when updated monitor information
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterDisplayChangedCallback(DisplayChangedCallback callback) {
+	if (callback == nullptr) return FALSE;
+
+	hDisplayChangedHandler_ = callback;
+	return TRUE;
+}
+
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterDisplayChangedCallback() {
+	hDisplayChangedHandler_ = nullptr;
+	return TRUE;
+}
+
+
+
+// ==================================================================
+// Mouse cursor
 
 /// <summary>
 /// マウスカーソル座標を取得
@@ -806,7 +850,7 @@ BOOL UNIWINC_API GetCursorPosition(float* x, float* y) {
 	POINT pos;
 	if (GetCursorPos(&pos)) {
 		*x = (float)pos.x;
-		*y = (float)(nPrimaryMonitorHeight - pos.y - 1);	// 左下基準とする
+		*y = (float)(nPrimaryMonitorHeight_ - pos.y - 1);	// 左下基準とする
 		return TRUE;
 	}
 	return FALSE;
@@ -823,14 +867,88 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 	POINT pos;
 
 	pos.x = (int)x;
-	pos.y = nPrimaryMonitorHeight - (int)y - 1;
+	pos.y = nPrimaryMonitorHeight_ - (int)y - 1;
 
 	return SetCursorPos(pos.x, pos.y);
 }
 
+
 // ==================================================================
 // Shell32
 
+
+/// <summary>
+/// Process drop files
+/// </summary>
+/// <param name="hDrop"></param>
+/// <returns></returns>
+BOOL ReceiveDropFiles(HDROP hDrop) {
+	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+
+	if (num > 0) {
+		// Retrieve total buffer size
+		UINT bufferSize = 0;
+		for (UINT i = 0; i < num; i++) {
+			UINT size = DragQueryFile(hDrop, i, NULL, 0);
+			bufferSize += size + sizeof(L'\n');		// Add a delimiter size
+		}
+		bufferSize++;
+
+		// Allocate buffer
+		LPWSTR buffer;
+		buffer = new (std::nothrow)WCHAR[bufferSize];
+
+		if (buffer != NULL) {
+			// Retrieve file paths
+			UINT bufferIndex = 0;
+			for (UINT i = 0; i < num; i++) {
+				UINT cch = bufferSize - 1 - bufferIndex;
+				UINT size = DragQueryFile(hDrop, i, buffer + bufferIndex, cch);
+				bufferIndex += size;
+				buffer[bufferIndex] = L'\n';	// Delimiter of each path
+				bufferIndex++;
+			}
+			buffer[bufferIndex] = NULL;
+
+			// Do callback function
+			if (hDropFilesHandler_ != nullptr) {
+				hDropFilesHandler_((WCHAR*)buffer);	// Charset of this project must be set U
+			}
+
+			delete[] buffer;
+		}
+	}
+
+	return (num > 0);
+}
+
+/// <summary>
+/// Custom window proceture to accept dropped files and display-changed event
+/// </summary>
+/// <param name="hWnd"></param>
+/// <param name="uMsg"></param>
+/// <param name="wParam"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
+LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (uMsg == WM_DROPFILES)
+	{
+		HDROP hDrop = (HDROP)wParam;
+		ReceiveDropFiles(hDrop);
+		DragFinish(hDrop);
+	}
+	else if (uMsg == WM_DISPLAYCHANGE) {
+		updateScreenSize();
+	}
+
+	if (lpOriginalWndProc_ != NULL) {
+		return CallWindowProc(lpOriginalWndProc_, hWnd, uMsg, wParam, lParam);
+	}
+	else {
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+}
 
 /// <summary>
 /// Callback when received WM_DROPFILE message
@@ -848,45 +966,9 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 	LPMSG msg = (LPMSG)lParam;
 
 	if (msg->message == WM_DROPFILES) {
-
 		if (hTargetWnd_ != NULL && msg->hwnd == hTargetWnd_) {
 			HDROP hDrop = (HDROP)msg->wParam;
-			UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-
-			if (num > 0) {
-				// Retrieve total buffer size
-				UINT bufferSize = 0;
-				for (UINT i = 0; i < num; i++) {
-					UINT size = DragQueryFile(hDrop, i, NULL, 0);
-					bufferSize += size + sizeof(L'\n');		// Add a delimiter size
-				}
-				bufferSize++;
-
-				// Allocate buffer
-				LPWSTR buffer;
-				buffer = new (std::nothrow)WCHAR[bufferSize];
-
-				if (buffer != NULL) {
-					// Retrieve file paths
-					UINT bufferIndex = 0;
-					for (UINT i = 0; i < num; i++) {
-						UINT cch = bufferSize - 1 - bufferIndex;
-						UINT size = DragQueryFile(hDrop, i, buffer + bufferIndex, cch);
-						bufferIndex += size;
-						buffer[bufferIndex] = L'\n';	// Delimiter of each path
-						bufferIndex++;
-					}
-					buffer[bufferIndex] = NULL;
-
-					// Do callback function
-					if (hFileDropHandler != nullptr) {
-						hFileDropHandler((WCHAR*)buffer);	// Charset of this project must be set U
-					}
-
-					delete[] buffer;
-				}
-			}
-
+			ReceiveDropFiles(hDrop);
 			DragFinish(hDrop);
 		}
 		return TRUE;
@@ -895,7 +977,44 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 		updateScreenSize();
 	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
 
+/// <summary>
+/// Wrapper of SetWindowLongPtr to set window procedure
+/// </summary>
+/// <param name="wndProc"></param>
+/// <returns></returns>
+WNDPROC SetWindowProcedure(WNDPROC wndProc) {
+	return (WNDPROC)SetWindowLongPtr(hTargetWnd_, GWLP_WNDPROC, (LONG_PTR)wndProc);
+}
+
+/// <summary>
+/// Remove the custom window procedure
+/// </summary>
+void DestroyCustomWindowProcedure() {
+	if (lpMyWndProc_ == NULL) return;
+
+	if (lpOriginalWndProc_ != NULL) {
+		if (hTargetWnd_ != NULL && IsWindow(hTargetWnd_)) {
+			SetWindowProcedure(lpOriginalWndProc_);
+		}
+		lpOriginalWndProc_ = NULL;
+	}
+	lpMyWndProc_ = NULL;
+}
+
+/// <summary>
+/// Create and attach the custom window procedure
+/// </summary>
+void CreateCustomWindowProcedure() {
+	if (lpMyWndProc_ != NULL) {
+		DestroyCustomWindowProcedure();
+	}
+
+	if (hTargetWnd_ != NULL) {
+		lpMyWndProc_ = CustomWindowProcedure;
+		lpOriginalWndProc_ = SetWindowProcedure(lpMyWndProc_);
+	}
 }
 
 /// <summary>
@@ -905,12 +1024,12 @@ void BeginHook() {
 	if (hTargetWnd_ == NULL) return;
 
 	// Return if the hook is already set
-	if (hHook != NULL) return;
+	if (hHook_ != NULL) return;
 
 	//HMODULE hMod = GetModuleHandle(NULL);
 	DWORD dwThreadId = GetCurrentThreadId();
 
-	hHook = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
+	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
 }
 
 /// <summary>
@@ -920,10 +1039,10 @@ void EndHook() {
 	if (hTargetWnd_ == NULL) return;
 
 	// Return if the hook is not set
-	if (hHook == NULL) return;
+	if (hHook_ == NULL) return;
 
-	UnhookWindowsHookEx(hHook);
-	hHook = NULL;
+	UnhookWindowsHookEx(hHook_);
+	hHook_ = NULL;
 }
 
 /// <summary>
@@ -935,27 +1054,41 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 {
 	if (hTargetWnd_ == NULL) return FALSE;
 
-	bAllowDropFile = bEnabled;
-	DragAcceptFiles(hTargetWnd_, bAllowDropFile);
+	bAllowDropFile_ = bEnabled;
+	DragAcceptFiles(hTargetWnd_, bAllowDropFile_);
 
-	if (bEnabled && hHook == NULL) {
-		BeginHook();
+	if (bEnabled && (lpMyWndProc_ == NULL)) {
+		// Create the window procedure if the first time
+		CreateCustomWindowProcedure();
 	}
-	//else if (!bEnabled && hHook != NULL) {
-	//	EndHook();
+
+	//if (bEnabled && hHook == NULL) {
+	//	BeginHook();
 	//}
+	////else if (!bEnabled && hHook != NULL) {
+	////	EndHook();
+	////}
 
 	return TRUE;
 }
 
-BOOL UNIWINC_API RegisterFileDropCallback(FileDropHandler callback) {
+/// <summary>
+/// Register the callback fucnction for dropping files
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback) {
 	if (callback == nullptr) return FALSE;
 
-	hFileDropHandler = callback;
+	hDropFilesHandler_ = callback;
 	return TRUE;
 }
 
-BOOL UNIWINC_API UnregisterFileDropCallback() {
-	hFileDropHandler = nullptr;
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterDropFilesCallback() {
+	hDropFilesHandler_ = nullptr;
 	return TRUE;
 }

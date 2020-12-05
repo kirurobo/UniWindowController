@@ -23,8 +23,14 @@ namespace TestLibUniWinC
         {
             uniwinc = new UniWinC();
 
-            UniWinC.RegisterFileDropCallback(msg => {
+            // ファイルドロップ時、出力
+            UniWinC.RegisterDropFilesCallback(msg => {
                 Console.Write(msg);
+            });
+
+            // 解像度変更時、モニター数を出力
+            UniWinC.RegisterDisplayChangedCallback(count => {
+                Console.WriteLine("Monitors: " + count);
             });
 
             //  モニタ一覧を表示
