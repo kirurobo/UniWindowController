@@ -6,9 +6,6 @@
  */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -28,6 +25,8 @@ namespace Kirurobo
         private Vector3 lastMousePosition;        // Right clicked position.
         private float touchDuration = 0f;
         private float touchDurationThreshold = 0.5f; // Long tap time threshold. [s]
+        private float lastEventOccurredTime = -5f;    // Timestamp the last event occurred [s]
+        private float eventMessageTimeout = 5f;     // Show event message while this period [s]
 
         public Toggle transparentToggle;
         public Toggle topmostToggle;
@@ -90,14 +89,23 @@ namespace Kirurobo
 #endif
                 
                 // Add events
-                uniwinc.OnDisplayChanged += () => { Debug.Log("Display changed!"); };
-                uniwinc.OnDropFiles += files =>
-                {
-                    Debug.Log(string.Join(Environment.NewLine, files));
-                };
+                uniwinc.OnDisplayChanged += () => { ShowEventMessage("Display changed!"); };
+                uniwinc.OnDropFiles += files => { ShowEventMessage(string.Join(Environment.NewLine, files)); };
             }
         }
-        
+
+        /// <summary>
+        /// Show the message with timeout
+        /// </summary>
+        /// <param name="message"></param>
+        private void ShowEventMessage(string message)
+        {
+            lastEventOccurredTime = Time.time;
+            if (messageText) messageText.text = message;
+
+            Debug.Log(message);
+        }
+
         /// <summary>
         /// 毎フレーム行う処理
         /// </summary>
@@ -105,9 +113,12 @@ namespace Kirurobo
         {
             // ヒットテスト関連の表示を更新
             UpdateHitTestUI();
-            
+
             // 動作確認のためウィンドウ位置・サイズを表示
-            ShowWindowMetrics();
+            if ((lastEventOccurredTime + eventMessageTimeout) < Time.time)
+            {
+                ShowWindowMetrics();
+            }
 
             // マウス右ボタンクリックでメニューを表示させる。閾値以下の移動ならクリックとみなす。
             if (Input.GetMouseButtonDown(1))
