@@ -5,6 +5,10 @@
  * License: MIT
  */
 
+//  Assembry Definition を有効にしてから、ビルド時に Editor クラスがないとエラーが出る。
+//   そこで丸ごと UNITY_EDITOR が無い場合は無視するものとした
+#if UNITY_EDITOR
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -284,3 +288,4 @@ namespace Kirurobo
         }
     }
 }
+#endif

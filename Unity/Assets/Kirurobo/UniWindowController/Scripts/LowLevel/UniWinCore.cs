@@ -8,6 +8,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using AOT;
 using Kirurobo;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -90,10 +91,19 @@ public class UniWinCore : IDisposable
         public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
 
         [DllImport("LibUniWinC")]
-        public static extern bool RegisterFileDropCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
+        public static extern bool RegisterDropFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
 
         [DllImport("LibUniWinC")]
-        public static extern bool UnregisterFileDropCallback();
+        public static extern bool UnregisterDropFilesCallback();
+
+        [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+        public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
+        
+        [DllImport("LibUniWinC")]
+        public static extern bool RegisterDisplayChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
+
+        [DllImport("LibUniWinC")]
+        public static extern bool UnregisterDisplayChangedCallback();
 
         [DllImport("LibUniWinC")]
         public static extern bool SetAllowDrop(bool enabled);
@@ -121,6 +131,9 @@ public class UniWinCore : IDisposable
     }
     #endregion
 
+    public static string[] lastDroppedFiles;
+    public static bool wasDropped = false;
+    public static bool wasDisplayChanged = false;
 
 #if UNITY_EDITOR
     // 参考 http://baba-s.hatenablog.com/entry/2017/09/17/135018
@@ -197,10 +210,12 @@ public class UniWinCore : IDisposable
     /// </summary>
     public void Dispose()
     {
-        // 最後にウィンドウ状態を戻すとそれが目についてしまうので、現状必ずしも戻さないようコメントアウト
+        // 最後にウィンドウ状態を戻すとそれが目についてしまうので、あえて戻さないことにしてみるためコメントアウト
         //DetachWindow();
         
-        LibUniWinC.UnregisterFileDropCallback();
+        // Instead of DetachWindow()
+        LibUniWinC.UnregisterDropFilesCallback();
+        LibUniWinC.UnregisterDisplayChangedCallback();
     }
     #endregion
 
@@ -231,9 +246,9 @@ public class UniWinCore : IDisposable
 #else
         LibUniWinC.AttachMyWindow();
 #endif
-        // Add file drop handler
-        LibUniWinC.RegisterFileDropCallback(_fileDroppedCallback);
-        Debug.Log("Registered ");
+        // Add event handlers
+        LibUniWinC.RegisterDropFilesCallback(_droppedFilesCallback);
+        LibUniWinC.RegisterDisplayChangedCallback(_displayChangedCallback);
 
         IsActive = LibUniWinC.IsActive();
         return IsActive;
@@ -358,23 +373,57 @@ public class UniWinCore : IDisposable
         LibUniWinC.SetAllowDrop(enabled);
     }
 
-    private void _fileDroppedCallback([MarshalAs(UnmanagedType.LPUTF8Str)] string paths)
+    [MonoPInvokeCallback(typeof(DropFilesDelegate))]
+    private static void _droppedFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
     {
         char[] delimiters = {'\n', '\r', '\t', '\0'};
         string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
 
         if (files.Length > 0)
         {
-            Debug.Log("UniWinCore._fileDroppedCallback");
-            foreach (var file in files)
-            {
-                Debug.Log(file);
-            }
-            //if (OnDropFilesHandler != null) OnDropFilesHandler.Invoke(files);
+            // Debug.Log("UniWinCore._fileDroppedCallback");
+            // foreach (var file in files)
+            // {
+            //     Debug.Log(file);
+            // }
+            ////if (OnDropFilesHandler != null) OnDropFilesHandler.Invoke(files);
+
+            lastDroppedFiles = new string[files.Length];
+            files.CopyTo(lastDroppedFiles, 0);
+            
+            wasDropped = true;
         }
     }
 
-    public event DropFilesDelegate OnDropFilesHandler;
+    /// <summary>
+    /// Fetch dropped files and unset the dropped flag
+    /// </summary>
+    /// <param name="files"></param>
+    /// <returns>true if files were dropped</returns>
+    public bool FetchDroppedFiles(out string[] files)
+    {
+        files = lastDroppedFiles;
+        
+        if (!wasDropped || files == null) return false;
+        
+        wasDropped = false;
+        return true;
+    }
+
+    /// <summary>
+    /// Check the numbers of display or resolution changing, and unset the flag 
+    /// </summary>
+    /// <returns>true if changed</returns>
+    public bool FetchDisplayChanged()
+    {
+        if (!wasDisplayChanged) return false;
+
+        wasDisplayChanged = false;
+        return true;
+    }
+
+    //public event DropFilesDelegate OnDropFilesHandler;
+    
     #endregion
 
     #region About mouse cursor
@@ -487,5 +536,11 @@ public class UniWinCore : IDisposable
         Debug.Log(message);
     }
     #endregion
+
+    [MonoPInvokeCallback(typeof(UniWindowController.OnDisplayChangedDelegate))]
+    private static void _displayChangedCallback([MarshalAs(UnmanagedType.I4)] int monitorCount)
+    {
+        wasDisplayChanged = true;
+    }
 
 }

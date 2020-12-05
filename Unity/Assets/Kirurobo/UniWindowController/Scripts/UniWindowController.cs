@@ -10,8 +10,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
@@ -96,15 +94,21 @@ namespace Kirurobo
         private bool _isZoomed = false;
 
         /// <summary>
+        /// Always fit to monitor (0, 1, ...)
+        /// Disabled if the value is -1
+        /// </summary>
+        public int fitToMonitor = -1;
+
+        /// <summary>
         /// Enable / disable accepting file drop
         /// </summary>
-        public bool allowDropFile
+        public bool allowDropFiles
         {
-            get { return _allowDropFile; }
+            get { return _allowDropFiles; }
             set { SetAllowDrop(value); }
         }
         [SerializeField, BoolProperty, Tooltip("Experimental...")]
-        private bool _allowDropFile = false;
+        private bool _allowDropFiles = false;
 
         /// <summary>
         /// クリックスルー自動判定を行うか
@@ -234,7 +238,11 @@ namespace Kirurobo
 
         public event OnDropFilesDelegate OnDropFiles;
 
+        public event OnDisplayChangedDelegate OnDisplayChanged;
+
         public delegate void OnDropFilesDelegate(string[] files);
+
+        public delegate void OnDisplayChangedDelegate();
 
 
         // Use this for initialization
@@ -279,21 +287,37 @@ namespace Kirurobo
 
             // ウィンドウ制御用のインスタンス作成
             uniWinCore = new UniWinCore();
-            uniWinCore.OnDropFilesHandler += (files) =>
-            {
-                foreach (var file in files)
-                {
-                    Debug.Log(file);
-                }
-
-                //OnDropFiles?.Invoke(files);
-            };
         }
 
+        /// <summary>
+        /// Fit to specified monitor
+        /// </summary>
+        private void UpdateMonitorFitting()
+        {
+            if (fitToMonitor < 0) return;
+
+            int monitors = uniWinCore.GetMonitorCount();
+            int targetMonitorIndex = fitToMonitor;
+
+            if (monitors <= targetMonitorIndex)
+            {
+                targetMonitorIndex = monitors - 1;
+            }
+
+            if (targetMonitorIndex >= 0)
+            {
+                uniWinCore.FitToMonitor(targetMonitorIndex);
+            }
+        }
+        
         void Start()
         {
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
+
+            // Fit to the selected monitor
+            OnDisplayChanged += UpdateMonitorFitting;
+            UpdateMonitorFitting();
         }
 
         void OnDestroy()
@@ -312,9 +336,30 @@ namespace Kirurobo
             {
                 UpdateTargetWindow();
             }
+            
+            // Process events
+            UpdateEvents();
 
             // キー、マウス操作の下ウィンドウへの透過状態を更新
             UpdateClickThrough();
+        }
+
+        /// <summary>
+        /// Check and process UniWinCore events
+        /// </summary>
+        private void UpdateEvents()
+        {
+            if (uniWinCore == null) return;
+
+            if (uniWinCore.FetchDroppedFiles(out var files))
+            {
+                OnDropFiles?.Invoke(files);
+            }
+
+            if (uniWinCore.FetchDisplayChanged())
+            {
+                OnDisplayChanged?.Invoke();
+            }
         }
 
         /// <summary>
@@ -530,7 +575,7 @@ namespace Kirurobo
                     SetTransparent(_isTransparent);
                     SetTopmost(_isTopmost);
                     SetClickThrough(_isClickThrough);
-                    SetAllowDrop(_allowDropFile);
+                    SetAllowDrop(_allowDropFiles);
                 }
             }
             else
@@ -665,7 +710,7 @@ namespace Kirurobo
             if (uniWinCore == null) return;
 
             uniWinCore.SetAllowDrop(enabled);
-            _allowDropFile = enabled;
+            _allowDropFiles = enabled;
             StateChangedEvent();
         }
 

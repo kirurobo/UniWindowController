@@ -296,12 +296,6 @@ void updateScreenSize() {
 	// Update the monitor resolution list.
 	//   To use the nPrimaryMonitorHeight, do this after its acquisition.
 	updateMonitorRectangles();
-
-	// Do callback
-	if (hDisplayChangedHandler_ != nullptr) {
-		INT32 count = GetMonitorCount();
-		hDisplayChangedHandler_(count);
-	}
 }
 
 /// <summary>
@@ -940,6 +934,12 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	}
 	else if (uMsg == WM_DISPLAYCHANGE) {
 		updateScreenSize();
+
+		// Do callback
+		if (hDisplayChangedHandler_ != nullptr) {
+			INT32 count = GetMonitorCount();
+			hDisplayChangedHandler_(count);
+		}
 	}
 
 	if (lpOriginalWndProc_ != NULL) {
@@ -985,7 +985,14 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 /// <param name="wndProc"></param>
 /// <returns></returns>
 WNDPROC SetWindowProcedure(WNDPROC wndProc) {
+	//return (WNDPROC)SetWindowLongPtr(hTargetWnd_, GWLP_WNDPROC, (LONG_PTR)wndProc);
+
+#ifdef _WIN64
+	// 64bit
 	return (WNDPROC)SetWindowLongPtr(hTargetWnd_, GWLP_WNDPROC, (LONG_PTR)wndProc);
+#else
+	return (WNDPROC)SetWindowLong(hTargetWnd_, GWLP_WNDPROC, (LONG)wndProc);
+#endif
 }
 
 /// <summary>

@@ -8,7 +8,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Kirurobo
@@ -29,8 +31,9 @@ namespace Kirurobo
 
         public Toggle transparentToggle;
         public Toggle topmostToggle;
+        [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
         public Toggle dragMoveToggle;
-        public Toggle maximizedToggle;
+        public Toggle allowDropToggle;
         public Button widthDownButton;
         public Button widthUpButton;
         public Button heightDownButton;
@@ -63,7 +66,8 @@ namespace Kirurobo
                 // UIを操作された際にはウィンドウに反映されるようにする
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
-                maximizedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
+                zoomedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
+                allowDropToggle?.onValueChanged.AddListener(val => uniwinc.allowDropFiles = val);
 
                 widthDownButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(-100, 0));
                 widthUpButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(+100, 0));
@@ -84,6 +88,13 @@ namespace Kirurobo
                 //if (transparentTypeDropdown) transparentTypeDropdown.enabled = false;
                 if (transparentTypeDropdown) transparentTypeDropdown.gameObject.SetActive(false);
 #endif
+                
+                // Add events
+                uniwinc.OnDisplayChanged += () => { Debug.Log("Display changed!"); };
+                uniwinc.OnDropFiles += files =>
+                {
+                    Debug.Log(string.Join(Environment.NewLine, files));
+                };
             }
         }
         
@@ -255,11 +266,11 @@ namespace Kirurobo
                 {
                     topmostToggle.isOn = uniwinc.isTopmost;
                 }
-                //
-                // if (maximizedToggle)
-                // {
-                //     maximizedToggle.isOn = uniwinc.isZoomed;
-                // }
+
+                if (allowDropToggle)
+                {
+                    allowDropToggle.isOn = uniwinc.allowDropFiles;
+                }
 
                 if (dragMoveToggle)
                 {
@@ -333,9 +344,9 @@ namespace Kirurobo
                 }
                 
                 // 最大化状態も、UI以外の要因での変化があるため頻繁に更新
-                if (maximizedToggle)
+                if (zoomedToggle)
                 {
-                    maximizedToggle.isOn = uniwinc.isZoomed;
+                    zoomedToggle.isOn = uniwinc.isZoomed;
                 }
             }
         }
