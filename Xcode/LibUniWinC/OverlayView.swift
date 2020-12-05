@@ -99,7 +99,7 @@ class OverlayView: NSView {
         buffer[count] = uint16.zero     // End of the string
         
         // Do callback
-        LibUniWinC.fileDropCallback?(buffer)
+        LibUniWinC.dropFilesCallback?(buffer)
         
         buffer.deallocate()
         return true

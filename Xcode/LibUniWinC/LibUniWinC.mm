@@ -15,6 +15,9 @@
 // Actually the argument type is wchar_t*
 using StringCallback = void(* _Nonnull)(const void* _Nonnull);
 
+// Callback for display changed
+using IntCallback = void(* _Nonnull)(const SInt32);
+
 
 UNIWINC_EXPORT BOOL IsActive() {
     return [LibUniWinC isActive];
@@ -101,16 +104,24 @@ UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32
     return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
 }
 
+UNIWINC_EXPORT BOOL RegisterDisplayChangedCallback(IntCallback callback) {
+    return [LibUniWinC registerDisplayChangedCallbackWithCallback: callback];
+}
+
+UNIWINC_EXPORT BOOL UnregisterDisplayChangedCallback() {
+    return [LibUniWinC unregisterDisplayChangedCallback];
+}
+
 UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
     return [LibUniWinC setAllowDropWithEnabled: enabled];
 }
 
-UNIWINC_EXPORT BOOL RegisterFileDropCallback(StringCallback callback) {
-    return [LibUniWinC registerFileDropCallbackWithCallback: callback];
+UNIWINC_EXPORT BOOL RegisterDropFilesCallback(StringCallback callback) {
+    return [LibUniWinC registerDropFilesCallbackWithCallback: callback];
 }
 
-UNIWINC_EXPORT BOOL UnregisterFileDropCallback() {
-    return [LibUniWinC unregisterFileDropCallback];
+UNIWINC_EXPORT BOOL UnregisterDropFilesCallback() {
+    return [LibUniWinC unregisterDropFilesCallback];
 }
 
 UNIWINC_EXPORT BOOL SetCursorPosition(Float32 x, Float32 y) {

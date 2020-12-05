@@ -108,11 +108,13 @@ public class LibUniWinC : NSObject {
     
     /// Callback function with wchar_t pointer
     public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
+    public typealias intCallback = (@convention(c) (Int32) -> Void)
+    public static var dropFilesCallback: stringCallback? = nil
+    public static var displayChangedCallback: intCallback? = nil
     
     /// Sub view to implement file dropping
     private static var overlayView: OverlayView? = nil
-    public static var fileDropCallback: stringCallback? = nil
-    
+
     /// プライマリーモニターの高さ
     private static var primaryMonitorHeight: CGFloat = 0
     
@@ -165,12 +167,20 @@ public class LibUniWinC : NSObject {
             object: NSApplication.shared,
             queue: OperationQueue.main
         ) {
-            notification -> Void in
-            _updateScreenInfo()
+            notification -> Void in _onDisplayChanged()
         }
 
         // Flag as initialized
         state.isReady = true
+    }
+    
+    /// Called when screen parameeters changed
+    private static func _onDisplayChanged() -> Void {
+        _updateScreenInfo()
+        
+        // Run callback
+        let count = getMonitorCount()
+        displayChangedCallback?(count)
     }
     
     /// Retrieve current monitor settings
@@ -610,6 +620,16 @@ public class LibUniWinC : NSObject {
     }
     
     
+    @objc public static func registerDisplayChangedCallback(callback: @escaping intCallback) -> Bool {
+        displayChangedCallback = callback
+        return true
+    }
+    
+    @objc public static func unregisterDisplayChangedCallback() -> Bool {
+        displayChangedCallback = nil
+        return true
+    }
+
     // MARK: - File drop
     
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
@@ -621,13 +641,13 @@ public class LibUniWinC : NSObject {
         return true
     }
 
-    @objc public static func registerFileDropCallback(callback: @escaping stringCallback) -> Bool {
-        fileDropCallback = callback
+    @objc public static func registerDropFilesCallback(callback: @escaping stringCallback) -> Bool {
+        dropFilesCallback = callback
         return true
     }
     
-    @objc public static func unregisterFileDropCallback() -> Bool {
-        fileDropCallback = nil
+    @objc public static func unregisterDropFilesCallback() -> Bool {
+        dropFilesCallback = nil
         return true
     }
     
