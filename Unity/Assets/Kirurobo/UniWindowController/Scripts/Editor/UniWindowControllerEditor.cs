@@ -77,75 +77,120 @@ namespace Kirurobo
             //if (!isWarningDismissed)
             if (enableValidation)
             {
-                // Player Settings をチェックし、非推奨があれば警告メッセージを得る
-                string[] warnings = ValidatePlayerSettings();
-
-                //  チェックに引っかかればボタンを表示
-                if (warnings.Length > 0)
+                if (ValidateSettings(false))
                 {
-
-                    // 枠を作成
-                    //EditorGUILayout.BeginVertical(GUI.skin.box);
-                    //GUILayout.Label("Player Settings validation");
-
-                    // 警告メッセージを表示
-                    foreach (var message in warnings)
-                    {
-                        EditorGUILayout.HelpBox(message, MessageType.Warning);
-                    }
-
-                    // 推奨設定をすべて適用するボタン
+                    // Apply all recommendation
                     GUI.backgroundColor = Color.green;
-                    if (
-                        GUILayout.Button(
-                            "✔ Apply all recommended settings",
-                            GUILayout.MinHeight(20f)
+                    if (GUILayout.Button(
+                        "✔ Fix all settings to recommended values",
+                        GUILayout.MinHeight(25f)
                         ))
                     {
-                        ApplyRecommendedSettings();
+                        ValidateSettings(true);
                     }
 
-                    // チェックを今後無視するボタン
+                    // Dismiss the validation
                     GUI.backgroundColor = Color.yellow;
-                    if (
-                        GUILayout.Button(
-                            "✘ Mute this validation",
-                            GUILayout.MinHeight(20f)
+                    if (GUILayout.Button(
+                        "✘ Mute this validation",
+                        GUILayout.MinHeight(25f)
                         ))
                     {
                         isWarningDismissed = true;
-                        //SaveSettings();
+                        
+                        //SaveSettings();        // Uncomment this if save you want to save immediately
                     }
-
-                    //EditorGUILayout.EndVertical();
+                    
+                    EditorGUILayout.Space();
                 }
                 else
                 {
                     GUI.color = Color.green;
                     GUILayout.Label("OK!");
                 }
+                
+                // Open the player settings page
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUI.color = Color.white;
+                GUI.backgroundColor = Color.white;
+                if (GUILayout.Button(
+                    "Open Player Settings",
+                    GUILayout.MinHeight(25f), GUILayout.Width(200f)
+                ))
+                {
+                    SettingsService.OpenProjectSettings("Project/Player");
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+                
+                EditorGUILayout.Space();
             }
         }
 
-        /// <summary>
-        /// Player設定を確認し、推奨設定になっていない項目のメッセージ一覧を得る
-        /// </summary>
-        /// <returns></returns>
-        private string[] ValidatePlayerSettings()
-        {
-            // 警告メッセージのリスト
-            List<string> warnings = new List<string>();
 
+        private delegate void FixMethod();
+
+        /// <summary>
+        /// Show or fix the setting
+        /// </summary>
+        /// <param name="message">Warning message</param>
+        /// <param name="fixAction"></param>
+        /// <param name="silentFix">false: show warning and fix button, true: fix without showing</param>
+        private void FixSetting(string message, FixMethod fixAction, bool silentFix = false)
+
+        {
+            if (silentFix)
+            {
+                // Fix
+                fixAction.Invoke();
+            }
+            else
+            {
+                // Show the message and a fix button
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.HelpBox(message, MessageType.Warning, true);
+                GUILayout.FlexibleSpace();
+                
+                EditorGUILayout.BeginVertical();
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Fix", GUILayout.Width(60f))) { fixAction.Invoke(); }
+                //GUILayout.FlexibleSpace();
+                EditorGUILayout.EndVertical();
+                
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+        
+        /// <summary>
+        /// Validate player settings
+        /// </summary>
+        /// <param name="silentFix">false: show warning and fix button, true: fix without showing</param>
+        /// <returns>true if there are any invalid items</returns>
+        private bool ValidateSettings(bool silentFix = false)
+        {
+            bool invalid = false;
+            
             // バックグラウンドでも実行する。クリックスルー切替などで必要
             if (!PlayerSettings.runInBackground)
             {
-                warnings.Add("'Run in background' is highly recommended.");
+                invalid = true;
+                FixSetting(
+                    "'Run in background' is highly recommended.",
+                    () => PlayerSettings.runInBackground = true,
+                    silentFix
+                    );
             }
 
             // サイズ変更可能なウィンドウとする。必須ではないがウィンドウ枠無効時にサイズも変わるので変更可能である方が自然
             if (!PlayerSettings.resizableWindow)
             {
-                warnings.Add("'Resizable window' is recommended.");
+                invalid = true;
+                FixSetting(
+                    "'Resizable window' is recommended.",
+                    () => PlayerSettings.resizableWindow = true,
+                    silentFix
+                );
             }
 
             // フルスクリーンでなくウィンドウとする
@@ -153,19 +198,35 @@ namespace Kirurobo
             // Unity 2018 からはフルスクリーン指定の仕様が変わった
             if (PlayerSettings.fullScreenMode != FullScreenMode.Windowed)
             {
-                warnings.Add("Chose 'Windowed' in 'Fullscreen Mode'.");
+                invalid = true;
+                FixSetting(
+                    "Chose 'Windowed' in 'Fullscreen Mode'.", 
+                    () => PlayerSettings.fullScreenMode = FullScreenMode.Windowed,
+                    silentFix
+                );
+
             }
 #else
             if (PlayerSettings.defaultIsFullScreen)
             {
-                warnings.Add("'Default is full screen' is not recommended.");
+                invalid = true;
+                FixSetting(
+                    "'Default is full screen' is not recommended.", 
+                    () => PlayerSettings.defaultIsFullScreen = false,
+                    silentFix
+                );
             }
 #endif
 
             // フルスクリーンとウィンドウの切替を無効とする
             if (PlayerSettings.allowFullscreenSwitch)
             {
-                warnings.Add("Disallow fullscreen switch.");
+                invalid = true;
+                FixSetting(
+                    "Disallow fullscreen switch.", 
+                    () => PlayerSettings.allowFullscreenSwitch = false,
+                    silentFix
+                );
             }
             
             // Windowsでは Use DXGI Flip Mode Swapchain を無効にしないと透過できない
@@ -182,38 +243,16 @@ namespace Kirurobo
             // Unity 2019.1.7 以降であれば、Player 設定 の Use DXGI Flip... 無効化を推奨
             if (PlayerSettings.useFlipModelSwapchain)
             {
-                warnings.Add("Disable 'Use DXGI Flip Mode Swapchain' to make the window transparent.");
+                invalid = true;
+                FixSetting(
+                    "Disable 'Use DXGI Flip Mode Swapchain' to make the window transparent.",
+                    () => PlayerSettings.useFlipModelSwapchain = false,
+                    silentFix
+                );
             }
 #endif
 
-            return warnings.ToArray();
-        }
-
-        /// <summary>
-        /// 推奨設定を一括で適用
-        /// </summary>
-        private void ApplyRecommendedSettings()
-        {
-#if UNITY_2018_1_OR_NEWER
-            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-#else
-            PlayerSettings.defaultIsFullScreen = false;
-#endif
-            PlayerSettings.runInBackground = true;
-            PlayerSettings.resizableWindow = true;
-            PlayerSettings.allowFullscreenSwitch = false;
-
-#if UNITY_2019_1_6
-#elif UNITY_2019_1_5
-#elif UNITY_2019_1_4
-#elif UNITY_2019_1_3
-#elif UNITY_2019_1_2
-#elif UNITY_2019_1_1
-#elif UNITY_2019_1_0
-#elif UNITY_2019_1_OR_NEWER
-            PlayerSettings.useFlipModelSwapchain = false;
-#endif
-
+            return invalid;
         }
     }
 
