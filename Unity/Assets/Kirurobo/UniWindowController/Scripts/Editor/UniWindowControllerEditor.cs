@@ -210,7 +210,7 @@ namespace Kirurobo
             if (PlayerSettings.defaultIsFullScreen)
             {
                 invalid = true;
-                ShowValidationItem(
+                FixSetting(
                     "'Default is full screen' is not recommended.", 
                     () => PlayerSettings.defaultIsFullScreen = false,
                     silentFix
@@ -244,7 +244,7 @@ namespace Kirurobo
             if (PlayerSettings.useFlipModelSwapchain)
             {
                 invalid = true;
-                ShowValidationItem(
+                FixSetting(
                     "Disable 'Use DXGI Flip Mode Swapchain' to make the window transparent.",
                     () => PlayerSettings.useFlipModelSwapchain = false,
                     silentFix
