@@ -10,9 +10,21 @@
         "Windows API",
         "macOS"
     ],
-    "author": {
-        "name": "Kirurobo",
-        "email": "kirurobo@gmail.com",
-        "url": "https://github.com/kirurobo/uniwindowcontroller"
+  "author": {
+    "name": "Kirurobo",
+    "email": "kirurobo@gmail.com",
+    "url": "https://github.com/kirurobo/uniwindowcontroller"
+  },
+  "samples": [
+    {
+      "displayName": "Simple sample",
+      "description": "Just use the UniWindowController prefab.",
+      "path": "Samples/01_SimpleSample"
+    },
+    {
+      "displayName": "UI sample",
+      "description": "Use uGUI to change parametes.",
+      "path": "Samples/02_UiSample"
     }
+  ]
 }
