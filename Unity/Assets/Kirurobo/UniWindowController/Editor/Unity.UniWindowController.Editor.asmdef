@@ -1,12 +1,11 @@
 {
-    "name": "UniWindowController",
-    "references": [],
+    "name": "Unity.UniWindowController.Editor",
+    "references": [
+        "Unity.UniWindowController"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [
-        "Editor",
-        "macOSStandalone",
-        "WindowsStandalone32",
-        "WindowsStandalone64"
+        "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

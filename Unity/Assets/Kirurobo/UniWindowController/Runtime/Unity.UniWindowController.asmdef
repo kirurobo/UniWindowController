@@ -1,8 +1,6 @@
 {
-    "name": "UniWindowController.Samples",
-    "references": [
-        "Unity.UniWindowController"
-    ],
+    "name": "Unity.UniWindowController",
+    "references": [],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor",
