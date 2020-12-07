@@ -132,7 +132,7 @@
       <AdditionalDependencies>dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /B /Y $(OutputPath)$(TargetName)$(TargetExt) $(SolutionDir)..\Unity\Assets\Kirurobo\UniWindowController\Plugins\Windows\$(PlatformShortName)\
+      <Command>copy /B /Y $(OutputPath)$(TargetName)$(TargetExt) $(SolutionDir)..\Unity\Assets\Kirurobo\UniWindowController\Runtime\Plugins\Windows\$(PlatformShortName)\
 copy /B /Y "$(OutputPath)$(TargetName)$(TargetExt)" "$(SolutionDir)TestLibUniWinC\bin\$(PlatformShortName)\$(Configuration)"</Command>
       <Message>Unityのアセット下とテスト実行ディレクトリにコピー</Message>
     </PostBuildEvent>
@@ -179,7 +179,7 @@ copy /B /Y "$(OutputPath)$(TargetName)$(TargetExt)" "$(SolutionDir)TestLibUniWin
       <AdditionalDependencies>dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /B /Y $(OutputPath)$(TargetName)$(TargetExt) $(SolutionDir)..\Unity\Assets\Kirurobo\UniWindowController\Plugins\Windows\$(PlatformShortName)\
+      <Command>copy /B /Y $(OutputPath)$(TargetName)$(TargetExt) $(SolutionDir)..\Unity\Assets\Kirurobo\UniWindowController\Runtime\Plugins\Windows\$(PlatformShortName)\
 copy /B /Y "$(OutputPath)$(TargetName)$(TargetExt)" "$(SolutionDir)TestLibUniWinC\bin\$(PlatformShortName)\$(Configuration)"</Command>
       <Message>Unityのアセット下とテスト実行ディレクトリにコピー</Message>
     </PostBuildEvent>
