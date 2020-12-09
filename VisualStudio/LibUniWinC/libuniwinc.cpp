@@ -366,7 +366,7 @@ BOOL UNIWINC_API IsTopmost() {
 }
 
 /// <summary>
-/// 最大化しているか否かを返す
+/// Return true if the window is zoomed
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsMaximized() {
@@ -374,7 +374,15 @@ BOOL UNIWINC_API IsMaximized() {
 }
 
 /// <summary>
-/// ウィンドウを元に戻して対象から解除
+/// Return true if the window is iconic
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API IsMinimized() {
+	return (hTargetWnd_ && IsIconic(hTargetWnd_));
+}
+
+/// <summary>
+/// Restore and release the target window
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API DetachWindow() {
@@ -383,7 +391,7 @@ BOOL UNIWINC_API DetachWindow() {
 }
 
 /// <summary>
-/// 自分のウィンドウを探して選択（オーナーと同じ）
+/// Find my own window and attach (Same as the AttachMyOwnerWindow)
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API AttachMyWindow() {
@@ -391,7 +399,7 @@ BOOL UNIWINC_API AttachMyWindow() {
 }
 
 /// <summary>
-/// 現在のプロセスIDを持つオーナーウィンドウを探して選択
+/// Find and select the window with the current process ID
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API AttachMyOwnerWindow() {
@@ -400,7 +408,8 @@ BOOL UNIWINC_API AttachMyOwnerWindow() {
 }
 
 /// <summary>
-/// 現在アクティブ、かつプロセスIDが一致するウィンドウを選択
+/// Find and select the active window with the current process ID
+///   (To attach the process with multiple windows)
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API AttachMyActiveWindow() {
@@ -417,7 +426,7 @@ BOOL UNIWINC_API AttachMyActiveWindow() {
 }
 
 /// <summary>
-/// 透明化方法の選択を変更
+/// Select the transparentize method
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
