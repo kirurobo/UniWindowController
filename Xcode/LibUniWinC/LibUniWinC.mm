@@ -108,10 +108,6 @@ UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32
     return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
 }
 
-UNIWINC_EXPORT BOOL GetMonitorName(SInt32 monitorIndex, void* nameString) {
-    return [LibUniWinC getMonitorNameWithMonitorIndex: monitorIndex name: nameString];
-}
-
 UNIWINC_EXPORT BOOL RegisterMonitorChangedCallback(IntCallback callback) {
     return [LibUniWinC registerMonitorChangedCallbackWithCallback: callback];
 }

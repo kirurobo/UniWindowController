@@ -639,20 +639,6 @@ public class LibUniWinC : NSObject {
         return true
     }
     
-    @objc public static func getMonitorName(monitorIndex: Int32, name: UnsafeMutableRawPointer) -> Bool {
-        
-
-        let screen = NSScreen.screens[monitorIndices[Int(monitorIndex)]]
-        let utf16Name = screen.localizedName.utf16
-        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: utf16Name.count + 1)
-        
-        let result = _copyUTF16ToBuffer(text: utf16Name, buffer: buffer)
-        buffer.deallocate()
-        
-        return result
-    }
-    
-    
     @objc public static func registerMonitorChangedCallback(callback: @escaping intCallback) -> Bool {
         monitorChangedCallback = callback
         return true
