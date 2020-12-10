@@ -27,7 +27,7 @@ static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
 static HHOOK hHook_ = NULL;
 static DropFilesCallback hDropFilesHandler_ = nullptr;
-static MonitorChangedCallback hDisplayChangedHandler_ = nullptr;
+static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -828,7 +828,7 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback) {
 	if (callback == nullptr) return FALSE;
 
-	hDisplayChangedHandler_ = callback;
+	hMonitorChangedHandler_ = callback;
 	return TRUE;
 }
 
@@ -837,7 +837,7 @@ BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback)
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API UnregisterMonitorChangedCallback() {
-	hDisplayChangedHandler_ = nullptr;
+	hMonitorChangedHandler_ = nullptr;
 	return TRUE;
 }
 
@@ -951,9 +951,9 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		updateScreenSize();
 
 		// Do callback
-		if (hDisplayChangedHandler_ != nullptr) {
+		if (hMonitorChangedHandler_ != nullptr) {
 			INT32 count = GetMonitorCount();
-			hDisplayChangedHandler_(count);
+			hMonitorChangedHandler_(count);
 		}
 	}
 

@@ -116,9 +116,6 @@ public class UniWinC : IDisposable
     [DllImport("LibUniWinC.dll")]
     public static extern bool GetMonitorRectangle(int monitorIndex, out float x, out float y, out float width, out float height);
 
-    [DllImport("LibUniWinC.dll", CharSet = CharSet.Unicode)]
-    public static extern bool GetMonitorName(int monitorIndex, StringBuilder name, int bufferSize);
-
     [DllImport("LibUniWinC.dll")]
     public static extern bool SetCursorPosition(float x, float y);
 
