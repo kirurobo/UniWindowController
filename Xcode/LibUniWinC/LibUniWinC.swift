@@ -110,7 +110,7 @@ public class LibUniWinC : NSObject {
     public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
     public typealias intCallback = (@convention(c) (Int32) -> Void)
     public static var dropFilesCallback: stringCallback? = nil
-    public static var displayChangedCallback: intCallback? = nil
+    public static var monitorChangedCallback: intCallback? = nil
     
     /// Sub view to implement file dropping
     private static var overlayView: OverlayView? = nil
@@ -167,7 +167,7 @@ public class LibUniWinC : NSObject {
             object: NSApplication.shared,
             queue: OperationQueue.main
         ) {
-            notification -> Void in _onDisplayChanged()
+            notification -> Void in _onMonitorChanged()
         }
 
         // Flag as initialized
@@ -175,12 +175,12 @@ public class LibUniWinC : NSObject {
     }
     
     /// Called when screen parameeters changed
-    private static func _onDisplayChanged() -> Void {
+    private static func _onMonitorChanged() -> Void {
         _updateScreenInfo()
         
         // Run callback
         let count = getMonitorCount()
-        displayChangedCallback?(count)
+        monitorChangedCallback?(count)
     }
     
     /// Retrieve current monitor settings
@@ -542,7 +542,7 @@ public class LibUniWinC : NSObject {
     }
 
     
-    // MARK: - Display Info.
+    // MARK: - Monitor Info.
     
     /// 現在有効な画面数を取得
     /// - Returns: 画面数
@@ -620,13 +620,13 @@ public class LibUniWinC : NSObject {
     }
     
     
-    @objc public static func registerDisplayChangedCallback(callback: @escaping intCallback) -> Bool {
-        displayChangedCallback = callback
+    @objc public static func registerMonitorChangedCallback(callback: @escaping intCallback) -> Bool {
+        monitorChangedCallback = callback
         return true
     }
     
-    @objc public static func unregisterDisplayChangedCallback() -> Bool {
-        displayChangedCallback = nil
+    @objc public static func unregisterMonitorChangedCallback() -> Bool {
+        monitorChangedCallback = nil
         return true
     }
 

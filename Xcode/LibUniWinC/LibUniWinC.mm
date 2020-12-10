@@ -104,12 +104,12 @@ UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32
     return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
 }
 
-UNIWINC_EXPORT BOOL RegisterDisplayChangedCallback(IntCallback callback) {
-    return [LibUniWinC registerDisplayChangedCallbackWithCallback: callback];
+UNIWINC_EXPORT BOOL RegisterMonitorChangedCallback(IntCallback callback) {
+    return [LibUniWinC registerMonitorChangedCallbackWithCallback: callback];
 }
 
-UNIWINC_EXPORT BOOL UnregisterDisplayChangedCallback() {
-    return [LibUniWinC unregisterDisplayChangedCallback];
+UNIWINC_EXPORT BOOL UnregisterMonitorChangedCallback() {
+    return [LibUniWinC unregisterMonitorChangedCallback];
 }
 
 UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
