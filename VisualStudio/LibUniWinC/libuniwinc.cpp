@@ -167,16 +167,6 @@ BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lPar
 	return TRUE;
 }
 
-BOOL getMonitorDeviceString(const LPWSTR sDeviceName, LPWSTR sDeviceString) {
-	DISPLAY_DEVICE dd = { 0 };
-	DWORD iDevNum = 0;
-	if (EnumDisplayDevices(sDeviceName, 0, &dd, 0)) {
-		wcscpy_s(sDeviceString, 128, dd.DeviceID);
-		return TRUE;
-	}
-	return FALSE;
-}
-
 /// <summary>
 /// 接続モニタ数とそれらのサイズ一覧を取得
 /// </summary>
@@ -828,39 +818,6 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 	*width = (float)(rect.right - rect.left);
 	*height = (float)(rect.bottom - rect.top);
 	return TRUE;
-}
-
-/// <summary>
-/// Get specified monitor's device name
-/// </summary>
-/// <param name="monitorIndex"></param>
-/// <param name="name">Pointer to return the name</param>
-/// <param name="size">Size of the buffer</param>
-/// <returns></returns>
-BOOL UNIWINC_API GetMonitorName(const INT32 monitorIndex, LPWSTR name, const INT32 size) {
-	if (monitorIndex < 0 || monitorIndex >= nMonitorCount_) {
-		return FALSE;
-	}
-
-	HMONITOR hMon = hMonitors_[pMonitorIndices_[monitorIndex]];
-	if (hMon == nullptr) {
-		return FALSE;
-	}
-
-	MONITORINFOEX mi;
-	mi.cbSize = sizeof(mi);
-	if (!GetMonitorInfo(hMon, &mi) || (mi.szDevice == nullptr)) {
-		return FALSE;
-	}
-
-	wcscpy_s(name, CCHDEVICENAME, mi.szDevice);
-	return TRUE;
-
-	//if (getMonitorDeviceString(mi.szDevice, name)) {
-	//	return TRUE;
-	//}
-
-	//return FALSE;
 }
 
 /// <summary>

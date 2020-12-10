@@ -55,7 +55,6 @@ UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
 // Monitor Info.
 UNIWINC_EXPORT INT32 UNIWINC_API GetMonitorCount();
 UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height);
-UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorName(const INT32 monitorIndex, LPWSTR name, const INT32 size);
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
 
