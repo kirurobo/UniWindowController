@@ -52,13 +52,20 @@ void detachWindow()
 		//EndHook();
 
 		if (IsWindow(hTargetWnd_)) {
+			// 透明化は、起動時は無効であるものとして、戻すときは無効化
 			SetTransparent(false);
 
+			//// 常に最前面は、起動時の状態に合わせるよう戻す	↓SetWindowLongで本来戻るはずで不要？
+			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
+
+			// 最初のスタイルに戻す
 			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo.dwExStyle);
 
+			// ウィンドウ位置を戻す
 			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
 
+			// 表示を更新
 			refreshWindow();
 		}
 	}
@@ -255,7 +262,7 @@ void refreshWindow() {
 		ShowWindow(hTargetWnd_, SW_MAXIMIZE);
 	}
 	else if (IsIconic(hTargetWnd_)) {
-		// 最小化されていた場合は、次に表示されるときにこうしんされるものとして、何もしない
+		// 最小化されていた場合は、次に表示されるときに更新されるものとして、何もしない
 	}
 	else if (IsWindowVisible(hTargetWnd_)) {
 		// 通常のウィンドウだった場合は、ウィンドウサイズを1px変えることで再描画
@@ -315,6 +322,18 @@ LONG calcFlippedY(LONG y) {
 }
 
 // Windows only
+
+/// <summary>
+/// 現在、実際に常に最前面になっているかを調べる
+/// </summary>
+/// <returns></returns>
+BOOL GetTopMost() {
+	if ((hTargetWnd_ == NULL) || !IsWindow(hTargetWnd_)) {
+		return FALSE;
+	}
+	LONG ex = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
+	return (ex & WS_EX_TOPMOST) == WS_EX_TOPMOST;
+}
 
 /// <summary>
 /// 現在選択されているウィンドウハンドルを取得

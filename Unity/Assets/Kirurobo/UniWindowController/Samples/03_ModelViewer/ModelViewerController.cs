@@ -3,24 +3,27 @@ using System.Collections.Generic;
 using Kirurobo;
 using UnityEngine;
 
-public class ModelViewerController : MonoBehaviour
+namespace Kirurobo
 {
-    private UniWindowController uniwin;
-    
-    // Start is called before the first frame update
-    void Start()
+    public class ModelViewerController : MonoBehaviour
     {
-        //UniWinCore.DebugMonitorInfo();
+        private UniWindowController uniwin;
 
-        uniwin = GameObject.FindObjectOfType<UniWindowController>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F))
+        // Start is called before the first frame update
+        void Start()
         {
-            uniwin.FitToMonitor(0);
+            //UniWinCore.DebugMonitorInfo();
+
+            uniwin = GameObject.FindObjectOfType<UniWindowController>();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                uniwin.FitToMonitor(0);
+            }
         }
     }
 }

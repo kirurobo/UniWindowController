@@ -75,7 +75,7 @@ namespace Kirurobo
                 
                 clickThroughToggle?.onValueChanged.AddListener(val => uniwinc.isClickThrough = val);
 
-                transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.SetTransparentType((UniWinCore.TransparentType)val));
+                transparentTypeDropdown?.onValueChanged.AddListener(val => uniwinc.SetTransparentType((UniWindowController.TransparentType)val));
                 hitTestTypeDropdown?.onValueChanged.AddListener(val => uniwinc.hitTestType = (UniWindowController.HitTestType)val);
                 menuCloseButton?.onClick.AddListener(CloseMenu);
 
@@ -89,7 +89,7 @@ namespace Kirurobo
 #endif
                 
                 // Add events
-                uniwinc.OnDisplayChanged += () => { ShowEventMessage("Display changed!"); };
+                uniwinc.OnMonitorChanged += () => { ShowEventMessage("Resolution changed!"); };
                 uniwinc.OnDropFiles += files => { ShowEventMessage(string.Join(Environment.NewLine, files)); };
             }
         }

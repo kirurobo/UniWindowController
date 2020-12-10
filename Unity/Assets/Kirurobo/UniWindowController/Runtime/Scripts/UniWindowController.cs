@@ -36,6 +36,16 @@ namespace Kirurobo
     public class UniWindowController : MonoBehaviour
     {
         /// <summary>
+        /// The same as UniWinCore.TransparentType
+        /// </summary>
+        public enum TransparentType
+        {
+            None = 0,
+            Alpha = 1,
+            ColorKey = 2,
+        }
+
+        /// <summary>
         /// 透明化の方式
         /// </summary>
         public enum HitTestType
@@ -157,7 +167,7 @@ namespace Kirurobo
         /// </summary>
         [Header("For Windows only")]
         [Tooltip("Select the method. *Only available on Windows")]
-        public UniWinCore.TransparentType transparentType = UniWinCore.TransparentType.Alpha;
+        public TransparentType transparentType = TransparentType.Alpha;
 
         /// <summary>
         /// Key color used when the transparent-type is ColorKey
@@ -232,17 +242,21 @@ namespace Kirurobo
         /// <summary>
         /// ウィンドウ状態が変化したときに発生するイベント
         /// </summary>
+        [Obsolete]
         public event OnStateChangedDelegate OnStateChanged;
-
         public delegate void OnStateChangedDelegate();
 
+        /// <summary>
+        /// Occurs after files or folders were dropped
+        /// </summary>
         public event OnDropFilesDelegate OnDropFiles;
-
-        public event OnDisplayChangedDelegate OnDisplayChanged;
-
         public delegate void OnDropFilesDelegate(string[] files);
 
-        public delegate void OnDisplayChangedDelegate();
+        /// <summary>
+        /// Occurs when the monitor settings or resolution changed
+        /// </summary>
+        public event OnMonitorChangedDelegate OnMonitorChanged;
+        public delegate void OnMonitorChangedDelegate();
 
 
         // Use this for initialization
@@ -316,7 +330,7 @@ namespace Kirurobo
             StartCoroutine(HitTestCoroutine());
 
             // Fit to the selected monitor
-            OnDisplayChanged += UpdateMonitorFitting;
+            OnMonitorChanged += UpdateMonitorFitting;
             UpdateMonitorFitting();
         }
 
@@ -351,14 +365,14 @@ namespace Kirurobo
         {
             if (uniWinCore == null) return;
 
-            if (uniWinCore.FetchDroppedFiles(out var files))
+            if (uniWinCore.ObserveDroppedFiles(out var files))
             {
                 OnDropFiles?.Invoke(files);
             }
 
-            if (uniWinCore.FetchDisplayChanged())
+            if (uniWinCore.ObserveMonitorChanged())
             {
-                OnDisplayChanged?.Invoke();
+                OnMonitorChanged?.Invoke();
             }
         }
 
@@ -422,7 +436,7 @@ namespace Kirurobo
 
                 // Windowsの場合、単色での透過ならばヒットテストはOSに任せるため、常にヒット
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-                if (transparentType == UniWinCore.TransparentType.ColorKey)
+                if (transparentType == TransparentType.ColorKey)
                 {
                     onObject = true;
                 }
@@ -492,7 +506,7 @@ namespace Kirurobo
             if (!_isTransparent) return true;
 
             // LayeredWindowならばクリックスルーはOSに任せるため、ウィンドウ内ならtrueを返しておく
-            if (transparentType == UniWinCore.TransparentType.ColorKey) return true;
+            if (transparentType == TransparentType.ColorKey) return true;
 
             // 指定座標の描画結果を見て判断
             try   // WaitForEndOfFrame のタイミングで実行すればtryは無くても大丈夫な気はする
@@ -570,7 +584,7 @@ namespace Kirurobo
                 // ウィンドウを取得できたら最初の値を設定
                 if (uniWinCore.IsActive)
                 {
-                    uniWinCore.SetTransparentType(transparentType);
+                    uniWinCore.SetTransparentType((UniWinCore.TransparentType)transparentType);
                     uniWinCore.SetKeyColor(keyColor);
                     SetTransparent(_isTransparent);
                     SetTopmost(_isTopmost);
@@ -599,7 +613,7 @@ namespace Kirurobo
                 UpdateTargetWindow();
 
                 // フォーカスが当たった瞬間には、強制的にクリックスルーはオフにする
-                if (_isTransparent && isHitTestEnabled && transparentType != UniWinCore.TransparentType.ColorKey)
+                if (_isTransparent && isHitTestEnabled && transparentType != TransparentType.ColorKey)
                 {
                     SetClickThrough(false);
                 }
@@ -619,7 +633,7 @@ namespace Kirurobo
             if (isTransparent)
             {
                 currentCamera.clearFlags = CameraClearFlags.SolidColor;
-                if (transparentType == UniWinCore.TransparentType.ColorKey)
+                if (transparentType == TransparentType.ColorKey)
                 {
                     currentCamera.backgroundColor = keyColor;
                 }
@@ -659,20 +673,20 @@ namespace Kirurobo
         /// 透過方法を変更
         /// </summary>
         /// <param name="type"></param>
-        public void SetTransparentType(UniWinCore.TransparentType type)
+        public void SetTransparentType(TransparentType type)
         {
             if (uniWinCore != null) {
                 // 透過中だったなら、一度解除して再透過
                 if (_isTransparent)
                 {
                     SetTransparent(false);
-                    uniWinCore.SetTransparentType(type);
+                    uniWinCore.SetTransparentType((UniWinCore.TransparentType)type);
                     transparentType = type;
                     SetTransparent(true);
                 }
                 else
                 {
-                    uniWinCore.SetTransparentType(type);
+                    uniWinCore.SetTransparentType((UniWinCore.TransparentType)type);
                     transparentType = type;
                 }
             }
