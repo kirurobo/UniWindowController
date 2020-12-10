@@ -25,7 +25,7 @@ using DropFilesCallback = void(*)(WCHAR*);
 
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
-using DisplayChangedCallback = void(*)(INT32);
+using MonitorChangedCallback = void(*)(INT32);
 
 
 // Winodow state functions
@@ -55,8 +55,9 @@ UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
 // Monitor Info.
 UNIWINC_EXPORT INT32 UNIWINC_API GetMonitorCount();
 UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height);
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterDisplayChangedCallback(DisplayChangedCallback callback);
-UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDisplayChangedCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorName(const INT32 monitorIndex, LPWSTR name, const INT32 size);
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
 
 // Mouse pointer
 UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);

@@ -29,7 +29,7 @@ namespace TestLibUniWinC
             });
 
             // 解像度変更時、モニター数を出力
-            UniWinC.RegisterDisplayChangedCallback(count => {
+            UniWinC.RegisterMonitorChangedCallback(count => {
                 Console.WriteLine("Monitors: " + count);
             });
 
@@ -52,9 +52,13 @@ namespace TestLibUniWinC
             {
                 float x, y, w, h;
                 bool result = UniWinC.GetMonitorRectangle(i, out x, out y, out w, out h);
+
+                StringBuilder name = new StringBuilder(128);
+                result = UniWinC.GetMonitorName(i, name, name.Capacity);
+
                 message += String.Format(
-                    "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4}\r\n",
-                    i, x, y, w, h
+                    "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4} - {5} {6}\r\n",
+                    i, x, y, w, h, name, result
                     );
             }
             Console.WriteLine(message);

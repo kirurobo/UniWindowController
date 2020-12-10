@@ -20,13 +20,14 @@ static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
 static TransparentType nTransparentType_ = TransparentType::Alpha;
 static TransparentType nCurrentTransparentType_ = TransparentType::Alpha;
 static INT nMonitorCount_ = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
-static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];		// EnumDisplayMonitorsの順番で保持した、各画面のRECT
+static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];	// EnumDisplayMonitorsの順番で保持した、各画面のRECT
 static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
+static HMONITOR hMonitors_[UNIWINC_MAX_MONITORCOUNT];	// Monitor handles
 static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
 static HHOOK hHook_ = NULL;
 static DropFilesCallback hDropFilesHandler_ = nullptr;
-static DisplayChangedCallback hDisplayChangedHandler_ = nullptr;
+static MonitorChangedCallback hDisplayChangedHandler_ = nullptr;
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -157,10 +158,23 @@ BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lPar
 	// インデックスを一旦登場順で保存
 	pMonitorIndices_[nMonitorCount_] = nMonitorCount_;
 
+	// Store the monitor handle
+	hMonitors_[nMonitorCount_] = hMon;
+
 	// モニタ数カウント
 	nMonitorCount_++;
 
 	return TRUE;
+}
+
+BOOL getMonitorDeviceString(const LPWSTR sDeviceName, LPWSTR sDeviceString) {
+	DISPLAY_DEVICE dd = { 0 };
+	DWORD iDevNum = 0;
+	if (EnumDisplayDevices(sDeviceName, 0, &dd, 0)) {
+		wcscpy_s(sDeviceString, 128, dd.DeviceID);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /// <summary>
@@ -176,15 +190,17 @@ BOOL updateMonitorRectangles() {
 		return FALSE;
 	}
 
-	// モニタの位置でインデックスをバブルソート
+	// モニタの位置を基準にバブルソート
 	for (int i = 0; i < (nMonitorCount_ - 1); i++) {
 		for (int j = (nMonitorCount_ - 1); j > i; j--) {
 			RECT pr = pMonitorRect_[pMonitorIndices_[j - 1]];
 			RECT cr = pMonitorRect_[pMonitorIndices_[j]];
-			if (pr.left >  cr.left || ((pr.left == cr.left) && (pr.bottom > cr.bottom))) {
-				int wk = pMonitorIndices_[j - 1];
+
+			// 左にあるモニタが先、横が同じなら下にあるモニタが先となるようソート
+			if (pr.left >  cr.left || ((pr.left == cr.left) && (pr.bottom < cr.bottom))) {
+				int index = pMonitorIndices_[j - 1];
 				pMonitorIndices_[j - 1] = pMonitorIndices_[j];
-				pMonitorIndices_[j] = wk;
+				pMonitorIndices_[j] = index;
 			}
 		}
 	}
@@ -815,11 +831,44 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 }
 
 /// <summary>
+/// Get specified monitor's device name
+/// </summary>
+/// <param name="monitorIndex"></param>
+/// <param name="name">Pointer to return the name</param>
+/// <param name="size">Size of the buffer</param>
+/// <returns></returns>
+BOOL UNIWINC_API GetMonitorName(const INT32 monitorIndex, LPWSTR name, const INT32 size) {
+	if (monitorIndex < 0 || monitorIndex >= nMonitorCount_) {
+		return FALSE;
+	}
+
+	HMONITOR hMon = hMonitors_[pMonitorIndices_[monitorIndex]];
+	if (hMon == nullptr) {
+		return FALSE;
+	}
+
+	MONITORINFOEX mi;
+	mi.cbSize = sizeof(mi);
+	if (!GetMonitorInfo(hMon, &mi) || (mi.szDevice == nullptr)) {
+		return FALSE;
+	}
+
+	wcscpy_s(name, CCHDEVICENAME, mi.szDevice);
+	return TRUE;
+
+	//if (getMonitorDeviceString(mi.szDevice, name)) {
+	//	return TRUE;
+	//}
+
+	//return FALSE;
+}
+
+/// <summary>
 /// Register the callback fucnction called when updated monitor information
 /// </summary>
 /// <param name="callback"></param>
 /// <returns></returns>
-BOOL UNIWINC_API RegisterDisplayChangedCallback(DisplayChangedCallback callback) {
+BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback) {
 	if (callback == nullptr) return FALSE;
 
 	hDisplayChangedHandler_ = callback;
@@ -830,7 +879,7 @@ BOOL UNIWINC_API RegisterDisplayChangedCallback(DisplayChangedCallback callback)
 /// Unregister the callback function
 /// </summary>
 /// <returns></returns>
-BOOL UNIWINC_API UnregisterDisplayChangedCallback() {
+BOOL UNIWINC_API UnregisterMonitorChangedCallback() {
 	hDisplayChangedHandler_ = nullptr;
 	return TRUE;
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Text;
 
 /// <summary>
 /// Windows / macOS のネイティブプラグインラッパー
@@ -76,6 +77,8 @@ public class UniWinC : IDisposable
         }
     }
 
+    public const int DeviceNameLength = 32;
+
 
     [DllImport("LibUniWinC.dll")]
     public static extern void AttachMyWindow();
@@ -113,11 +116,17 @@ public class UniWinC : IDisposable
     [DllImport("LibUniWinC.dll")]
     public static extern bool GetMonitorRectangle(int monitorIndex, out float x, out float y, out float width, out float height);
 
+    [DllImport("LibUniWinC.dll", CharSet = CharSet.Unicode)]
+    public static extern bool GetMonitorName(int monitorIndex, StringBuilder name, int bufferSize);
+
     [DllImport("LibUniWinC.dll")]
     public static extern bool SetCursorPosition(float x, float y);
 
     [DllImport("LibUniWinC.dll")]
     public static extern bool GetCursorPosition(out float x, out float y);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool SetAllowDrop(bool enabled);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void FileDropped([MarshalAs(UnmanagedType.LPWStr)]string files);
@@ -128,15 +137,12 @@ public class UniWinC : IDisposable
     public static extern bool UnregisterDropFilesCallback();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void DisplayChanged([MarshalAs(UnmanagedType.I4)] int monitorCount);
+    public delegate void MonitorChanged([MarshalAs(UnmanagedType.I4)] int monitorCount);
     [DllImport("LibUniWinC.dll")]
-    public static extern bool RegisterDisplayChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] DisplayChanged callback);
+    public static extern bool RegisterMonitorChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] MonitorChanged callback);
 
     [DllImport("LibUniWinC.dll")]
-    public static extern bool UnregisterDisplayChangedCallback();
-
-    [DllImport("LibUniWinC.dll")]
-    public static extern bool SetAllowDrop(bool enabled);
+    public static extern bool UnregisterMonitorChangedCallback();
 
     // for development & testing. Windows only.
     [DllImport("LibUniWinC.dll")]
