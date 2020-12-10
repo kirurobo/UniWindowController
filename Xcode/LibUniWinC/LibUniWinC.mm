@@ -39,6 +39,10 @@ UNIWINC_EXPORT BOOL IsMaximized() {
     return [LibUniWinC isMaximized];
 }
 
+UNIWINC_EXPORT BOOL IsMinimized() {
+    return [LibUniWinC isMinimized];
+}
+
 UNIWINC_EXPORT BOOL DetachWindow() {
     [LibUniWinC detachWindow];
     return true;
@@ -102,6 +106,10 @@ UNIWINC_EXPORT SInt32 GetMonitorCount() {
 
 UNIWINC_EXPORT BOOL GetMonitorRectangle(SInt32 monitorIndex, Float32* x, Float32* y, Float32* width, Float32* height) {
     return [LibUniWinC getMonitorRectangleWithMonitorIndex:monitorIndex x:x y:y width:width height:height];
+}
+
+UNIWINC_EXPORT BOOL GetMonitorName(SInt32 monitorIndex, void* nameString) {
+    return [LibUniWinC getMonitorNameWithMonitorIndex: monitorIndex name: nameString];
 }
 
 UNIWINC_EXPORT BOOL RegisterMonitorChangedCallback(IntCallback callback) {

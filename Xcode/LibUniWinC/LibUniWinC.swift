@@ -154,6 +154,10 @@ public class LibUniWinC : NSObject {
         }
     }
     
+    @objc public static func isMinimized() -> Bool {
+        return (targetWindow?.isMiniaturized ?? false)
+    }
+    
     // MARK: - Initialize, window handling
     
     /// Initialize
@@ -306,6 +310,22 @@ public class LibUniWinC : NSObject {
             setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
         }
+    }
+    
+    /// Copy UTF-16 string to uint16 buffer and add null for the end of the string
+    private static func _copyUTF16ToBuffer(text: String.UTF16View, buffer: UnsafeMutablePointer<uint16>) -> Bool {
+        let count = text.count
+        if (count <= 0) {
+            return false
+        }
+        
+        var i = 0
+        for c in text {
+            buffer[i] = c
+            i += 1
+        }
+        buffer[count] = uint16.zero     // End of the string
+        return true
     }
 
     // MARK: - Functions to get or set the window state
@@ -617,6 +637,19 @@ public class LibUniWinC : NSObject {
         width.pointee = Float32(frame.width)
         height.pointee = Float32(frame.height)
         return true
+    }
+    
+    @objc public static func getMonitorName(monitorIndex: Int32, name: UnsafeMutableRawPointer) -> Bool {
+        
+
+        let screen = NSScreen.screens[monitorIndices[Int(monitorIndex)]]
+        let utf16Name = screen.localizedName.utf16
+        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: utf16Name.count + 1)
+        
+        let result = _copyUTF16ToBuffer(text: utf16Name, buffer: buffer)
+        buffer.deallocate()
+        
+        return result
     }
     
     
