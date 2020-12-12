@@ -100,14 +100,29 @@ namespace Kirurobo
             get { return ((uniWinCore == null) ? _isZoomed : _isZoomed = uniWinCore.GetZoomed()); }
             set { SetZoomed(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Experimental...")]
+        [SerializeField, BoolProperty, Tooltip("Check to set zoomed on startup")]
         private bool _isZoomed = false;
 
         /// <summary>
-        /// Always fit to monitor (0, 1, ...)
-        /// Disabled if the value is -1
+        /// This window will fit to the monitor or not
         /// </summary>
-        public int fitToMonitor = -1;
+        public bool shouldFitMonitor
+        {
+            get { return _shouldFitMonitor; }
+            set { FitToMonitor(value, _monitorToFit); }
+        }
+        [SerializeField, BoolProperty, Tooltip("Check to fit the window to the monitor")]
+        private bool _shouldFitMonitor = false;
+
+        /// <summary>
+        /// Target monitor index to fit the window (0, 1, ...)
+        /// </summary>
+        public int monitorToFit
+        {
+            get { return _monitorToFit; }
+            set { FitToMonitor(_shouldFitMonitor, value); }
+        }
+        private int _monitorToFit = 0;
 
         /// <summary>
         /// Enable / disable accepting file drop
@@ -117,7 +132,7 @@ namespace Kirurobo
             get { return _allowDropFiles; }
             set { SetAllowDrop(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Experimental...")]
+        [SerializeField, BoolProperty, Tooltip("Enable file or folder dropping")]
         private bool _allowDropFiles = false;
 
         /// <summary>
@@ -215,6 +230,11 @@ namespace Kirurobo
             set { uniWinCore?.SetCursorPosition(value); }
         }
 
+        /// <summary>
+        /// 初期状態でのウィンドウ位置、サイズ
+        /// </summary>
+        private Rect originalWindowRectangle;
+
         // カメラの背景をアルファゼロの黒に置き換えるため、本来の背景を保存しておく変数
         private CameraClearFlags originalCameraClearFlags;
         private Color originalCameraBackground;
@@ -308,11 +328,15 @@ namespace Kirurobo
         /// </summary>
         private void UpdateMonitorFitting()
         {
-            if (fitToMonitor < 0) return;
+            if (!_shouldFitMonitor) return;
 
             int monitors = uniWinCore.GetMonitorCount();
-            int targetMonitorIndex = fitToMonitor;
+            int targetMonitorIndex = _monitorToFit;
 
+            if (targetMonitorIndex < 0)
+            {
+                targetMonitorIndex = 0;
+            }
             if (monitors <= targetMonitorIndex)
             {
                 targetMonitorIndex = monitors - 1;
@@ -329,6 +353,9 @@ namespace Kirurobo
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
 
+            // Get the initial window size and position
+            StoreOriginalWindowRectangle();
+
             // Fit to the selected monitor
             OnMonitorChanged += UpdateMonitorFitting;
             UpdateMonitorFitting();
@@ -339,6 +366,16 @@ namespace Kirurobo
             if (uniWinCore != null)
             {
                 uniWinCore.Dispose();
+            }
+        }
+
+        void StoreOriginalWindowRectangle()
+        {
+            if (uniWinCore != null)
+            {
+                var size = uniWinCore.GetWindowSize();
+                var pos = uniWinCore.GetWindowPosition();
+                originalWindowRectangle = new Rect(pos, size);
             }
         }
 
@@ -739,13 +776,50 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// 接続されているモニタ数を取得
+        /// Fit to the specified monitor
         /// </summary>
         /// <returns></returns>
-        public bool FitToMonitor(int monitorIndex)
+        private bool FitToMonitor(bool shouldFit, int monitorIndex)
         {
-            if (uniWinCore == null) return false;
-            return uniWinCore.FitToMonitor(monitorIndex);
+            if (uniWinCore == null)
+            {
+                _shouldFitMonitor = shouldFit;
+                return false;
+            }
+
+            if (shouldFit)
+            {
+                if (!_shouldFitMonitor)
+                {
+                    // 直前はフィットしない状態だった場合
+                    _monitorToFit = monitorIndex;
+                    _shouldFitMonitor = shouldFit;
+                    UpdateMonitorFitting();
+                } else
+                {
+                    if (_monitorToFit != monitorIndex)
+                    {
+                        // フィット先モニタが変化した場合
+                        _monitorToFit = monitorIndex;
+                        UpdateMonitorFitting();
+                    }
+                }
+            } 
+            else
+            {
+                if (_shouldFitMonitor)
+                {
+                    // 直前はフィット状態で、解除された場合
+                    _monitorToFit = monitorIndex;
+                    _shouldFitMonitor = shouldFit;
+                    UpdateMonitorFitting();
+
+                    uniWinCore.SetWindowSize(originalWindowRectangle.size);
+                    uniWinCore.SetWindowPosition(originalWindowRectangle.position);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

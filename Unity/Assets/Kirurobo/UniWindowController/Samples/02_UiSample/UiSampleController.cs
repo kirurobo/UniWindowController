@@ -33,6 +33,7 @@ namespace Kirurobo
         [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
         public Toggle dragMoveToggle;
         public Toggle allowDropToggle;
+        public Dropdown fitWindowDropdown;
         public Button widthDownButton;
         public Button widthUpButton;
         public Button heightDownButton;
@@ -56,6 +57,9 @@ namespace Kirurobo
             
             // UniWindowDragMove を探す
             uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();
+
+            // 有効なモニタ数に合わせて選択肢を作成
+            UpdateMonitorDropdown();
             
             // Toggleのチェック状態を、現在の状態に合わせる
             UpdateUI();
@@ -67,6 +71,8 @@ namespace Kirurobo
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
                 zoomedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
                 allowDropToggle?.onValueChanged.AddListener(val => uniwinc.allowDropFiles = val);
+
+                fitWindowDropdown?.onValueChanged.AddListener(val => SetFitToMonitor(val));
 
                 widthDownButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(-100, 0));
                 widthUpButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(+100, 0));
@@ -89,7 +95,11 @@ namespace Kirurobo
 #endif
                 
                 // Add events
-                uniwinc.OnMonitorChanged += () => { ShowEventMessage("Resolution changed!"); };
+                uniwinc.OnMonitorChanged += () => {
+                    UpdateMonitorDropdown();
+                    UpdateUI();
+                    ShowEventMessage("Resolution changed!"); 
+                };
                 uniwinc.OnDropFiles += files => { ShowEventMessage(string.Join(Environment.NewLine, files)); };
             }
         }
@@ -185,6 +195,26 @@ namespace Kirurobo
 #else
                 Application.Quit();
 #endif
+            }
+        }
+
+        /// <summary>
+        /// フィット対象モニタドロップダウンが変更された時の処理
+        /// </summary>
+        /// <param name="val"></param>
+        void SetFitToMonitor(int val)
+        {
+            if (!uniwinc) return;
+
+            if (val < 1)
+            {
+                // ドロップダウンの先頭は、フィット無し
+                uniwinc.shouldFitMonitor = false;
+            } else
+            {
+                // 次からなので、モニタ番号は1を引く
+                uniwinc.monitorToFit = val - 1;
+                uniwinc.shouldFitMonitor = true;    // これがfalseからtrueにしたタイミングで移動されるため、モニタ番号を指定してから変更
             }
         }
 
@@ -288,6 +318,12 @@ namespace Kirurobo
                     dragMoveToggle.isOn = (uniWinMoveHandle && uniWinMoveHandle.isActiveAndEnabled);
                 }
 
+                if (fitWindowDropdown)
+                {
+                    fitWindowDropdown.value = (uniwinc.shouldFitMonitor ? uniwinc.monitorToFit + 1 : 0);
+                    fitWindowDropdown.RefreshShownValue();
+                }
+
                 if (transparentTypeDropdown)
                 {
                     transparentTypeDropdown.value = (int)uniwinc.transparentType;
@@ -358,6 +394,35 @@ namespace Kirurobo
                 if (zoomedToggle)
                 {
                     zoomedToggle.isOn = uniwinc.isZoomed;
+                }
+            }
+        }
+
+        /// <summary>
+        /// モニタ選択ドロップダウンの選択肢を更新
+        /// この後にUpdateUI()を呼ぶこと
+        /// </summary>
+        void UpdateMonitorDropdown()
+        {
+            if (!fitWindowDropdown) return;
+
+            // 先頭以外の選択肢を削除
+            fitWindowDropdown.options.RemoveRange(1, fitWindowDropdown.options.Count - 1);
+
+            if (!uniwinc)
+            {
+                fitWindowDropdown.value = 0;
+            }
+            else
+            {
+                int count = uniwinc.GetMonitorCount();
+                for (int i = 0; i < count; i++)
+                {
+                    fitWindowDropdown.options.Add(new Dropdown.OptionData("Fit to Monitor " + i));
+                }
+                if (uniwinc.monitorToFit >= count)
+                {
+                    uniwinc.monitorToFit = count - 1;
                 }
             }
         }

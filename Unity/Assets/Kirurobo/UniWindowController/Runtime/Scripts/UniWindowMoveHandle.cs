@@ -32,9 +32,20 @@ namespace  Kirurobo
         }
         private bool _isDragging = false;
 
+        /// <summary>
+        /// ドラッグを行なうか否か
+        /// </summary>
         private bool IsEnabled
         {
-            get { return enabled && (!disableOnZoomed || !(_uniwinc && _uniwinc.isZoomed)); }
+            get { return enabled && (!disableOnZoomed || !IsZoomed); }
+        }
+
+        /// <summary>
+        /// モニタにフィットさせるか、最大化している
+        /// </summary>
+        private bool IsZoomed
+        {
+            get { return (_uniwinc && (_uniwinc.shouldFitMonitor || _uniwinc.isZoomed)); }
         }
 
         /// <summary>
