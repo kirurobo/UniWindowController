@@ -784,6 +784,7 @@ namespace Kirurobo
             if (uniWinCore == null)
             {
                 _shouldFitMonitor = shouldFit;
+                _monitorToFit = monitorIndex;
                 return false;
             }
 
@@ -834,6 +835,9 @@ namespace Kirurobo
                     // エディタだとウィンドウ状態を戻す
                     // スタンドアローンだと戻した姿が見えてしまうためスキップ
 #if UNITY_EDITOR
+                    uniWinCore.SetWindowSize(originalWindowRectangle.size);
+                    uniWinCore.SetWindowPosition(originalWindowRectangle.position);
+
                     uniWinCore.DetachWindow();
 #endif
                     uniWinCore.Dispose();

@@ -204,13 +204,16 @@ namespace Kirurobo
         /// <param name="val"></param>
         void SetFitToMonitor(int val)
         {
+            Debug.Log("Dropdown: " + val);
+
             if (!uniwinc) return;
 
             if (val < 1)
             {
                 // ドロップダウンの先頭は、フィット無し
                 uniwinc.shouldFitMonitor = false;
-            } else
+            }
+            else
             {
                 // 次からなので、モニタ番号は1を引く
                 uniwinc.monitorToFit = val - 1;
