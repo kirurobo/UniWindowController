@@ -14,6 +14,10 @@ namespace TestLibUniWinC
     {
         UniWinC uniwinc;
 
+        static bool monitorChanged = false;
+        static bool filesDropped = false;
+        static string droppedFiles = "";
+
         public FormMain()
         {
             InitializeComponent();
@@ -23,18 +27,43 @@ namespace TestLibUniWinC
         {
             uniwinc = new UniWinC();
 
-            // ファイルドロップ時、出力
+            // ファイルドロップ時、その内容を出力
             UniWinC.RegisterDropFilesCallback(msg => {
-                Console.Write(msg);
+                droppedFiles = msg;
+                filesDropped = true;
             });
 
-            // 解像度変更時、モニター数を出力
+            // 解像度変更時、モニター一覧を更新
             UniWinC.RegisterMonitorChangedCallback(count => {
-                Console.WriteLine("Monitors: " + count);
+                monitorChanged = true;
             });
+            UpdateMonitorCombobox();    // 初回の一覧取得
 
             //  モニタ一覧を表示
             PrintMonitorInfo();
+
+            // 定期的にフラグを監視して処理
+            timerMainLoop.Start();
+        }
+
+        /// <summary>
+        /// モニタ一覧を更新
+        /// </summary>
+        private void UpdateMonitorCombobox()
+        {
+            int count = UniWinC.GetMonitorCount();
+            int index = comboBoxFitMonitor.SelectedIndex;
+
+            comboBoxFitMonitor.Items.Clear();
+
+            for (int i = 0; i < count; i++)
+            {
+                comboBoxFitMonitor.Items.Add($"Monitor {i}");
+            }
+
+            if (index >= count) index = count - 1;
+            if (index < 0) index = 0;
+            comboBoxFitMonitor.SelectedIndex = index;
         }
 
         /// <summary>
@@ -62,7 +91,7 @@ namespace TestLibUniWinC
             textBoxMessage.Text = message;
         }
 
-        private void buttonCheck_Click(object sender, EventArgs e)
+        private void PrintWindowInfo()
         {
             var pos = uniwinc.GetWindowPosition();
             var size = uniwinc.GetWindowSize();
@@ -80,6 +109,26 @@ namespace TestLibUniWinC
             Console.WriteLine(message);
             textBoxMessage.Text = message;
         }
+
+        private void buttonCheck_Click(object sender, EventArgs e)
+        {
+            PrintWindowInfo();
+        }
+
+        /// <summary>
+        /// 選択されたモニタにウィンドウを移動
+        /// </summary>
+        private void FitToMonitor(int monitor)
+        {
+            float x, y, w, h;
+            if (UniWinC.GetMonitorRectangle(monitor, out x, out y, out w, out h))
+            {
+                UniWinC.SetPosition(x, y);
+                //UniWinC.SetSize(w / 2, h / 2);
+                UniWinC.SetSize(w, h);
+            }
+        }
+
 
         private void checkBoxTransparent_CheckedChanged(object sender, EventArgs e)
         {
@@ -104,6 +153,29 @@ namespace TestLibUniWinC
         private void checkBoxAllowDrop_CheckedChanged(object sender, EventArgs e)
         {
             UniWinC.SetAllowDrop(checkBoxAllowDrop.Checked);
+        }
+
+        private void buttonFitMonitor_Click(object sender, EventArgs e)
+        {
+            FitToMonitor(comboBoxFitMonitor.SelectedIndex);
+            PrintWindowInfo();
+        }
+
+        private void timerMainLoop_Tick(object sender, EventArgs e)
+        {
+            if (monitorChanged)
+            {
+                // 解像度が変化した後の処理
+                UpdateMonitorCombobox();
+                monitorChanged = false;
+            }
+
+            if (filesDropped)
+            {
+                // ファイルがドロップされた後の処理
+                Console.WriteLine(droppedFiles);
+                filesDropped = false;
+            }
         }
     }
 }

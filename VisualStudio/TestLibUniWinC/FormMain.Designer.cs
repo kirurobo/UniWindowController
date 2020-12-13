@@ -28,19 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.buttonCheck = new System.Windows.Forms.Button();
             this.textBoxMessage = new System.Windows.Forms.TextBox();
             this.checkBoxTransparent = new System.Windows.Forms.CheckBox();
             this.checkBoxTopmost = new System.Windows.Forms.CheckBox();
             this.buttonShowMonitorInfo = new System.Windows.Forms.Button();
             this.checkBoxAllowDrop = new System.Windows.Forms.CheckBox();
+            this.comboBoxFitMonitor = new System.Windows.Forms.ComboBox();
+            this.buttonFitMonitor = new System.Windows.Forms.Button();
+            this.timerMainLoop = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // buttonCheck
             // 
-            this.buttonCheck.Location = new System.Drawing.Point(22, 11);
+            this.buttonCheck.Location = new System.Drawing.Point(29, 14);
+            this.buttonCheck.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonCheck.Name = "buttonCheck";
-            this.buttonCheck.Size = new System.Drawing.Size(97, 23);
+            this.buttonCheck.Size = new System.Drawing.Size(129, 29);
             this.buttonCheck.TabIndex = 0;
             this.buttonCheck.Text = "Window Info.";
             this.buttonCheck.UseVisualStyleBackColor = true;
@@ -53,18 +58,20 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxMessage.BackColor = System.Drawing.Color.Black;
             this.textBoxMessage.ForeColor = System.Drawing.Color.White;
-            this.textBoxMessage.Location = new System.Drawing.Point(22, 72);
+            this.textBoxMessage.Location = new System.Drawing.Point(29, 90);
+            this.textBoxMessage.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxMessage.Multiline = true;
             this.textBoxMessage.Name = "textBoxMessage";
-            this.textBoxMessage.Size = new System.Drawing.Size(300, 114);
+            this.textBoxMessage.Size = new System.Drawing.Size(510, 142);
             this.textBoxMessage.TabIndex = 1;
             // 
             // checkBoxTransparent
             // 
             this.checkBoxTransparent.AutoSize = true;
-            this.checkBoxTransparent.Location = new System.Drawing.Point(156, 16);
+            this.checkBoxTransparent.Location = new System.Drawing.Point(166, 20);
+            this.checkBoxTransparent.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxTransparent.Name = "checkBoxTransparent";
-            this.checkBoxTransparent.Size = new System.Drawing.Size(85, 16);
+            this.checkBoxTransparent.Size = new System.Drawing.Size(105, 19);
             this.checkBoxTransparent.TabIndex = 2;
             this.checkBoxTransparent.Text = "Transparent";
             this.checkBoxTransparent.UseVisualStyleBackColor = true;
@@ -73,9 +80,10 @@
             // checkBoxTopmost
             // 
             this.checkBoxTopmost.AutoSize = true;
-            this.checkBoxTopmost.Location = new System.Drawing.Point(247, 16);
+            this.checkBoxTopmost.Location = new System.Drawing.Point(279, 20);
+            this.checkBoxTopmost.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxTopmost.Name = "checkBoxTopmost";
-            this.checkBoxTopmost.Size = new System.Drawing.Size(68, 16);
+            this.checkBoxTopmost.Size = new System.Drawing.Size(84, 19);
             this.checkBoxTopmost.TabIndex = 2;
             this.checkBoxTopmost.Text = "Topmost";
             this.checkBoxTopmost.UseVisualStyleBackColor = true;
@@ -83,9 +91,10 @@
             // 
             // buttonShowMonitorInfo
             // 
-            this.buttonShowMonitorInfo.Location = new System.Drawing.Point(22, 44);
+            this.buttonShowMonitorInfo.Location = new System.Drawing.Point(29, 55);
+            this.buttonShowMonitorInfo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonShowMonitorInfo.Name = "buttonShowMonitorInfo";
-            this.buttonShowMonitorInfo.Size = new System.Drawing.Size(97, 23);
+            this.buttonShowMonitorInfo.Size = new System.Drawing.Size(129, 29);
             this.buttonShowMonitorInfo.TabIndex = 0;
             this.buttonShowMonitorInfo.Text = "Monitor Info.";
             this.buttonShowMonitorInfo.UseVisualStyleBackColor = true;
@@ -94,26 +103,57 @@
             // checkBoxAllowDrop
             // 
             this.checkBoxAllowDrop.AutoSize = true;
-            this.checkBoxAllowDrop.Location = new System.Drawing.Point(156, 48);
+            this.checkBoxAllowDrop.Location = new System.Drawing.Point(380, 20);
+            this.checkBoxAllowDrop.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxAllowDrop.Name = "checkBoxAllowDrop";
-            this.checkBoxAllowDrop.Size = new System.Drawing.Size(104, 16);
+            this.checkBoxAllowDrop.Size = new System.Drawing.Size(125, 19);
             this.checkBoxAllowDrop.TabIndex = 2;
             this.checkBoxAllowDrop.Text = "Allow drop files";
             this.checkBoxAllowDrop.UseVisualStyleBackColor = true;
             this.checkBoxAllowDrop.CheckedChanged += new System.EventHandler(this.checkBoxAllowDrop_CheckedChanged);
             // 
+            // comboBoxFitMonitor
+            // 
+            this.comboBoxFitMonitor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboBoxFitMonitor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxFitMonitor.FormattingEnabled = true;
+            this.comboBoxFitMonitor.Location = new System.Drawing.Point(344, 59);
+            this.comboBoxFitMonitor.Name = "comboBoxFitMonitor";
+            this.comboBoxFitMonitor.Size = new System.Drawing.Size(121, 23);
+            this.comboBoxFitMonitor.TabIndex = 3;
+            // 
+            // buttonFitMonitor
+            // 
+            this.buttonFitMonitor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFitMonitor.Location = new System.Drawing.Point(472, 55);
+            this.buttonFitMonitor.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonFitMonitor.Name = "buttonFitMonitor";
+            this.buttonFitMonitor.Size = new System.Drawing.Size(67, 29);
+            this.buttonFitMonitor.TabIndex = 0;
+            this.buttonFitMonitor.Text = "Fit";
+            this.buttonFitMonitor.UseVisualStyleBackColor = true;
+            this.buttonFitMonitor.Click += new System.EventHandler(this.buttonFitMonitor_Click);
+            // 
+            // timerMainLoop
+            // 
+            this.timerMainLoop.Interval = 50;
+            this.timerMainLoop.Tick += new System.EventHandler(this.timerMainLoop_Tick);
+            // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(343, 198);
+            this.ClientSize = new System.Drawing.Size(568, 248);
+            this.Controls.Add(this.comboBoxFitMonitor);
             this.Controls.Add(this.checkBoxTopmost);
             this.Controls.Add(this.checkBoxAllowDrop);
             this.Controls.Add(this.checkBoxTransparent);
             this.Controls.Add(this.textBoxMessage);
+            this.Controls.Add(this.buttonFitMonitor);
             this.Controls.Add(this.buttonShowMonitorInfo);
             this.Controls.Add(this.buttonCheck);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "FormMain";
             this.Text = "Form1";
             this.Shown += new System.EventHandler(this.Form1_Shown);
@@ -131,6 +171,9 @@
         private System.Windows.Forms.CheckBox checkBoxTopmost;
         private System.Windows.Forms.Button buttonShowMonitorInfo;
         private System.Windows.Forms.CheckBox checkBoxAllowDrop;
+        private System.Windows.Forms.ComboBox comboBoxFitMonitor;
+        private System.Windows.Forms.Button buttonFitMonitor;
+        private System.Windows.Forms.Timer timerMainLoop;
     }
 }
 

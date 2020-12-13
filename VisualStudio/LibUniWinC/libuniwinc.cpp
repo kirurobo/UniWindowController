@@ -28,7 +28,6 @@ static WNDPROC lpOriginalWndProc_ = NULL;
 //static HHOOK hHook_ = NULL;
 static DropFilesCallback hDropFilesHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
-static INT nDpi = USER_DEFAULT_SCREEN_DPI;				// 現在のウィンドウのDPI。モニタによって変化する
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -94,9 +93,6 @@ void attachWindow(const HWND hWnd) {
 		// Save the original state
 		GetWindowInfo(hWnd, &originalWindowInfo);
 		GetWindowPlacement(hWnd, &originalWindowPlacement);
-
-		// Get the DPI for this window
-		nDpi = GetDpiForWindow(hWnd);
 
 		// Apply current settings
 		SetTransparent(bIsTransparent_);
@@ -675,6 +671,27 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 }
 
 /// <summary>
+/// 現在ウィンドウのあるモニタの高さを取得
+/// </summary>
+/// <returns></returns>
+int getCurrentMonitorHeight() {
+	return nPrimaryMonitorHeight_;
+
+
+	HMONITOR hMon = MonitorFromWindow(hTargetWnd_, MONITOR_DEFAULTTOPRIMARY);
+
+	MONITORINFO mi;
+	mi.cbSize = sizeof(mi);
+
+	if (GetMonitorInfo(hMon, &mi)) {
+		return (mi.rcMonitor.bottom - mi.rcMonitor.top);
+	}
+
+	// 通常は失敗しないはずだが、失敗したらこちらの値を返す
+	return GetSystemMetrics(SM_CYSCREEN);
+}
+
+/// <summary>
 /// ウィンドウ座標を設定
 /// </summary>
 /// <param name="x">ウィンドウ左端座標 [px]</param>
@@ -687,9 +704,12 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 
+	// 表示されているモニタの高さを取得（DPIに依存）
+	int monitorHeight = getCurrentMonitorHeight();
+
 	// 引数の y はCocoa相当の座標系でウィンドウ左下なので、変換
-	int newY = (nPrimaryMonitorHeight_ - (int)(y * USER_DEFAULT_SCREEN_DPI / nDpi)) - (rect.bottom - rect.top);
-	int newX = (int)(x * USER_DEFAULT_SCREEN_DPI / nDpi);
+	int newY = (monitorHeight - (int)y) - (rect.bottom - rect.top);
+	int newX = (int)(x);
 
 	return SetWindowPos(
 		hTargetWnd_, NULL,
@@ -711,10 +731,13 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 
 	if (hTargetWnd_ == NULL) return FALSE;
 
+	// 表示されているモニタの高さを取得（DPIに依存）
+	int monitorHeight = getCurrentMonitorHeight();
+
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		*x = (float)(MulDiv(rect.left, nDpi, USER_DEFAULT_SCREEN_DPI));
-		*y = (float)(MulDiv(nPrimaryMonitorHeight_,nDpi, USER_DEFAULT_SCREEN_DPI) - rect.bottom);	// 左下基準とする
+		*x = (float)(rect.left);
+		*y = (float)(monitorHeight - rect.bottom);	// 左下基準とする
 		return TRUE;
 	}
 	return FALSE;
@@ -735,8 +758,8 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 
 	int x = rect.left;
 	int y = rect.bottom;
-	int w = (int)(width * USER_DEFAULT_SCREEN_DPI / nDpi);
-	int h = (int)(height * USER_DEFAULT_SCREEN_DPI / nDpi);
+	int w = (int)(width);
+	int h = (int)(height);
 
 	// 左下原点とするために調整した、新規Y座標
 	y = y - h;
@@ -761,13 +784,8 @@ BOOL  UNIWINC_API GetSize(float* width, float* height) {
 	if (hTargetWnd_ == NULL) return FALSE;
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		//// そのまま返すパターン
-		//*width = (float)(rect.right - rect.left);	// +1 は不要なよう
-		//*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
-
-		// DPIを反映したパターン
-		*width = (float)(MulDiv(rect.right - rect.left, nDpi, USER_DEFAULT_SCREEN_DPI));
-		*height = (float)(MulDiv(rect.bottom - rect.top, nDpi, USER_DEFAULT_SCREEN_DPI));
+		*width = (float)(rect.right - rect.left);	// +1 は不要なよう
+		*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
 
 		return TRUE;
 	}
@@ -849,6 +867,7 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 
 	RECT rect = pMonitorRect_[pMonitorIndices_[monitorIndex]];
 	*x = (float)(rect.left);
+	//*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// 左下基準とする
 	*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// 左下基準とする
 	*width = (float)(rect.right - rect.left);
 	*height = (float)(rect.bottom - rect.top);
@@ -1027,10 +1046,6 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	case WM_DISPLAYCHANGE:
 		updateScreenSize();
-		break;
-
-	case WM_DPICHANGED:
-		nDpi = HIWORD(wParam);
 		break;
 	}
 
