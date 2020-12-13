@@ -25,16 +25,17 @@ static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモ
 static HMONITOR hMonitors_[UNIWINC_MAX_MONITORCOUNT];	// Monitor handles
 static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
-static HHOOK hHook_ = NULL;
+//static HHOOK hHook_ = NULL;
 static DropFilesCallback hDropFilesHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
+static INT nDpi = USER_DEFAULT_SCREEN_DPI;				// 現在のウィンドウのDPI。モニタによって変化する
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
 void refreshWindow();
 void updateScreenSize();
-void BeginHook();
-void EndHook();
+//void BeginHook();
+//void EndHook();
 void CreateCustomWindowProcedure();
 void DestroyCustomWindowProcedure();
 
@@ -93,6 +94,9 @@ void attachWindow(const HWND hWnd) {
 		// Save the original state
 		GetWindowInfo(hWnd, &originalWindowInfo);
 		GetWindowPlacement(hWnd, &originalWindowPlacement);
+
+		// Get the DPI for this window
+		nDpi = GetDpiForWindow(hWnd);
 
 		// Apply current settings
 		SetTransparent(bIsTransparent_);
@@ -161,6 +165,12 @@ BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lPar
 
 	// RECTを記憶
 	pMonitorRect_[nMonitorCount_] = *lpRect;
+
+	// プライマリモニタの高さを記憶
+	if (lpRect->left == 0 && lpRect->top == 0) {
+		// 原点に位置するモニタがプライマリモニタだと判断
+		nPrimaryMonitorHeight_ = lpRect->bottom;
+	}
 
 	// インデックスを一旦登場順で保存
 	pMonitorIndices_[nMonitorCount_] = nMonitorCount_;
@@ -300,11 +310,7 @@ BOOL compareRect(const RECT rcA, const RECT rcB) {
 /// </summary>
 /// <returns></returns>
 void updateScreenSize() {
-	ptVirtualScreen_.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-	ptVirtualScreen_.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-	szVirtualScreen_.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	szVirtualScreen_.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-	nPrimaryMonitorHeight_ = GetSystemMetrics(SM_CYSCREEN);
+	//nPrimaryMonitorHeight_ = GetSystemMetrics(SM_CYSCREEN);	// 150% などの時は実解像度と一致しない
 
 	// Update the monitor resolution list.
 	//   To use the nPrimaryMonitorHeight, do this after its acquisition.
@@ -682,11 +688,12 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 	GetWindowRect(hTargetWnd_, &rect);
 
 	// 引数の y はCocoa相当の座標系でウィンドウ左下なので、変換
-	int newY = (nPrimaryMonitorHeight_ - (int)y) - (rect.bottom - rect.top);
+	int newY = (nPrimaryMonitorHeight_ - (int)(y * USER_DEFAULT_SCREEN_DPI / nDpi)) - (rect.bottom - rect.top);
+	int newX = (int)(x * USER_DEFAULT_SCREEN_DPI / nDpi);
 
 	return SetWindowPos(
 		hTargetWnd_, NULL,
-		(int)x, (int)newY,
+		newX, newY,
 		0, 0,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_ASYNCWINDOWPOS
 		);
@@ -706,8 +713,8 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		*x = (float)rect.left;
-		*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);	// 左下基準とする
+		*x = (float)(MulDiv(rect.left, nDpi, USER_DEFAULT_SCREEN_DPI));
+		*y = (float)(MulDiv(nPrimaryMonitorHeight_,nDpi, USER_DEFAULT_SCREEN_DPI) - rect.bottom);	// 左下基準とする
 		return TRUE;
 	}
 	return FALSE;
@@ -726,13 +733,17 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 
+	int x = rect.left;
+	int y = rect.bottom;
+	int w = (int)(width * USER_DEFAULT_SCREEN_DPI / nDpi);
+	int h = (int)(height * USER_DEFAULT_SCREEN_DPI / nDpi);
+
 	// 左下原点とするために調整した、新規Y座標
-	int newY = rect.bottom - (int)height;
+	y = y - h;
 
 	return SetWindowPos(
 		hTargetWnd_, NULL,
-		rect.left, newY,
-		(int)width, (int)height,
+		x, y, w, h,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_ASYNCWINDOWPOS
 	);
 }
@@ -748,11 +759,16 @@ BOOL  UNIWINC_API GetSize(float* width, float* height) {
 	*height = 0;
 
 	if (hTargetWnd_ == NULL) return FALSE;
-
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		*width = (float)(rect.right - rect.left);	// +1 は不要なよう
-		*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
+		//// そのまま返すパターン
+		//*width = (float)(rect.right - rect.left);	// +1 は不要なよう
+		//*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
+
+		// DPIを反映したパターン
+		*width = (float)(MulDiv(rect.right - rect.left, nDpi, USER_DEFAULT_SCREEN_DPI));
+		*height = (float)(MulDiv(rect.bottom - rect.top, nDpi, USER_DEFAULT_SCREEN_DPI));
+
 		return TRUE;
 	}
 	return FALSE;
@@ -999,17 +1015,25 @@ LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 	// lParam is a pointer to an MSG structure for WH_GETMESSAGE
 	LPMSG msg = (LPMSG)lParam;
 
-	if (msg->message == WM_DROPFILES) {
+	switch (msg->message) {
+	case WM_DROPFILES:
 		if (hTargetWnd_ != NULL && msg->hwnd == hTargetWnd_) {
 			HDROP hDrop = (HDROP)msg->wParam;
 			ReceiveDropFiles(hDrop);
 			DragFinish(hDrop);
 		}
 		return TRUE;
-	}
-	else if (msg->message == WM_DISPLAYCHANGE) {
+		break;
+
+	case WM_DISPLAYCHANGE:
 		updateScreenSize();
+		break;
+
+	case WM_DPICHANGED:
+		nDpi = HIWORD(wParam);
+		break;
 	}
+
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
@@ -1058,33 +1082,33 @@ void CreateCustomWindowProcedure() {
 	}
 }
 
-/// <summary>
-/// Set the hook
-/// </summary>
-void BeginHook() {
-	if (hTargetWnd_ == NULL) return;
-
-	// Return if the hook is already set
-	if (hHook_ != NULL) return;
-
-	//HMODULE hMod = GetModuleHandle(NULL);
-	DWORD dwThreadId = GetCurrentThreadId();
-
-	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
-}
-
-/// <summary>
-/// Unset the hook
-/// </summary>
-void EndHook() {
-	if (hTargetWnd_ == NULL) return;
-
-	// Return if the hook is not set
-	if (hHook_ == NULL) return;
-
-	UnhookWindowsHookEx(hHook_);
-	hHook_ = NULL;
-}
+///// <summary>
+///// Set the hook
+///// </summary>
+//void BeginHook() {
+//	if (hTargetWnd_ == NULL) return;
+//
+//	// Return if the hook is already set
+//	if (hHook_ != NULL) return;
+//
+//	//HMODULE hMod = GetModuleHandle(NULL);
+//	DWORD dwThreadId = GetCurrentThreadId();
+//
+//	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
+//}
+//
+///// <summary>
+///// Unset the hook
+///// </summary>
+//void EndHook() {
+//	if (hTargetWnd_ == NULL) return;
+//
+//	// Return if the hook is not set
+//	if (hHook_ == NULL) return;
+//
+//	UnhookWindowsHookEx(hHook_);
+//	hHook_ = NULL;
+//}
 
 /// <summary>
 /// Set window procedure.

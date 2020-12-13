@@ -513,9 +513,10 @@ namespace Kirurobo
             if (LibUniWinC.GetMonitorRectangle(monitorIndex, out x, out y, out width, out height))
             {
                 if (LibUniWinC.IsMaximized()) LibUniWinC.SetMaximized(false);
-                LibUniWinC.SetPosition(x, y);
                 //LibUniWinC.SetSize(width, height);
-                LibUniWinC.SetMaximized(true);
+                LibUniWinC.SetSize(width / 2, height / 2);
+                //LibUniWinC.SetMaximized(true);
+                LibUniWinC.SetPosition(x, y);
 
                 Debug.Log(String.Format("Monitor {4} : {0},{1} - {2},{3}", x, y, width, height, monitorIndex));
                 return true;

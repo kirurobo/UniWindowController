@@ -204,8 +204,6 @@ namespace Kirurobo
         /// <param name="val"></param>
         void SetFitToMonitor(int val)
         {
-            Debug.Log("Dropdown: " + val);
-
             if (!uniwinc) return;
 
             if (val < 1)
