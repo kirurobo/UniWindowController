@@ -35,6 +35,13 @@ namespace Kirurobo
         #region Native functions
         protected class LibUniWinC
         {
+            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
+
+            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
+
+            
             [DllImport("LibUniWinC")]
             public static extern bool IsActive();
 
@@ -46,6 +53,9 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern bool IsTopmost();
+
+            [DllImport("LibUniWinC")]
+            public static extern bool IsBottommost();
 
             [DllImport("LibUniWinC")]
             public static extern bool IsMaximized();
@@ -75,6 +85,9 @@ namespace Kirurobo
             public static extern void SetTopmost(bool bEnabled);
 
             [DllImport("LibUniWinC")]
+            public static extern void SetBottommost(bool bEnabled);
+
+            [DllImport("LibUniWinC")]
             public static extern void SetMaximized(bool bZoomed);
 
             [DllImport("LibUniWinC")]
@@ -89,23 +102,23 @@ namespace Kirurobo
             [DllImport("LibUniWinC")]
             public static extern bool GetSize(out float x, out float y);
 
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
-            public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
-
             [DllImport("LibUniWinC")]
             public static extern bool RegisterDropFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
 
             [DllImport("LibUniWinC")]
             public static extern bool UnregisterDropFilesCallback();
 
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
-            public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
-
             [DllImport("LibUniWinC")]
             public static extern bool RegisterMonitorChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
 
             [DllImport("LibUniWinC")]
             public static extern bool UnregisterMonitorChangedCallback();
+
+            [DllImport("LibUniWinC")]
+            public static extern bool RegisterWindowStyleChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
+
+            [DllImport("LibUniWinC")]
+            public static extern bool UnregisterWindowStyleChangedCallback();
 
             [DllImport("LibUniWinC")]
             public static extern bool SetAllowDrop(bool enabled);
@@ -133,9 +146,10 @@ namespace Kirurobo
         }
         #endregion
 
-        public static string[] lastDroppedFiles;
-        public static bool wasDropped = false;
-        public static bool wasMonitorChanged = false;
+        static string[] lastDroppedFiles;
+        static bool wasDropped = false;
+        static bool wasMonitorChanged = false;
+        static bool wasWindowStyleChanged = false;
 
 #if UNITY_EDITOR
         // 参考 http://baba-s.hatenablog.com/entry/2017/09/17/135018
@@ -165,6 +179,12 @@ namespace Kirurobo
         private bool _isTopmost = false;
 
         /// <summary>
+        /// 常に最背面表示になっているかどうか
+        /// </summary>
+        public bool IsBottommost { get { return (IsActive && _isBottommost); } }
+        private bool _isBottommost = false;
+
+        /// <summary>
         /// ウィンドウ透過となっているか
         /// </summary>
         public bool IsTransparent { get { return (IsActive && _isTransparent); } }
@@ -185,9 +205,6 @@ namespace Kirurobo
         /// Layered Windows で透過する色
         /// </summary>
         private Color32 ChromakeyColor = new Color32(1, 0, 1, 0);
-
-
-        public delegate void DropFilesDelegate(string[] files);
 
 
         #region Constructor or destructor
@@ -218,9 +235,58 @@ namespace Kirurobo
             // Instead of DetachWindow()
             LibUniWinC.UnregisterDropFilesCallback();
             LibUniWinC.UnregisterMonitorChangedCallback();
+            LibUniWinC.UnregisterWindowStyleChangedCallback();
         }
         #endregion
 
+        
+        #region Callbacks
+        
+        /// <summary>
+        /// モニタまたは解像度が変化したときのコールバック
+        /// この中での処理は最低限にするため、フラグを立てるのみ
+        /// </summary>
+        /// <param name="monitorCount"></param>
+        [MonoPInvokeCallback(typeof(LibUniWinC.IntCallback))]
+        private static void _monitorChangedCallback([MarshalAs(UnmanagedType.I4)] int monitorCount)
+        {
+            wasMonitorChanged = true;
+        }
+
+        /// <summary>
+        /// ウィンドウスタイルや最大化、最小化等で呼ばれるコールバック
+        /// この中での処理は最低限にするため、フラグを立てるのみ
+        /// </summary>
+        /// <param name="e"></param>
+        [MonoPInvokeCallback(typeof(LibUniWinC.IntCallback))]
+        private static void _windowStyleChangedCallback([MarshalAs(UnmanagedType.I4)] int e)
+        {
+            wasWindowStyleChanged = true;
+        }
+        
+        /// <summary>
+        /// ファイル、フォルダがドロップされた時に呼ばれるコールバック
+        /// 文字列を配列に直すことと、フラグを立てるまで行う
+        /// </summary>
+        /// <param name="paths"></param>
+        [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
+        private static void _droppedFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
+        {
+            // LF 区切りで届いた文字列を分割してパスの配列に直す
+            char[] delimiters = { '\n', '\r', '\t', '\0' };
+            string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+
+            if (files.Length > 0)
+            {
+                lastDroppedFiles = new string[files.Length];
+                files.CopyTo(lastDroppedFiles, 0);
+
+                wasDropped = true;
+            }
+        }
+        
+        #endregion
+        
         #region Find, attach or detach 
 
         /// <summary>
@@ -256,6 +322,7 @@ namespace Kirurobo
             // Add event handlers
             LibUniWinC.RegisterDropFilesCallback(_droppedFilesCallback);
             LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
+            LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
 
             IsActive = LibUniWinC.IsActive();
             return IsActive;
@@ -299,6 +366,18 @@ namespace Kirurobo
         {
             LibUniWinC.SetTopmost(isTopmost);
             this._isTopmost = isTopmost;
+            this._isBottommost = false;    // Exclusive
+        }
+
+        /// <summary>
+        /// Set the window z-order (Bottommost or not).
+        /// </summary>
+        /// <param name="isBottommost">If set to <c>true</c> is bottom.</param>
+        public void EnableBottommost(bool isBottommost)
+        {
+            LibUniWinC.SetBottommost(isBottommost);
+            this._isBottommost = isBottommost;
+            this._isTopmost = false;    // Exclusive
         }
 
         /// <summary>
@@ -380,28 +459,6 @@ namespace Kirurobo
             LibUniWinC.SetAllowDrop(enabled);
         }
 
-        [MonoPInvokeCallback(typeof(DropFilesDelegate))]
-        private static void _droppedFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
-        {
-            char[] delimiters = { '\n', '\r', '\t', '\0' };
-            string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
-
-            if (files.Length > 0)
-            {
-                // Debug.Log("UniWinCore._fileDroppedCallback");
-                // foreach (var file in files)
-                // {
-                //     Debug.Log(file);
-                // }
-                ////if (OnDropFilesHandler != null) OnDropFilesHandler.Invoke(files);
-
-                lastDroppedFiles = new string[files.Length];
-                files.CopyTo(lastDroppedFiles, 0);
-
-                wasDropped = true;
-            }
-        }
-
         /// <summary>
         /// Check files dropping and unset the dropped flag
         /// </summary>
@@ -429,7 +486,17 @@ namespace Kirurobo
             return true;
         }
 
-        //public event DropFilesDelegate OnDropFilesHandler;
+        /// <summary>
+        /// Check window style was changed, and unset the flag 
+        /// </summary>
+        /// <returns>true if changed</returns>
+        public bool ObserveWindowStyleChanged()
+        {
+            if (!wasWindowStyleChanged) return false;
+
+            wasWindowStyleChanged = false;
+            return true;
+        }
 
         #endregion
 
@@ -509,23 +576,34 @@ namespace Kirurobo
         /// <returns></returns>
         public bool FitToMonitor(int monitorIndex)
         {
-            float x, y, width, height;
-            if (LibUniWinC.GetMonitorRectangle(monitorIndex, out x, out y, out width, out height))
+            float dx, dy, dw, dh;
+            if (LibUniWinC.GetMonitorRectangle(monitorIndex, out dx, out dy, out dw, out dh))
             {
+                // 最大化状態なら一度戻す
                 if (LibUniWinC.IsMaximized()) LibUniWinC.SetMaximized(false);
-                //LibUniWinC.SetSize(width, height);
-                LibUniWinC.SetSize(width / 2, height / 2);
-                //LibUniWinC.SetMaximized(true);
-                LibUniWinC.SetPosition(x, y);
+                
+                // 指定モニタ中央座標
+                float cx = dx + (dw / 2);
+                float cy = dy + (dh / 2);
 
-                Debug.Log(String.Format("Monitor {4} : {0},{1} - {2},{3}", x, y, width, height, monitorIndex));
+                // ウィンドウ中央を指定モニタ中央に移動
+                float ww, wh;
+                LibUniWinC.GetSize(out ww, out wh);
+                float wx = cx - (ww / 2);
+                float wy = cy - (wh / 2);
+                LibUniWinC.SetPosition(wx, wy);
+                
+                // 最大化
+                LibUniWinC.SetMaximized(true);
+
+                //Debug.Log(String.Format("Monitor {4} : {0},{1} - {2},{3}", dx, dy, dw, dh, monitorIndex));
                 return true;
             }
             return false;
         }
 
         /// <summary>
-        /// モニタ一覧を出力
+        /// Print monitor list
         /// </summary>
         [Obsolete]
         public static void DebugMonitorInfo()
@@ -548,12 +626,6 @@ namespace Kirurobo
             Debug.Log(message);
         }
         #endregion
-
-        [MonoPInvokeCallback(typeof(UniWindowController.OnMonitorChangedDelegate))]
-        private static void _monitorChangedCallback([MarshalAs(UnmanagedType.I4)] int monitorCount)
-        {
-            wasMonitorChanged = true;
-        }
 
     }
 }

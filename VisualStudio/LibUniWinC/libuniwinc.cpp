@@ -65,10 +65,10 @@ void detachWindow()
 			// 透明化は、起動時は無効であるものとして、戻すときは無効化
 			SetTransparent(false);
 
-			// 壁紙化が試みられていればウィンドウの親を戻す
-			if (hDesktopWnd_ != NULL) {
-				SetParent(hTargetWnd_, hParentWnd_);
-			}
+			//// 壁紙化が試みられていればウィンドウの親を戻す
+			//if (hDesktopWnd_ != NULL) {
+			//	SetParent(hTargetWnd_, hParentWnd_);
+			//}
 
 			//// 常に最前面は、起動時の状態に合わせるよう戻す	↓SetWindowLongで本来戻るはずで不要？
 			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
@@ -108,14 +108,14 @@ void attachWindow(const HWND hWnd) {
 		// Save the original state
 		GetWindowInfo(hWnd, &originalWindowInfo);
 		GetWindowPlacement(hWnd, &originalWindowPlacement);
-		hParentWnd_ = GetParent(hWnd);
+		//hParentWnd_ = GetParent(hWnd);
 
 		// Apply current settings
 		SetTransparent(bIsTransparent_);
 		SetBorderless(bIsBorderless_);
 		SetTopmost(bIsTopmost_);
 		SetBottommost(bIsBottommost_);
-		SetBackground(bIsBackground_);
+		//SetBackground(bIsBackground_);
 		SetClickThrough(bIsClickThrough_);
 		SetAllowDrop(bAllowDropFile_);
 
@@ -1175,7 +1175,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			break;
 		}
 		break;
-
+		
 	default:
 		break;
 	}

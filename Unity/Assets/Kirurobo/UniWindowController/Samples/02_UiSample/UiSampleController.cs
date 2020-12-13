@@ -21,15 +21,16 @@ namespace Kirurobo
         private UniWindowMoveHandle uniWinMoveHandle;
 
         private float mouseMoveSS = 0f;           // Sum of mouse trajectory squares. [px^2]
-        private float mouseMoveSSThreshold = 16f; // Click (not dragging) threshold. [px^2]
+        private float mouseMoveSSThreshold = 36f; // Click (not dragging) threshold. [px^2]
         private Vector3 lastMousePosition;        // Right clicked position.
         private float touchDuration = 0f;
-        private float touchDurationThreshold = 0.5f; // Long tap time threshold. [s]
-        private float lastEventOccurredTime = -5f;    // Timestamp the last event occurred [s]
-        private float eventMessageTimeout = 5f;     // Show event message while this period [s]
+        private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
+        private float lastEventOccurredTime = -5f;     // Timestamp the last event occurred [s]
+        private float eventMessageTimeout = 5f;        // Show event message while this period [s]
 
         public Toggle transparentToggle;
         public Toggle topmostToggle;
+        public Toggle bottommostToggle;
         [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
         public Toggle dragMoveToggle;
         public Toggle allowDropToggle;
@@ -69,6 +70,7 @@ namespace Kirurobo
                 // UIを操作された際にはウィンドウに反映されるようにする
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
+                bottommostToggle?.onValueChanged.AddListener(val => uniwinc.isBottommost = val);
                 zoomedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
                 allowDropToggle?.onValueChanged.AddListener(val => uniwinc.allowDropFiles = val);
 
@@ -95,12 +97,19 @@ namespace Kirurobo
 #endif
                 
                 // Add events
+                uniwinc.OnStateChanged += () =>
+                {
+                    UpdateUI();
+                };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
                     UpdateUI();
                     ShowEventMessage("Resolution changed!"); 
                 };
-                uniwinc.OnDropFiles += files => { ShowEventMessage(string.Join(Environment.NewLine, files)); };
+                uniwinc.OnDropFiles += files =>
+                {
+                    ShowEventMessage(string.Join(Environment.NewLine, files));
+                };
             }
         }
 
@@ -210,12 +219,18 @@ namespace Kirurobo
             {
                 // ドロップダウンの先頭は、フィット無し
                 uniwinc.shouldFitMonitor = false;
+                
+                // 最大化を変更できるようにする
+                if (zoomedToggle) zoomedToggle.interactable = true;
             }
             else
             {
                 // 次からなので、モニタ番号は1を引く
                 uniwinc.monitorToFit = val - 1;
                 uniwinc.shouldFitMonitor = true;    // これがfalseからtrueにしたタイミングで移動されるため、モニタ番号を指定してから変更
+                
+                // 最大化を変更不可にする
+                if (zoomedToggle) zoomedToggle.interactable = false;
             }
         }
 
@@ -261,7 +276,7 @@ namespace Kirurobo
         /// <summary>
         /// 指定した座標にコンテキストメニューを表示する
         /// </summary>
-        /// <param name="position"></param>
+        /// <param name="position">中心座標指定</param>
         private void ShowMenu(Vector2 position)
         {
             if (menuPanel)
@@ -270,10 +285,11 @@ namespace Kirurobo
                 float w = menuPanel.rect.width;
                 float h = menuPanel.rect.height;
 
-                // 指定座標に左上角が来る前提で位置調整
-                pos.y += Mathf.Max(h - pos.y, 0f);   // 下にはみ出していれば上に寄せる
-                pos.x -= Mathf.Max(pos.x - Screen.width + w, 0f);    // 右にはみ出していれば左に寄せる
+                // 指定座標に中心が来る前提で位置調整
+                pos.y = Mathf.Max(Mathf.Min(pos.y, Screen.height - h / 2f), h / 2f);   // はみ出していれば上に寄せる
+                pos.x = Mathf.Max(Mathf.Min(pos.x, Screen.width - w / 2f), w / 2f);    // 右にはみ出していれば左に寄せる
 
+                menuPanel.pivot = Vector2.one * 0.5f;    // Set the center
                 menuPanel.anchorMin = Vector2.zero;
                 menuPanel.anchorMax = Vector2.zero;
                 menuPanel.anchoredPosition = pos;
@@ -308,6 +324,16 @@ namespace Kirurobo
                 {
                     topmostToggle.isOn = uniwinc.isTopmost;
                 }
+                
+                if (bottommostToggle)
+                {
+                    bottommostToggle.isOn = uniwinc.isBottommost;
+                }
+                
+                if (zoomedToggle)
+                {
+                    zoomedToggle.isOn = uniwinc.isZoomed;
+                }
 
                 if (allowDropToggle)
                 {
@@ -321,7 +347,16 @@ namespace Kirurobo
 
                 if (fitWindowDropdown)
                 {
-                    fitWindowDropdown.value = (uniwinc.shouldFitMonitor ? uniwinc.monitorToFit + 1 : 0);
+                    if (uniwinc.shouldFitMonitor)
+                    {
+                        fitWindowDropdown.value = uniwinc.monitorToFit + 1;
+                        if (zoomedToggle) zoomedToggle.interactable = false;
+                    }
+                    else
+                    {
+                        fitWindowDropdown.value = 0;
+                        if (zoomedToggle) zoomedToggle.interactable = true;
+                    }
                     fitWindowDropdown.RefreshShownValue();
                 }
 
@@ -389,12 +424,6 @@ namespace Kirurobo
                         pickedColorText.text = $"Color picker is disabled";
                         pickedColorText.color = Color.gray;
                     }
-                }
-                
-                // 最大化状態も、UI以外の要因での変化があるため頻繁に更新
-                if (zoomedToggle)
-                {
-                    zoomedToggle.isOn = uniwinc.isZoomed;
                 }
             }
         }

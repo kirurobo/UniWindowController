@@ -82,7 +82,7 @@ namespace Kirurobo
         private bool _isTransparent = false;
 
         /// <summary>
-        /// Is this window minimized
+        /// Is this window topmost
         /// </summary>
         public bool isTopmost
         {
@@ -91,6 +91,17 @@ namespace Kirurobo
         }
         [SerializeField, BoolProperty, Tooltip("Check to set topmost on startup")]
         private bool _isTopmost = false;
+
+        /// <summary>
+        /// Is this window bottommost
+        /// </summary>
+        public bool isBottommost
+        {
+            get { return ((uniWinCore == null) ? _isBottommost : _isBottommost = uniWinCore.IsBottommost); }
+            set { SetBottommost(value); }
+        }
+        [SerializeField, BoolProperty, Tooltip("Check to set bottommost on startup")]
+        private bool _isBottommost = false;
 
         /// <summary>
         /// Is this window minimized
@@ -260,9 +271,8 @@ namespace Kirurobo
         private int hitTestLayerMask;
         
         /// <summary>
-        /// ウィンドウ状態が変化したときに発生するイベント
+        /// Occurs when the window style changed
         /// </summary>
-        [Obsolete]
         public event OnStateChangedDelegate OnStateChanged;
         public delegate void OnStateChangedDelegate();
 
@@ -411,14 +421,27 @@ namespace Kirurobo
             {
                 OnMonitorChanged?.Invoke();
             }
+
+            if (uniWinCore.ObserveWindowStyleChanged())
+            {
+                // // モニタへのフィット指定がある状態で最大化解除された場合
+                // if (shouldFitMonitor && !uniWinCore.GetZoomed())
+                // {
+                //     //StartCoroutine("ForceZoomed");    // 時間差で最大化を強制
+                //     //SetZoomed(true);        // 強制的に最大化　←必ずしも働かない
+                //     //shouldFitMonitor = false;    // フィットを無効化
+                // }
+                if (_shouldFitMonitor) StartCoroutine("ForceZoomed"); // 時間差で最大化を強制
+                
+                OnStateChanged?.Invoke();
+            }
         }
 
-        /// <summary>
-        /// ウィンドウ状態が変わったときに呼ぶイベントを処理
-        /// </summary>
-        private void StateChangedEvent()
+        IEnumerator ForceZoomed()
         {
-            OnStateChanged?.Invoke();
+            yield return new WaitForSeconds(0.5f);
+            if (_shouldFitMonitor && !uniWinCore.GetZoomed()) SetZoomed(true);
+            yield return null;
         }
 
         /// <summary>
@@ -627,6 +650,9 @@ namespace Kirurobo
                     SetTopmost(_isTopmost);
                     SetClickThrough(_isClickThrough);
                     SetAllowDrop(_allowDropFiles);
+
+                    // ウィンドウ取得時にはモニタ変更と同等の処理を行う
+                    OnMonitorChanged?.Invoke();
                 }
             }
             else
@@ -703,7 +729,6 @@ namespace Kirurobo
             }
 #endif
             UpdateClickThrough();
-            StateChangedEvent();
         }
 
         /// <summary>
@@ -740,7 +765,20 @@ namespace Kirurobo
 
             uniWinCore.EnableTopmost(topmost);
             _isTopmost = uniWinCore.IsTopmost;
-            StateChangedEvent();
+            _isBottommost = uniWinCore.IsBottommost;
+        }
+
+        /// <summary>
+        /// 常に最背面を切替
+        /// </summary>
+        /// <param name="bottommost"></param>
+        private void SetBottommost(bool bottommost)
+        {
+            if (uniWinCore == null) return;
+
+            uniWinCore.EnableBottommost(bottommost);
+            _isBottommost = uniWinCore.IsBottommost;
+            _isTopmost = uniWinCore.IsTopmost;
         }
 
         /// <summary>
@@ -753,7 +791,6 @@ namespace Kirurobo
 
             uniWinCore.SetZoomed(zoomed);
             _isZoomed = uniWinCore.GetZoomed();
-            StateChangedEvent();
         }
 
         private void SetAllowDrop(bool enabled)
@@ -762,7 +799,6 @@ namespace Kirurobo
 
             uniWinCore.SetAllowDrop(enabled);
             _allowDropFiles = enabled;
-            StateChangedEvent();
         }
 
         /// <summary>
@@ -816,8 +852,9 @@ namespace Kirurobo
                     _shouldFitMonitor = shouldFit;
                     UpdateMonitorFitting();
 
-                    uniWinCore.SetWindowSize(originalWindowRectangle.size);
-                    uniWinCore.SetWindowPosition(originalWindowRectangle.position);
+                    uniWinCore.SetZoomed(false);
+                    //uniWinCore.SetWindowSize(originalWindowRectangle.size);
+                    //uniWinCore.SetWindowPosition(originalWindowRectangle.position);
                 }
                 else
                 {
