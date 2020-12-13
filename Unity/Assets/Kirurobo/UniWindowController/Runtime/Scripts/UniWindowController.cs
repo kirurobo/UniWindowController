@@ -796,7 +796,8 @@ namespace Kirurobo
                     _monitorToFit = monitorIndex;
                     _shouldFitMonitor = shouldFit;
                     UpdateMonitorFitting();
-                } else
+                }
+                else
                 {
                     if (_monitorToFit != monitorIndex)
                     {
@@ -817,6 +818,11 @@ namespace Kirurobo
 
                     uniWinCore.SetWindowSize(originalWindowRectangle.size);
                     uniWinCore.SetWindowPosition(originalWindowRectangle.position);
+                }
+                else
+                {
+                    // フィット中でなければ選択を変えるのみ
+                    _monitorToFit = monitorIndex;
                 }
             }
 
