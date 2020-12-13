@@ -106,14 +106,15 @@ namespace TestLibUniWinC
             var pos = uniwinc.GetWindowPosition();
             var size = uniwinc.GetWindowSize();
             var hwnd = UniWinC.GetWindowHandle();
+            var hdesktop = UniWinC.GetDesktopWindowHandle();
             var pid = UniWinC.GetMyProcessId();
             var myPid = System.Diagnostics.Process.GetCurrentProcess().Id;
             var clientSize = this.ClientSize;
 
             string message = String.Format(
-                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X} / {7:X}\r\nPID {8} / {9}",
+                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X} / {7:X}\r\nPID {8} / {9}\r\nDesktop {10:X}",
                 pos.x, pos.y, size.x, size.y, clientSize.Width, clientSize.Height,
-                hwnd.ToInt32(), this.Handle.ToInt32(), pid, myPid);
+                hwnd.ToInt32(), this.Handle.ToInt32(), pid, myPid, hdesktop.ToInt32());
 
 
             Console.WriteLine(message);

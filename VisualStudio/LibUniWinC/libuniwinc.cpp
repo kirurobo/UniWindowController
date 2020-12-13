@@ -7,6 +7,9 @@
 static HWND hTargetWnd_ = NULL;
 static WINDOWINFO originalWindowInfo;
 static WINDOWPLACEMENT originalWindowPlacement;
+static HWND hParentWnd_ = NULL;
+static BOOL bExpedtDesktopWnd = FALSE;
+static HWND hDesktopWnd_ = NULL;
 static SIZE szOriginaiBorder_;
 static POINT ptVirtualScreen_;
 static SIZE szVirtualScreen_;
@@ -15,6 +18,7 @@ static BOOL bIsTransparent_ = FALSE;
 static BOOL bIsBorderless_ = FALSE;
 static BOOL bIsTopmost_ = FALSE;
 static BOOL bIsBottommost_ = FALSE;
+static BOOL bIsBackground_ = FALSE;
 static BOOL bIsClickThrough_ = FALSE;
 static BOOL bAllowDropFile_ = FALSE;
 static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
@@ -61,6 +65,11 @@ void detachWindow()
 			// 透明化は、起動時は無効であるものとして、戻すときは無効化
 			SetTransparent(false);
 
+			// 壁紙化が試みられていればウィンドウの親を戻す
+			if (hDesktopWnd_ != NULL) {
+				SetParent(hTargetWnd_, hParentWnd_);
+			}
+
 			//// 常に最前面は、起動時の状態に合わせるよう戻す	↓SetWindowLongで本来戻るはずで不要？
 			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
 
@@ -99,11 +108,14 @@ void attachWindow(const HWND hWnd) {
 		// Save the original state
 		GetWindowInfo(hWnd, &originalWindowInfo);
 		GetWindowPlacement(hWnd, &originalWindowPlacement);
+		hParentWnd_ = GetParent(hWnd);
 
 		// Apply current settings
 		SetTransparent(bIsTransparent_);
 		SetBorderless(bIsBorderless_);
 		SetTopmost(bIsTopmost_);
+		SetBottommost(bIsBottommost_);
+		SetBackground(bIsBackground_);
 		SetClickThrough(bIsClickThrough_);
 		SetAllowDrop(bAllowDropFile_);
 
@@ -146,6 +158,40 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 		//	hTargetWnd_ = hWnd;
 		//	return FALSE;
 		//}
+	}
+
+	return TRUE;
+}
+
+/// <summary>
+/// デスクトップのウィンドウハンドルを探す際のコールバック
+/// </summary>
+/// <param name="hWnd"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
+BOOL CALLBACK findDesktopWindowProc(const HWND hWnd, const LPARAM lParam)
+{
+	WCHAR className[UNIWINC_MAX_CLASSNAME];
+	int len = GetClassName(hWnd, className, UNIWINC_MAX_CLASSNAME);
+
+	if (len > 0) {
+		// クラス名が取得でき、WorkerW または Progman ならその子で SHELLDLL_DefView を対象とする
+		// 参考 http://www.orangemaker.sakura.ne.jp/labo/memo/sdk-mfc/win7Desktop.html
+		if ((lstrcmp(TEXT("WorkerW"), className) == 0) || (lstrcmp(TEXT("Progman"), className) == 0)) {
+			if (bExpedtDesktopWnd) {
+				hDesktopWnd_ = hWnd;
+				return FALSE;
+			}
+
+			HWND hChild = FindWindowEx(hWnd, NULL, TEXT("SHELLDLL_DefView"), NULL);
+			if (hChild != NULL) {
+				//hDesktopWnd_ = hChild;
+				//return FALSE;
+
+				bExpedtDesktopWnd = TRUE;
+				return TRUE;
+			}
+		}
 	}
 
 	return TRUE;
@@ -263,6 +309,14 @@ void disableTransparentBySetLayered()
 }
 
 /// <summary>
+/// 壁紙の親となるウィンドウハンドルを取得
+/// </summary>
+void findDesktopWindow() {
+	bExpedtDesktopWnd = FALSE;
+	EnumWindows(findDesktopWindowProc, NULL);
+}
+
+/// <summary>
 /// 枠を消した際に描画サイズが合わなくなることに対応するため、ウィンドウを強制リサイズして更新
 /// </summary>
 void refreshWindow() {
@@ -320,22 +374,10 @@ void updateScreenSize() {
 }
 
 /// <summary>
-/// Cocoaと同様のY座標に変換
-/// 事前にプライマリーモニターの高さが取得できていることとする
-/// </summary>
-/// <param name="y"></param>
-/// <returns></returns>
-LONG calcFlippedY(LONG y) {
-	return (nPrimaryMonitorHeight_ - y);
-}
-
-// Windows only
-
-/// <summary>
 /// 現在、実際に常に最前面になっているかを調べる
 /// </summary>
 /// <returns></returns>
-BOOL GetTopMost() {
+BOOL getTopMost() {
 	if ((hTargetWnd_ == NULL) || !IsWindow(hTargetWnd_)) {
 		return FALSE;
 	}
@@ -344,28 +386,6 @@ BOOL GetTopMost() {
 }
 
 #pragma endregion Internal functions
-
-
-// ========================================================================
-#pragma region Windows only public functions
-
-/// <summary>
-/// 現在選択されているウィンドウハンドルを取得
-/// </summary>
-/// <returns></returns>
-HWND UNIWINC_API GetWindowHandle() {
-	return hTargetWnd_;
-}
-
-/// <summary>
-/// 自分のプロセスIDを取得
-/// </summary>
-/// <returns></returns>
-DWORD UNIWINC_API GetMyProcessId() {
-	return GetCurrentProcessId();
-}
-
-#pragma endregion Windows-only public functions
 
 
 // ========================================================================
@@ -412,6 +432,14 @@ BOOL UNIWINC_API IsTopmost() {
 /// <returns></returns>
 BOOL UNIWINC_API IsBottommost() {
 	return bIsBottommost_;
+}
+
+/// <summary>
+/// 壁紙にしているか否かを返す
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API IsBackground() {
+	return bIsBackground_;
 }
 
 /// <summary>
@@ -685,6 +713,48 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 	}
 
 	bIsBottommost_ = bBottommost;
+}
+
+/// <summary>
+/// 壁紙化／解除
+/// </summary>
+/// <param name="bEnabled"></param>
+/// <returns></returns>
+void UNIWINC_API SetBackground(const BOOL bEnabled) {
+	if (hTargetWnd_) {
+		if (bEnabled) {
+			// デスクトップにあたるウィンドウが未取得なら、ここで取得
+			if (hDesktopWnd_ == NULL) {
+				findDesktopWindow();
+			}
+
+			if (hDesktopWnd_ != NULL) {
+				SetParent(hTargetWnd_, hDesktopWnd_);
+				//SetBottommost(true);
+				//SetWindowPos(
+				//	hTargetWnd_,
+				//	HWND_BOTTOM,
+				//	0, 0, 0, 0,
+				//	SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+				//);
+				//refreshWindow();
+			}
+		}
+		else
+		{
+			SetParent(hTargetWnd_, hParentWnd_);
+			//SetBottommost(false);
+		}
+
+		// Run callback if the bottommost state changed
+		if (bIsBackground_!= bEnabled) {
+			if (hWindowStyleChangedHandler_ != nullptr) {
+				hWindowStyleChangedHandler_((INT32)EventType::Style);
+			}
+		}
+	}
+
+	bIsBackground_= bEnabled;
 }
 
 /// <summary>
@@ -1275,3 +1345,33 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 }
 
 #pragma endregion For file dropping and window procedure
+
+
+// ========================================================================
+#pragma region Windows only public functions
+
+/// <summary>
+/// 現在選択されているウィンドウハンドルを取得
+/// </summary>
+/// <returns></returns>
+HWND UNIWINC_API GetWindowHandle() {
+	return hTargetWnd_;
+}
+
+/// <summary>
+/// 壁紙化の親となるウィンドウハンドルを取得
+/// </summary>
+/// <returns></returns>
+HWND UNIWINC_API GetDesktopWindowHandle() {
+	return hDesktopWnd_;
+}
+
+/// <summary>
+/// 自分のプロセスIDを取得
+/// </summary>
+/// <returns></returns>
+DWORD UNIWINC_API GetMyProcessId() {
+	return GetCurrentProcessId();
+}
+
+#pragma endregion Windows-only public functions

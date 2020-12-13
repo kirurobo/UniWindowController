@@ -12,6 +12,10 @@
 // Maximum monitor number that this library could be handle
 #define UNIWINC_MAX_MONITORCOUNT 32
 
+// Maximum length for a classname
+#define UNIWINC_MAX_CLASSNAME 32
+
+
 // Methods to transparent the window
 enum class TransparentType : int {
 	None = 0,
@@ -45,6 +49,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API IsTransparent();
 UNIWINC_EXPORT BOOL UNIWINC_API IsBorderless();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTopmost();
 UNIWINC_EXPORT BOOL UNIWINC_API IsBottommost();
+UNIWINC_EXPORT BOOL UNIWINC_API IsBackground();
 UNIWINC_EXPORT BOOL UNIWINC_API IsMaximized();
 UNIWINC_EXPORT BOOL UNIWINC_API IsMinimized();
 
@@ -57,6 +62,7 @@ UNIWINC_EXPORT void UNIWINC_API SetTransparent(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetBorderless(const BOOL isBorderless);
 UNIWINC_EXPORT void UNIWINC_API SetTopmost(const BOOL isTopmost);
 UNIWINC_EXPORT void UNIWINC_API SetBottommost(const BOOL isBottommost);
+UNIWINC_EXPORT void UNIWINC_API SetBackground(const BOOL isBackground);
 UNIWINC_EXPORT void UNIWINC_API SetClickThrough(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetMaximized(const BOOL isZoomed);
 UNIWINC_EXPORT BOOL UNIWINC_API SetPosition(const float x, const float y);
@@ -89,4 +95,5 @@ UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
 UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
+UNIWINC_EXPORT HWND UNIWINC_API GetDesktopWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();

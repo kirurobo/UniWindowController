@@ -105,6 +105,9 @@ public class UniWinC : IDisposable
     public static extern void SetBottommost(bool bEnabled);
 
     [DllImport("LibUniWinC.dll")]
+    public static extern void SetBackground(bool bEnabled);
+
+    [DllImport("LibUniWinC.dll")]
     public static extern bool SetPosition(float x, float y);
 
     [DllImport("LibUniWinC.dll")]
@@ -163,6 +166,9 @@ public class UniWinC : IDisposable
     public static extern IntPtr GetWindowHandle();
 
     [DllImport("LibUniWinC.dll")]
+    public static extern IntPtr GetDesktopWindowHandle();
+
+    [DllImport("LibUniWinC.dll")]
     public static extern uint GetMyProcessId();
 
 
@@ -213,6 +219,7 @@ public class UniWinC : IDisposable
     {
         if (!IsActive) return;
         SetBottommost(isBottommost);
+        //SetBackground(isBottommost);
         this._isTopmost = false;
         this._isBottommost = isBottommost;
     }
