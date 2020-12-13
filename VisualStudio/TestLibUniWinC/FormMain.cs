@@ -18,6 +18,12 @@ namespace TestLibUniWinC
         static bool filesDropped = false;
         static string droppedFiles = "";
 
+        /// <summary>
+        /// 値を変更中で、GUI操作を反映させたくないときtrueとする
+        /// </summary>
+        bool isAplying = false;
+
+
         public FormMain()
         {
             InitializeComponent();
@@ -26,6 +32,10 @@ namespace TestLibUniWinC
         private void Form1_Shown(object sender, EventArgs e)
         {
             uniwinc = new UniWinC();
+
+            UniWinC.RegisterWindowStyleChangedCallback(type => {
+                Console.WriteLine($"Style changed: {type}");
+            });
 
             // ファイルドロップ時、その内容を出力
             UniWinC.RegisterDropFilesCallback(msg => {
@@ -132,27 +142,50 @@ namespace TestLibUniWinC
 
         private void checkBoxTransparent_CheckedChanged(object sender, EventArgs e)
         {
+            if (isAplying) return;
+
+            isAplying = true;
             uniwinc.EnableTransparent(checkBoxTransparent.Checked);
+            isAplying = false;
         }
 
         private void checkBoxTopmost_CheckedChanged(object sender, EventArgs e)
         {
+            if (isAplying) return;
+
+            isAplying = true;
+            checkBoxBottommost.Checked = false;
             uniwinc.EnableTopmost(checkBoxTopmost.Checked);
+            isAplying = false;
+        }
+
+        private void checkBoxBottommost_CheckedChanged(object sender, EventArgs e)
+        {
+            if (isAplying) return;
+
+            isAplying = true;
+            checkBoxTopmost.Checked = false;
+            uniwinc.EnableBottommost(checkBoxBottommost.Checked);
+            isAplying = false;
+        }
+
+        private void checkBoxAllowDrop_CheckedChanged(object sender, EventArgs e)
+        {
+            if (isAplying) return;
+
+            isAplying = true;
+            UniWinC.SetAllowDrop(checkBoxAllowDrop.Checked);
+            isAplying = false;
         }
 
         private void FormMain_Resize(object sender, EventArgs e)
         {
-            Console.WriteLine("Resized!");
+            //Console.WriteLine("Resized!");
         }
 
         private void buttonShowMonitorInfo_Click(object sender, EventArgs e)
         {
             PrintMonitorInfo();
-        }
-
-        private void checkBoxAllowDrop_CheckedChanged(object sender, EventArgs e)
-        {
-            UniWinC.SetAllowDrop(checkBoxAllowDrop.Checked);
         }
 
         private void buttonFitMonitor_Click(object sender, EventArgs e)

@@ -14,6 +14,7 @@ static INT nPrimaryMonitorHeight_;
 static BOOL bIsTransparent_ = FALSE;
 static BOOL bIsBorderless_ = FALSE;
 static BOOL bIsTopmost_ = FALSE;
+static BOOL bIsBottommost_ = FALSE;
 static BOOL bIsClickThrough_ = FALSE;
 static BOOL bAllowDropFile_ = FALSE;
 static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
@@ -26,8 +27,13 @@ static HMONITOR hMonitors_[UNIWINC_MAX_MONITORCOUNT];	// Monitor handles
 static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
 //static HHOOK hHook_ = NULL;
-static DropFilesCallback hDropFilesHandler_ = nullptr;
+static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
+static DropFilesCallback hDropFilesHandler_ = nullptr;
+
+
+// ========================================================================
+#pragma region Internal functions
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
@@ -337,6 +343,12 @@ BOOL GetTopMost() {
 	return (ex & WS_EX_TOPMOST) == WS_EX_TOPMOST;
 }
 
+#pragma endregion Internal functions
+
+
+// ========================================================================
+#pragma region Windows only public functions
+
 /// <summary>
 /// 現在選択されているウィンドウハンドルを取得
 /// </summary>
@@ -353,9 +365,11 @@ DWORD UNIWINC_API GetMyProcessId() {
 	return GetCurrentProcessId();
 }
 
+#pragma endregion Windows-only public functions
 
-// ==================================================================
-// Public functions
+
+// ========================================================================
+#pragma region For window style
 
 /// <summary>
 /// 利用可能な状態ならtrueを返す
@@ -390,6 +404,14 @@ BOOL UNIWINC_API IsBorderless() {
 /// <returns></returns>
 BOOL UNIWINC_API IsTopmost() {
 	return bIsTopmost_;
+}
+
+/// <summary>
+/// 最背面にしているか否かを返す
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API IsBottommost() {
+	return bIsBottommost_;
 }
 
 /// <summary>
@@ -615,6 +637,9 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 /// <param name="bTopmost"></param>
 /// <returns></returns>
 void UNIWINC_API SetTopmost(const BOOL bTopmost) {
+	// 最背面化されていたら、解除
+	bIsBottommost_ = false;
+
 	if (hTargetWnd_) {
 		SetWindowPos(
 			hTargetWnd_,
@@ -622,13 +647,48 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 			0, 0, 0, 0,
 			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
+
+		// Run callback if the topmost state changed
+		if (bIsTopmost_ != bTopmost) {
+			if (hWindowStyleChangedHandler_ != nullptr) {
+				hWindowStyleChangedHandler_((INT32)EventType::Style);
+			}
+		}
 	}
 
 	bIsTopmost_ = bTopmost;
 }
 
 /// <summary>
-/// 最大化／解除
+/// 最背面化／解除
+/// </summary>
+/// <param name="bBottommost"></param>
+/// <returns></returns>
+void UNIWINC_API SetBottommost(const BOOL bBottommost) {
+	// 最前面化されていたら、解除
+	bIsTopmost_ = false;
+
+	if (hTargetWnd_) {
+		SetWindowPos(
+			hTargetWnd_,
+			(bBottommost ? HWND_BOTTOM : HWND_NOTOPMOST),
+			0, 0, 0, 0,
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+		);
+
+		// Run callback if the bottommost state changed
+		if (bIsBottommost_ != bBottommost) {
+			if (hWindowStyleChangedHandler_ != nullptr) {
+				hWindowStyleChangedHandler_((INT32)EventType::Style);
+			}
+		}
+	}
+
+	bIsBottommost_ = bBottommost;
+}
+
+/// <summary>
+/// Zoom the window or normalize
 /// </summary>
 /// <param name="bZoomed"></param>
 /// <returns></returns>
@@ -671,28 +731,7 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 }
 
 /// <summary>
-/// 現在ウィンドウのあるモニタの高さを取得
-/// </summary>
-/// <returns></returns>
-int getCurrentMonitorHeight() {
-	return nPrimaryMonitorHeight_;
-
-
-	HMONITOR hMon = MonitorFromWindow(hTargetWnd_, MONITOR_DEFAULTTOPRIMARY);
-
-	MONITORINFO mi;
-	mi.cbSize = sizeof(mi);
-
-	if (GetMonitorInfo(hMon, &mi)) {
-		return (mi.rcMonitor.bottom - mi.rcMonitor.top);
-	}
-
-	// 通常は失敗しないはずだが、失敗したらこちらの値を返す
-	return GetSystemMetrics(SM_CYSCREEN);
-}
-
-/// <summary>
-/// ウィンドウ座標を設定
+/// Set the window position
 /// </summary>
 /// <param name="x">ウィンドウ左端座標 [px]</param>
 /// <param name="y">プライマリー画面下端を原点とし、上が正のY座標 [px]</param>
@@ -704,11 +743,8 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 
-	// 表示されているモニタの高さを取得（DPIに依存）
-	int monitorHeight = getCurrentMonitorHeight();
-
 	// 引数の y はCocoa相当の座標系でウィンドウ左下なので、変換
-	int newY = (monitorHeight - (int)y) - (rect.bottom - rect.top);
+	int newY = (nPrimaryMonitorHeight_ - (int)y) - (rect.bottom - rect.top);
 	int newX = (int)(x);
 
 	return SetWindowPos(
@@ -720,7 +756,7 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 }
 
 /// <summary>
-/// ウィンドウ座標を取得
+/// Get the window position
 /// </summary>
 /// <param name="x">ウィンドウ左端座標 [px]</param>
 /// <param name="y">プライマリー画面下端を原点とし、上が正のY座標 [px]</param>
@@ -731,20 +767,17 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 
 	if (hTargetWnd_ == NULL) return FALSE;
 
-	// 表示されているモニタの高さを取得（DPIに依存）
-	int monitorHeight = getCurrentMonitorHeight();
-
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
 		*x = (float)(rect.left);
-		*y = (float)(monitorHeight - rect.bottom);	// 左下基準とする
+		*y = (float)(nPrimaryMonitorHeight_- rect.bottom);	// 左下基準とする
 		return TRUE;
 	}
 	return FALSE;
 }
 
 /// <summary>
-/// ウィンドウサイズを設定
+/// Set the window size
 /// </summary>
 /// <param name="width">幅 [px]</param>
 /// <param name="height">高さ [px]</param>
@@ -772,7 +805,7 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 }
 
 /// <summary>
-/// ウィンドウサイズを取得
+/// Get the window size with the border
 /// </summary>
 /// <param name="width">幅 [px]</param>
 /// <param name="height">高さ [px]</param>
@@ -791,6 +824,34 @@ BOOL  UNIWINC_API GetSize(float* width, float* height) {
 	}
 	return FALSE;
 }
+
+/// <summary>
+/// Register the callback fucnction called when window style changed
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterWindowStyleChangedCallback(WindowStyleChangedCallback callback) {
+	if (callback == nullptr) return FALSE;
+
+	hWindowStyleChangedHandler_= callback;
+	return TRUE;
+}
+
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterWindowStyleChangedCallback() {
+	hWindowStyleChangedHandler_ = nullptr;
+	return TRUE;
+}
+
+
+#pragma endregion For window style
+
+
+// ========================================================================
+#pragma region For monitor Info.
 
 /// <summary>
 /// このウィンドウが現在表示されているモニタ番号を取得
@@ -867,7 +928,6 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 
 	RECT rect = pMonitorRect_[pMonitorIndices_[monitorIndex]];
 	*x = (float)(rect.left);
-	//*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// 左下基準とする
 	*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// 左下基準とする
 	*width = (float)(rect.right - rect.left);
 	*height = (float)(rect.bottom - rect.top);
@@ -895,10 +955,11 @@ BOOL UNIWINC_API UnregisterMonitorChangedCallback() {
 	return TRUE;
 }
 
+#pragma endregion For monitor Info.
 
 
-// ==================================================================
-// Mouse cursor
+// ========================================================================
+#pragma region For mouse cursor
 
 /// <summary>
 /// マウスカーソル座標を取得
@@ -935,10 +996,11 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 	return SetCursorPos(pos.x, pos.y);
 }
 
+#pragma endregion For mouse cursor
 
-// ==================================================================
-// Shell32
 
+// ========================================================================
+#pragma region For file dropping and window procedure
 
 /// <summary>
 /// Process drop files
@@ -995,20 +1057,57 @@ BOOL ReceiveDropFiles(HDROP hDrop) {
 /// <returns></returns>
 LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_DROPFILES)
+	HDROP hDrop;
+	INT32 count;
+
+	switch (uMsg)
 	{
-		HDROP hDrop = (HDROP)wParam;
+	case WM_DROPFILES:
+		hDrop = (HDROP)wParam;
 		ReceiveDropFiles(hDrop);
 		DragFinish(hDrop);
-	}
-	else if (uMsg == WM_DISPLAYCHANGE) {
+		break;
+
+	case WM_DISPLAYCHANGE:
 		updateScreenSize();
 
-		// Do callback
+		// Run callback
 		if (hMonitorChangedHandler_ != nullptr) {
-			INT32 count = GetMonitorCount();
+			count = GetMonitorCount();
 			hMonitorChangedHandler_(count);
 		}
+		break;
+
+	case WM_WINDOWPOSCHANGING:
+		// 常に最背面
+		if (bIsBottommost_) {
+			((WINDOWPOS*)lParam)->hwndInsertAfter = HWND_BOTTOM;
+		}
+		break;
+
+	case WM_STYLECHANGED:	// スタイルの変化を検出
+		// Run callback
+		if (hWindowStyleChangedHandler_ != nullptr) {
+			hWindowStyleChangedHandler_((INT32)EventType::Style);
+		}
+		break;
+
+	case WM_SIZE:		// 最大化、最小化による変化を検出
+		switch (wParam)
+		{
+		case SIZE_RESTORED:
+		case SIZE_MAXIMIZED:
+		case SIZE_MINIMIZED:
+			// Run callback
+			if (hWindowStyleChangedHandler_ != nullptr) {
+				hWindowStyleChangedHandler_((INT32)EventType::Size);
+			}
+			break;
+		}
+		break;
+
+	default:
+		break;
 	}
 
 	if (lpOriginalWndProc_ != NULL) {
@@ -1017,39 +1116,6 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	else {
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
-}
-
-/// <summary>
-/// Callback when received WM_DROPFILE message
-/// </summary>
-/// <param name="nCode"></param>
-/// <param name="wParam"></param>
-/// <param name="lParam"></param>
-/// <returns></returns>
-LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
-	if (nCode < 0) {
-		return CallNextHookEx(NULL, nCode, wParam, lParam);
-	}
-
-	// lParam is a pointer to an MSG structure for WH_GETMESSAGE
-	LPMSG msg = (LPMSG)lParam;
-
-	switch (msg->message) {
-	case WM_DROPFILES:
-		if (hTargetWnd_ != NULL && msg->hwnd == hTargetWnd_) {
-			HDROP hDrop = (HDROP)msg->wParam;
-			ReceiveDropFiles(hDrop);
-			DragFinish(hDrop);
-		}
-		return TRUE;
-		break;
-
-	case WM_DISPLAYCHANGE:
-		updateScreenSize();
-		break;
-	}
-
-	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 /// <summary>
@@ -1097,6 +1163,46 @@ void CreateCustomWindowProcedure() {
 	}
 }
 
+
+// ↓ウィンドウプロシージャではなくメッセージをフックする場合はこちらを使う
+//    解像度変更を検出するためにウィンドウプロシージャを使うものとした
+
+///// <summary>
+///// Callback when received WM_DROPFILE message
+///// </summary>
+///// <param name="nCode"></param>
+///// <param name="wParam"></param>
+///// <param name="lParam"></param>
+///// <returns></returns>
+//LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+//	if (nCode < 0) {
+//		return CallNextHookEx(NULL, nCode, wParam, lParam);
+//	}
+//
+//	// lParam is a pointer to an MSG structure for WH_GETMESSAGE
+//	LPMSG msg = (LPMSG)lParam;
+//
+//	switch (msg->message) {
+//	case WM_DROPFILES:
+//		if (hTargetWnd_ != NULL && msg->hwnd == hTargetWnd_) {
+//			HDROP hDrop = (HDROP)msg->wParam;
+//			ReceiveDropFiles(hDrop);
+//			DragFinish(hDrop);
+//		}
+//		return TRUE;
+//		break;
+//
+//	case WM_DISPLAYCHANGE:
+//		updateScreenSize();
+//		break;
+//
+//	case WM_STYLECHANGED:
+//		break;
+//	}
+//
+//	return CallNextHookEx(NULL, nCode, wParam, lParam);
+//}
+//
 ///// <summary>
 ///// Set the hook
 ///// </summary>
@@ -1125,9 +1231,9 @@ void CreateCustomWindowProcedure() {
 //	hHook_ = NULL;
 //}
 
+
 /// <summary>
-/// Set window procedure.
-/// This method is not implemented in user32.dll
+/// Enable or disable file dropping
 /// </summary>
 /// <returns>Previous window procedure</returns>
 BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
@@ -1136,11 +1242,6 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 
 	bAllowDropFile_ = bEnabled;
 	DragAcceptFiles(hTargetWnd_, bAllowDropFile_);
-
-	if (bEnabled && (lpMyWndProc_ == NULL)) {
-		// Create the window procedure if the first time
-		CreateCustomWindowProcedure();
-	}
 
 	//if (bEnabled && hHook == NULL) {
 	//	BeginHook();
@@ -1172,3 +1273,5 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 	hDropFilesHandler_ = nullptr;
 	return TRUE;
 }
+
+#pragma endregion For file dropping and window procedure

@@ -53,6 +53,12 @@ public class UniWinC : IDisposable
     private bool _isTopmost = false;
 
     /// <summary>
+    /// 最背面表示になっているかどうか
+    /// </summary>
+    public bool IsBottommost { get { return (IsActive && _isBottommost); } }
+    private bool _isBottommost = false;
+
+    /// <summary>
     /// ウィンドウ透過となっているか
     /// </summary>
     public bool IsTransparent { get { return (IsActive && _isTransparent); } }
@@ -96,6 +102,9 @@ public class UniWinC : IDisposable
     public static extern void SetTopmost(bool bEnabled);
 
     [DllImport("LibUniWinC.dll")]
+    public static extern void SetBottommost(bool bEnabled);
+
+    [DllImport("LibUniWinC.dll")]
     public static extern bool SetPosition(float x, float y);
 
     [DllImport("LibUniWinC.dll")]
@@ -124,6 +133,14 @@ public class UniWinC : IDisposable
 
     [DllImport("LibUniWinC.dll")]
     public static extern bool SetAllowDrop(bool enabled);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void WindowStyleChanged([MarshalAs(UnmanagedType.I4)] int eventType);
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool RegisterWindowStyleChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] WindowStyleChanged callback);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool UnregisterWindowStyleChangedCallback();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void FileDropped([MarshalAs(UnmanagedType.LPWStr)]string files);
@@ -184,7 +201,20 @@ public class UniWinC : IDisposable
     {
         if (!IsActive) return;
         SetTopmost(isTopmost);
+        this._isBottommost = false;
         this._isTopmost = isTopmost;
+    }
+
+    /// <summary>
+    /// Set the window bottommost.
+    /// </summary>
+    /// <param name="isBottommost">If set to <c>true</c> is always on the bottom.</param>
+    public void EnableBottommost(bool isBottommost)
+    {
+        if (!IsActive) return;
+        SetBottommost(isBottommost);
+        this._isTopmost = false;
+        this._isBottommost = isBottommost;
     }
 
     public void EnableClickThrough(bool isThrough)

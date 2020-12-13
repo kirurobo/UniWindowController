@@ -19,6 +19,17 @@ enum class TransparentType : int {
 	ColorKey = 2
 };
 
+// Event type (Experimental)
+enum class EventType : int {
+	None = 0,
+	Style = 1,
+	Size = 2
+};
+
+// Function called when window style (e.g. maximized, transparetize, etc.)
+//   param: The argument is indicate the kind of event
+using WindowStyleChangedCallback = void(*)(INT32);
+
 // Function called when files have dropped
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
 using DropFilesCallback = void(*)(WCHAR*);
@@ -33,6 +44,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API IsActive();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTransparent();
 UNIWINC_EXPORT BOOL UNIWINC_API IsBorderless();
 UNIWINC_EXPORT BOOL UNIWINC_API IsTopmost();
+UNIWINC_EXPORT BOOL UNIWINC_API IsBottommost();
 UNIWINC_EXPORT BOOL UNIWINC_API IsMaximized();
 UNIWINC_EXPORT BOOL UNIWINC_API IsMinimized();
 
@@ -44,6 +56,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API DetachWindow();
 UNIWINC_EXPORT void UNIWINC_API SetTransparent(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetBorderless(const BOOL isBorderless);
 UNIWINC_EXPORT void UNIWINC_API SetTopmost(const BOOL isTopmost);
+UNIWINC_EXPORT void UNIWINC_API SetBottommost(const BOOL isBottommost);
 UNIWINC_EXPORT void UNIWINC_API SetClickThrough(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetMaximized(const BOOL isZoomed);
 UNIWINC_EXPORT BOOL UNIWINC_API SetPosition(const float x, const float y);
@@ -52,11 +65,18 @@ UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetSize(float* width, float* height);
 UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
 
+// Event handling
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterWindowStyleChangedCallback(WindowStyleChangedCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterWindowStyleChangedCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
+
+
 // Monitor Info.
 UNIWINC_EXPORT INT32 UNIWINC_API GetMonitorCount();
 UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height);
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
-UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
 
 // Mouse pointer
 UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);
@@ -64,8 +84,6 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback);
-UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
