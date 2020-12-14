@@ -35,6 +35,10 @@ UNIWINC_EXPORT BOOL IsTopmost() {
     return [LibUniWinC isTopmost];
 }
 
+UNIWINC_EXPORT BOOL IsBottommost() {
+    return [LibUniWinC isBottommost];
+}
+
 UNIWINC_EXPORT BOOL IsMaximized() {
     return [LibUniWinC isMaximized];
 }
@@ -70,6 +74,10 @@ UNIWINC_EXPORT void SetBorderless(BOOL isBorderless) {
 
 UNIWINC_EXPORT void SetTopmost(BOOL isTopmost) {
     [LibUniWinC setTopmostWithIsTopmost:isTopmost];
+}
+
+UNIWINC_EXPORT void SetBottommost(BOOL isBottommost) {
+    [LibUniWinC setBottommostWithIsBottommost:isBottommost];
 }
 
 UNIWINC_EXPORT void SetMaximized(BOOL isZoomed) {
@@ -116,8 +124,12 @@ UNIWINC_EXPORT BOOL UnregisterMonitorChangedCallback() {
     return [LibUniWinC unregisterMonitorChangedCallback];
 }
 
-UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
-    return [LibUniWinC setAllowDropWithEnabled: enabled];
+UNIWINC_EXPORT BOOL RegisterWindowStyleChangedCallback(IntCallback callback) {
+    return [LibUniWinC registerWindowStyleChangedCallbackWithCallback: callback];
+}
+
+UNIWINC_EXPORT BOOL UnregisterWindowStyleChangedCallback() {
+    return [LibUniWinC unregisterWindowStyleChangedCallback];
 }
 
 UNIWINC_EXPORT BOOL RegisterDropFilesCallback(StringCallback callback) {
@@ -126,6 +138,10 @@ UNIWINC_EXPORT BOOL RegisterDropFilesCallback(StringCallback callback) {
 
 UNIWINC_EXPORT BOOL UnregisterDropFilesCallback() {
     return [LibUniWinC unregisterDropFilesCallback];
+}
+
+UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
+    return [LibUniWinC setAllowDropWithEnabled: enabled];
 }
 
 UNIWINC_EXPORT BOOL SetCursorPosition(Float32 x, Float32 y) {

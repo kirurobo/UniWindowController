@@ -99,6 +99,7 @@ namespace Kirurobo
                 // Add events
                 uniwinc.OnStateChanged += () =>
                 {
+                    Debug.Log("Style changed");
                     UpdateUI();
                 };
                 uniwinc.OnMonitorChanged += () => {

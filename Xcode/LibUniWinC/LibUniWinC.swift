@@ -24,15 +24,23 @@ public class LibUniWinC : NSObject {
     
     // MARK: - Internal structs and classes
     
-    // 現在の設定を保持する構造体
+    /// 現在の設定を保持する構造体
     private struct State {
         public var isReady: Bool = false
         public var isTopmost: Bool = false
+        public var isBottommost: Bool = false
         public var isBorderless: Bool = false
         public var isTransparent: Bool = false
         
         // サイズ変更がなされると不正確となる。透過時にこれを使う
         public var isZoomed: Bool = false
+    }
+    
+    /// WindowStyleChangedイベントで返す種類値（仮）
+    private enum EventType : Int32 {
+        case None = 0
+        case Style = 1
+        case Size = 2
     }
     
     /// ウィンドウの初期状態を保持するクラス
@@ -111,7 +119,8 @@ public class LibUniWinC : NSObject {
     public typealias intCallback = (@convention(c) (Int32) -> Void)
     public static var dropFilesCallback: stringCallback? = nil
     public static var monitorChangedCallback: intCallback? = nil
-    
+    public static var windowStyleChangedCallback: intCallback? = nil
+
     /// Sub view to implement file dropping
     private static var overlayView: OverlayView? = nil
 
@@ -146,6 +155,10 @@ public class LibUniWinC : NSObject {
         return state.isTopmost
     }
     
+    @objc public static func isBottommost() -> Bool {
+        return state.isBottommost
+    }
+
     @objc public static func isMaximized() -> Bool {
         if (state.isTransparent) {
             return state.isZoomed
@@ -273,21 +286,39 @@ public class LibUniWinC : NSObject {
         
         // Reapply the state at fullscreen
         NotificationCenter.default.addObserver(
-            forName: NSWindow.didEnterFullScreenNotification,
+            forName: nil,
             object: nil,
             queue: OperationQueue.main)
         {
-            notification -> Void in _reapplyWindowStyles()
+            notification -> Void in
+            switch(notification.name) {
+            case NSWindow.didEnterFullScreenNotification:
+                _reapplyWindowStyles()
+                _doWindowStyleChangedCallback(num: EventType.Size)
+                break
+            case NSWindow.didExitFullScreenNotification:
+                _reapplyWindowStyles()
+                _doWindowStyleChangedCallback(num: EventType.Size)
+                break
+            case NSWindow.didMiniaturizeNotification:
+                _doWindowStyleChangedCallback(num: EventType.Size)
+                break
+            case NSWindow.didDeminiaturizeNotification:
+                _doWindowStyleChangedCallback(num: EventType.Size)
+                break
+            case NSWindow.didResizeNotification:
+                if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
+                    state.isZoomed = targetWindow!.isZoomed
+                    _doWindowStyleChangedCallback(num: EventType.Size)
+                }
+            default:
+                break
+            }
         }
-        
-        // Reapply the state at the end of fullscreen
-        NotificationCenter.default.addObserver(
-            forName: NSWindow.didExitFullScreenNotification,
-            object: nil,
-            queue: OperationQueue.main)
-        {
-            notification -> Void in _reapplyWindowStyles()
-        }
+    }
+    
+    private static func _doWindowStyleChangedCallback(num : EventType) -> Void {
+        windowStyleChangedCallback?(num.rawValue)
     }
     
     /// Create an overlay view to handle file dropping
@@ -446,8 +477,26 @@ public class LibUniWinC : NSObject {
             }
         }
         state.isTopmost = isTopmost
+        state.isBottommost = false
     }
-    
+
+    /// 常に最背面を有効化／無効化
+    /// - Parameter isBottommost: trueなら最背面
+    @objc public static func setBottommost(isBottommost: Bool) -> Void {
+        if let window: NSWindow = targetWindow {
+            if (isBottommost) {
+                window.collectionBehavior = [.fullScreenAuxiliary]
+                window.level = orgWindowInfo.level
+                window.order(NSWindow.OrderingMode.below, relativeTo:0)
+            } else {
+                window.collectionBehavior = orgWindowInfo.collectionBehavior
+                window.level = orgWindowInfo.level
+            }
+        }
+        state.isBottommost = isBottommost
+        state.isTopmost = false
+    }
+
     /// 操作のクリックスルーを有効化／無効化
     @objc public static func setClickThrough(isTransparent: Bool) -> Void {
         if (targetWindow != nil) {
@@ -561,6 +610,16 @@ public class LibUniWinC : NSObject {
         return true
     }
 
+    @objc public static func registerWindowStyleChangedCallback(callback: @escaping intCallback) -> Bool {
+        windowStyleChangedCallback = callback
+        return true
+    }
+    
+    @objc public static func unregisterWindowStyleChangedCallback() -> Bool {
+        windowStyleChangedCallback = nil
+        return true
+    }
+
     
     // MARK: - Monitor Info.
     
@@ -648,6 +707,7 @@ public class LibUniWinC : NSObject {
         monitorChangedCallback = nil
         return true
     }
+
 
     // MARK: - File drop
     
