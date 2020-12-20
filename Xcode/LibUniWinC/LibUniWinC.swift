@@ -271,73 +271,15 @@ public class LibUniWinC : NSObject {
         // Apply the state
         _reapplyWindowStyles()
         
-        // Reapply the state at fullscreen
-//        if (observerObject != nil) {
-//            NotificationCenter.default.removeObserver(observerObject!)
-//        }
-//        observerObject = NotificationCenter.default.addObserver(
-//            forName: nil,
-//            object: nil,
-//            queue: OperationQueue.main)
-//        {
-//            notification -> Void in
-//            switch(notification.name) {
-//            case NSWindow.didEnterFullScreenNotification:
-//                _reapplyWindowStyles()
-//                _doWindowStyleChangedCallback(num: EventType.Size)
-//                break
-//            case NSWindow.didExitFullScreenNotification:
-//                _reapplyWindowStyles()
-//                _doWindowStyleChangedCallback(num: EventType.Size)
-//                break
-//            case NSWindow.didMiniaturizeNotification:
-//                _doWindowStyleChangedCallback(num: EventType.Size)
-//                break
-//            case NSWindow.didDeminiaturizeNotification:
-//                _doWindowStyleChangedCallback(num: EventType.Size)
-//                break
-//            case NSWindow.didResizeNotification:
-//                if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
-//                    state.isZoomed = targetWindow!.isZoomed
-//                    _doWindowStyleChangedCallback(num: EventType.Size)
-//                }
-//            default:
-//                break
-//            }
-//        }
-        
+        // Add observers for window state changed callback and reapply styles
         let center = NotificationCenter.default
         center.addObserver(self, selector: #selector(_fullScreenChangedObserver(notification:)), name: NSWindow.didEnterFullScreenNotification, object: window)
         center.addObserver(self, selector: #selector(_fullScreenChangedObserver(notification:)), name: NSWindow.didExitFullScreenNotification, object: window)
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didMiniaturizeNotification, object: window)
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didDeminiaturizeNotification, object: window)
         center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
-
-//        observerObject = NotificationCenter.default.addObserver(
-//            window,
-//            selector:#selector(_windowStateObserver(name:)),
-//            name: nil,
-//            object: nil
-//            )
     }
-    
-    @objc static func _fullScreenChangedObserver(notification: Notification) {
-        _reapplyWindowStyles()
-        _doWindowStyleChangedCallback(num: EventType.Size)
-    }
-    
-    @objc static func _windowStateChangedObserver(notification: Notification) {
-        _doWindowStyleChangedCallback(num: EventType.Size)
-    }
-    
-    @objc static func _resizedObserver(notification: Notification) {
-        if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
-            state.isZoomed = targetWindow!.isZoomed
-            _doWindowStyleChangedCallback(num: EventType.Size)
-        }
-    }
-
-
+ 
     private static func _detachWindow() -> Void {
         if (targetWindow != nil) {
             let center = NotificationCenter.default
@@ -360,32 +302,21 @@ public class LibUniWinC : NSObject {
             targetWindow = nil
         }
     }
+
+    @objc static func _fullScreenChangedObserver(notification: Notification) {
+        // Reapply the state at fullscreen
+        _reapplyWindowStyles()
+        _doWindowStyleChangedCallback(num: EventType.Size)
+    }
     
-    @objc static func _windowStateObserver(name: NSNotification.Name?) {
-        if (name != nil) {
-            switch(name) {
-            case NSWindow.didEnterFullScreenNotification:
-                _reapplyWindowStyles()
-                //_doWindowStyleChangedCallback(num: EventType.Size)
-                break
-            case NSWindow.didExitFullScreenNotification:
-                _reapplyWindowStyles()
-                //_doWindowStyleChangedCallback(num: EventType.Size)
-                break
-            case NSWindow.didMiniaturizeNotification:
-                //_doWindowStyleChangedCallback(num: EventType.Size)
-                break
-            case NSWindow.didDeminiaturizeNotification:
-                //_doWindowStyleChangedCallback(num: EventType.Size)
-                break
-            case NSWindow.didResizeNotification:
-                if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
-                    state.isZoomed = targetWindow!.isZoomed
-                    //_doWindowStyleChangedCallback(num: EventType.Size)
-                }
-            default:
-                break
-            }
+    @objc static func _windowStateChangedObserver(notification: Notification) {
+        _doWindowStyleChangedCallback(num: EventType.Size)
+    }
+    
+    @objc static func _resizedObserver(notification: Notification) {
+        if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
+            state.isZoomed = targetWindow!.isZoomed
+            _doWindowStyleChangedCallback(num: EventType.Size)
         }
     }
     
