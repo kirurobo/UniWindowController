@@ -8,6 +8,11 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.8.0] - 2020-12-27
+### Added
+- Fullscreen demo.
+- Set to bottommost. (Experimental)
+
 
 ## [v0.7.0] - 2020-12-07
 ### Added
