@@ -19,6 +19,7 @@ namespace Kirurobo
     {
         private UniWindowController uniwinc;
         private UniWindowMoveHandle uniWinMoveHandle;
+        private RectTransform canvasRect;
 
         private float mouseMoveSS = 0f;           // Sum of mouse trajectory squares. [px^2]
         private float mouseMoveSSThreshold = 36f; // Click (not dragging) threshold. [px^2]
@@ -58,6 +59,9 @@ namespace Kirurobo
             
             // UniWindowDragMove を探す
             uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();
+
+            // CanvasのRectTransform取得
+            if (menuPanel) canvasRect = menuPanel.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
 
             // 有効なモニタ数に合わせて選択肢を作成
             UpdateMonitorDropdown();
@@ -282,7 +286,7 @@ namespace Kirurobo
         {
             if (menuPanel)
             {
-                Vector2 pos = position;
+                Vector2 pos = position * (canvasRect.sizeDelta.x / Screen.width);
                 float w = menuPanel.rect.width;
                 float h = menuPanel.rect.height;
 
