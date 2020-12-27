@@ -28,6 +28,7 @@ namespace Kirurobo
         public Toggle topmostToggle;
         public Toggle bottommostToggle;
         public Dropdown fitWindowDropdown;
+        public Button quitButton;
         public Button menuCloseButton;
         public RectTransform menuPanel;
 
@@ -57,15 +58,15 @@ namespace Kirurobo
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
                 bottommostToggle?.onValueChanged.AddListener(val => uniwinc.isBottommost = val);
-
                 fitWindowDropdown?.onValueChanged.AddListener(val => SetFitToMonitor(val));
+                quitButton?.onClick.AddListener(Quit);
                 menuCloseButton?.onClick.AddListener(CloseMenu);
 
                 // Add events
                 uniwinc.OnStateChanged += () =>
                 {
                     UpdateUI();
-                    ShowEventMessage("Style changed");
+                    //ShowEventMessage("Style changed");
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
@@ -128,12 +129,17 @@ namespace Kirurobo
             // Quit or stop playing when pressed [ESC]
             if (Input.GetKey(KeyCode.Escape))
             {
+                Quit();
+            }
+        }
+
+        void Quit()
+        {
 #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
-            }
         }
 
         /// <summary>
@@ -177,6 +183,7 @@ namespace Kirurobo
                 menuPanel.anchorMin = Vector2.zero;
                 menuPanel.anchorMax = Vector2.zero;
                 menuPanel.anchoredPosition = pos;
+                
                 menuPanel.gameObject.SetActive(true);
             }
         }

@@ -26,48 +26,42 @@ namespace Kirurobo
         }
 
         [Flags]
-        public enum ZoomType : int
+        public enum DragState
         {
-            None = 0,
-            Dolly = 1, // Dolly in/out
-            Zoom = 2, // Zoom in/out
-        }
-
-        [Flags]
-        public enum MouseButton : int
-        {
-            Left = 0,
-            Right = 1,
-            Middle = 2,
+            None,
+            Rotating,
+            Translating,
         }
         
         public RotationAxes axes = RotationAxes.PitchAndYaw;
-        [FormerlySerializedAs("zoomMode")] public ZoomType zoomType = ZoomType.Dolly;
-        public float sensitivityX = 15f;
-        public float sensitivityY = 15f;
-        public float dragSensitivity = 0.1f;
-        public float wheelSensitivity = 0.5f;
+        public float yawSensitivity = 1f;
+        public float pitchSensitvity = 1f;
+        public float scaleSensitivity = 0.5f;
 
         public Vector2 minimumAngles = new Vector2(-90f, -360f);
         public Vector2 maximumAngles = new Vector2(90f, 360f);
 
-        [Tooltip("None means to set the parent transform")]
-        public Transform centerTransform; // 回転中心
+        [Tooltip("Restrict to move out from screen")]
+        public bool confineTranslation = true;        // 並進移動をウィンドウ（Screen）の範囲に制限するか
 
+        [Tooltip("Default is the parent transform")]
+        public Transform centerTransform; // 回転中心
+        
+        [Tooltip("Default is the main camera")]
+        public Camera currentCamera;
+        
         internal GameObject centerObject = null; // 回転中心Transformが指定されなかった場合に作成される
 
-        [SerializeField]
         internal Vector3 rotation;
         internal Vector3 translation;
         internal Vector3 lastMousePosition;    // 直前フレームでのマウス座標 
+        internal DragState dragState;            // ドラッグ中は開始時のボタンに合わせた内容にする
 
         internal Vector3 relativePosition;
         internal Quaternion relativeRotation;
         internal Vector3 originalLocalScale;
-        internal float dolly;
         internal float zoom;
 
-        public Camera currentCamera;
 
         void Start()
         {
@@ -133,8 +127,7 @@ namespace Kirurobo
         public void ResetTransform()
         {
             rotation = relativeRotation.eulerAngles;
-            translation = Vector3.zero;
-            dolly = 0f;
+            translation = relativePosition;
             zoom = 0f;
 
             UpdateTransform();
@@ -154,86 +147,115 @@ namespace Kirurobo
 
         internal virtual void HandleMouse()
         {
-            if (Input.GetMouseButton(1) && IsHit())
+            Vector3 mousePos = Input.mousePosition;
+            
+            if (Input.GetMouseButtonDown(0))
             {
-                // 右ボタンドラッグで回転
-                if ((axes & RotationAxes.Yaw) > RotationAxes.None)
+                // 左ボタン(0)ドラッグでは並進移動を行う
+                if (dragState == DragState.None && IsHit(mousePos))
                 {
-                    rotation.y += Input.GetAxis("Mouse X") * sensitivityX;
-                    rotation.y = ClampAngle(rotation.y, minimumAngles.y, maximumAngles.y);
-                }
+                    dragState = DragState.Translating;
+                    
+                    // 画面範囲に制限する
+                    if (confineTranslation)
+                    {
+                        Vector3 screenMax = new Vector3(Screen.width, Screen.height);
+                        mousePos = Vector3.Max(Vector3.Min(mousePos, screenMax), Vector3.zero);
+                    }
+                    
+                    lastMousePosition = mousePos;        // ドラッグ開始時にはリセット
+                } 
+            }
+            else if (Input.GetMouseButtonDown(1))
+            {
+                // 右ボタン(1)ドラッグでは回転を行う
+                if (dragState == DragState.None && IsHit(mousePos))
+                {
+                    dragState = DragState.Rotating;
+                    lastMousePosition = mousePos;        // ドラッグ開始時にはリセット
+                } 
+            }
 
-                if ((axes & RotationAxes.Pitch) > RotationAxes.None)
+            // ドラッグで回転
+            if (dragState == DragState.Rotating)
+            {
+                // ボタンが押されている間のみ操作
+                if (Input.GetMouseButton(1))
                 {
-                    rotation.x += Input.GetAxis("Mouse Y") * sensitivityY;
-                    rotation.x = ClampAngle(rotation.x, minimumAngles.x, maximumAngles.x);
+                    // ドラッグで回転
+                    if ((axes & RotationAxes.Yaw) > RotationAxes.None)
+                    {
+                        rotation.y -= (mousePos.x - lastMousePosition.x) * 360f / Screen.width * yawSensitivity;
+                        rotation.y = ClampAngle(rotation.y, minimumAngles.y, maximumAngles.y);
+                    }
+
+                    if ((axes & RotationAxes.Pitch) > RotationAxes.None)
+                    {
+                        rotation.x += (mousePos.y - lastMousePosition.y) * 360f / Screen.height * pitchSensitvity;
+                        rotation.x = ClampAngle(rotation.x, minimumAngles.x, maximumAngles.x);
+                    }
+
+                    UpdateTransform();
                 }
+                else
+                {
+                    // 右ボタンが離されていれば回転は終了
+                    dragState = DragState.None;
+                }
+            }
+            
+            // ドラッグで並進移動
+            if (dragState == DragState.Translating)
+            {
+                // ボタンが押されている間のみ操作
+                if (Input.GetMouseButton(0))
+                {
+                    // 画面範囲に制限する
+                    if (confineTranslation)
+                    {
+                        Vector3 screenMax = new Vector3(Screen.width, Screen.height);
+                        mousePos = Vector3.Max(Vector3.Min(mousePos, screenMax), Vector3.zero);
+                    }
+                    
+                    Vector3 screenPos = currentCamera.WorldToScreenPoint(transform.position);
+                    Vector3 deltaPos = mousePos - lastMousePosition; 
+                    deltaPos.z = 0f;
+                    Vector3 worldPos = currentCamera.ScreenToWorldPoint(screenPos + deltaPos);
+                    translation = worldPos - centerTransform.position;
+                    
+                    UpdateTransform();
+                }
+                else
+                {
+                    // ボタンが離されていれば並進は終了
+                    dragState = DragState.None;
+                }
+            }
+            
+            // ホイールが回転されれば、拡大縮小
+            if (!Mathf.Approximately(Input.GetAxis("Mouse ScrollWheel"), 0f) && IsHit(mousePos))
+            {
+                // ホイールによる操作量
+                float wheelDelta = Input.GetAxis("Mouse ScrollWheel") * scaleSensitivity;
+
+                // 倍率を変更
+                zoom -= wheelDelta;
+                zoom = Mathf.Clamp(zoom, -1f, 2f); // Logarithm of field-of-view [deg] range
 
                 UpdateTransform();
             }
-            else if (Input.GetMouseButton(0) && IsHit())
-            {
-                Vector3 relativePos = Quaternion.Inverse(currentCamera.transform.rotation) * (transform.position - currentCamera.transform.position);
-                Vector3 screenPos = currentCamera.WorldToScreenPoint(transform.position);
-                Vector3 mousePos = Input.mousePosition - lastMousePosition; 
-                mousePos.z = 0f;
-                Vector3 delta = currentCamera.ScreenToWorldPoint(mousePos + screenPos);
-                //Debug.Log(mousePos);
-                translation = delta - centerTransform.position;
-                UpdateTransform();
-            }
-            else if (!Mathf.Approximately(Input.GetAxis("Mouse ScrollWheel"), 0f) && IsHit())
-            {
-                // ホイールで接近・離脱
-                float wheelDelta = Input.GetAxis("Mouse ScrollWheel") * wheelSensitivity;
-
-                ZoomType type = zoomType;
-
-                // Shiftキーが押されていて、かつZoomModeがZoomかDollyならば、モードを入れ替える
-                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                {
-                    if (type == ZoomType.Dolly)
-                    {
-                        type = ZoomType.Zoom;
-                    }
-                    else if (type == ZoomType.Zoom)
-                    {
-                        type = ZoomType.Dolly;
-                    }
-                }
-
-                if (wheelDelta != 0f)
-                {
-                    if ((type & ZoomType.Dolly) != ZoomType.None)
-                    {
-                        // ドリーの場合。カメラを近づけたり遠ざけたり。
-                        dolly += wheelDelta;
-                        dolly = Mathf.Clamp(dolly, -2f, 5f); // Logarithm of distance [m] range
-
-                        UpdateTransform();
-                    }
-                    else if ((type & ZoomType.Zoom) != ZoomType.None)
-                    {
-                        // ズームの場合。カメラのFOVを変更
-                        zoom -= wheelDelta;
-                        zoom = Mathf.Clamp(zoom, -1f, 2f); // Logarithm of field-of-view [deg] range
-
-                        UpdateTransform();
-                    }
-                }
-            }
-
-            lastMousePosition = Input.mousePosition;
+                    
+            lastMousePosition = mousePos;
         }
 
         /// <summary>
         /// マウスでの操作時、オブジェクトにヒットしたか判定
         /// </summary>
         /// <returns></returns>
-        internal bool IsHit()
+        internal bool IsHit(Vector3 screenPosition)
         {
             RaycastHit hit;
-            Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
+            Ray ray = currentCamera.ScreenPointToRay(screenPosition);
 
             if (Physics.Raycast(ray, out hit))
             {
