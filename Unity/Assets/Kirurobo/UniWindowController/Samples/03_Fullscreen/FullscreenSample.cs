@@ -47,6 +47,9 @@ namespace Kirurobo
 
             // Toggleのチェック状態を、現在の状態に合わせる
             UpdateUI();
+            
+            // 初期状態ではメニューを閉じておく
+            CloseMenu();
 
             if (uniwinc)
             {
