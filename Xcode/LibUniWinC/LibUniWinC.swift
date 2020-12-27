@@ -278,6 +278,7 @@ public class LibUniWinC : NSObject {
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didMiniaturizeNotification, object: window)
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didDeminiaturizeNotification, object: window)
         center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
+        center.addObserver(self, selector: #selector(_keepBottommostObserver(notification:)), name: NSWindow.didBecomeKeyNotification, object: window)
     }
  
     private static func _detachWindow() -> Void {
@@ -288,6 +289,8 @@ public class LibUniWinC : NSObject {
             center.removeObserver(self, name: NSWindow.didMiniaturizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didDeminiaturizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didResizeNotification, object: targetWindow)
+            center.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: targetWindow)
+
             //center.removeObserver(self)
 
             // Restore the original style
@@ -317,6 +320,14 @@ public class LibUniWinC : NSObject {
         if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
             state.isZoomed = targetWindow!.isZoomed
             _doWindowStyleChangedCallback(num: EventType.Size)
+        }
+    }
+    
+    @objc static func _keepBottommostObserver(notification: Notification) {
+        if ((targetWindow != nil) && (state.isBottommost)) {
+            targetWindow!.level = orgWindowInfo.level
+            targetWindow!.order(NSWindow.OrderingMode.below, relativeTo:0)
+            _doWindowStyleChangedCallback(num: EventType.Style)
         }
     }
     
