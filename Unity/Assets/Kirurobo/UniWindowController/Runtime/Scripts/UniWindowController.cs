@@ -287,6 +287,12 @@ namespace Kirurobo
         /// </summary>
         public event OnMonitorChangedDelegate OnMonitorChanged;
         public delegate void OnMonitorChangedDelegate();
+        
+        /// <summary>
+        /// Occurs when the window received the App command
+        /// </summary>
+        public event OnAppCommandDelegate OnAppCommand;
+        public delegate void OnAppCommandDelegate(int key);
 
 
         // Use this for initialization
@@ -434,6 +440,11 @@ namespace Kirurobo
                 if (_shouldFitMonitor) StartCoroutine("ForceZoomed"); // 時間差で最大化を強制
                 
                 OnStateChanged?.Invoke();
+            }
+            
+            if (uniWinCore.ObserveAppCommand())
+            {
+                OnAppCommand?.Invoke(uniWinCore.GetAppCommand());
             }
         }
 

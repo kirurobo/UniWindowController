@@ -27,7 +27,8 @@ enum class TransparentType : int {
 enum class EventType : int {
 	None = 0,
 	Style = 1,
-	Size = 2
+	Size = 2,
+	Order = 4
 };
 
 // Function called when window style (e.g. maximized, transparetize, etc.)
@@ -41,6 +42,8 @@ using DropFilesCallback = void(*)(WCHAR*);
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
 using MonitorChangedCallback = void(*)(INT32);
+
+using AppCommandCallback = void(*)(INT32);
 
 
 // Winodow state functions
@@ -78,6 +81,8 @@ UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCal
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterAppCommandCallback(AppCommandCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterAppCommandCallback();
 
 
 // Monitor Info.

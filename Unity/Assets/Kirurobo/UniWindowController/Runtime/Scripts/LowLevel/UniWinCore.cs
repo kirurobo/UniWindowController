@@ -121,6 +121,12 @@ namespace Kirurobo
             public static extern bool UnregisterWindowStyleChangedCallback();
 
             [DllImport("LibUniWinC")]
+            public static extern bool RegisterAppCommandCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
+
+            [DllImport("LibUniWinC")]
+            public static extern bool UnregisterAppCommandCallback();
+
+            [DllImport("LibUniWinC")]
             public static extern bool SetAllowDrop(bool enabled);
 
             [DllImport("LibUniWinC")]
@@ -150,6 +156,8 @@ namespace Kirurobo
         static bool wasDropped = false;
         static bool wasMonitorChanged = false;
         static bool wasWindowStyleChanged = false;
+        static bool wasAppCommandSent = false;
+        static int appCommand = 0;
 
 #if UNITY_EDITOR
         // 参考 http://baba-s.hatenablog.com/entry/2017/09/17/135018
@@ -236,6 +244,7 @@ namespace Kirurobo
             LibUniWinC.UnregisterDropFilesCallback();
             LibUniWinC.UnregisterMonitorChangedCallback();
             LibUniWinC.UnregisterWindowStyleChangedCallback();
+            LibUniWinC.UnregisterAppCommandCallback();
         }
         #endregion
 
@@ -262,6 +271,16 @@ namespace Kirurobo
         private static void _windowStyleChangedCallback([MarshalAs(UnmanagedType.I4)] int e)
         {
             wasWindowStyleChanged = true;
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="val"></param>
+        [MonoPInvokeCallback(typeof(LibUniWinC.IntCallback))]
+        private static void _appCommandCallback([MarshalAs(UnmanagedType.I4)] int val)
+        {
+            appCommand = val;
+            wasAppCommandSent = true;
         }
         
         /// <summary>
@@ -323,6 +342,7 @@ namespace Kirurobo
             LibUniWinC.RegisterDropFilesCallback(_droppedFilesCallback);
             LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
             LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
+            LibUniWinC.RegisterAppCommandCallback(_appCommandCallback);
 
             IsActive = LibUniWinC.IsActive();
             return IsActive;
@@ -498,6 +518,18 @@ namespace Kirurobo
             return true;
         }
 
+        /// <summary>
+        /// Check window style was changed, and unset the flag 
+        /// </summary>
+        /// <returns>true if changed</returns>
+        public bool ObserveAppCommand()
+        {
+            if (!wasAppCommandSent) return false;
+
+            wasAppCommandSent = false;
+            return true;
+        }
+        
         #endregion
 
         #region About mouse cursor
@@ -548,6 +580,12 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             ChromakeyColor = color;
         }
+
+        public int GetAppCommand()
+        {
+            return appCommand;
+        }
+        
         #endregion
 
         #region About monitors

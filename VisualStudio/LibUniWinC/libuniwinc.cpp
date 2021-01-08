@@ -34,6 +34,7 @@ static WNDPROC lpOriginalWndProc_ = NULL;
 static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 static DropFilesCallback hDropFilesHandler_ = nullptr;
+static AppCommandCallback hAppCommandHandler_ = nullptr;
 
 
 // ========================================================================
@@ -1176,6 +1177,14 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 		break;
 		
+	// マルチメディアキーを取得できるかテスト
+	case WM_APPCOMMAND:
+		if (lParam != NULL) {
+			if (hAppCommandHandler_ != nullptr) {
+				hAppCommandHandler_((INT32)lParam);
+			}
+		}
+
 	default:
 		break;
 	}
@@ -1372,6 +1381,28 @@ HWND UNIWINC_API GetDesktopWindowHandle() {
 /// <returns></returns>
 DWORD UNIWINC_API GetMyProcessId() {
 	return GetCurrentProcessId();
+}
+
+
+/// <summary>
+/// Register the callback fucnction for App command message
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterAppCommandCallback(AppCommandCallback callback) {
+	if (callback == nullptr) return FALSE;
+
+	hAppCommandHandler_ = callback;
+	return TRUE;
+}
+
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterAppCommandCallback() {
+	hAppCommandHandler_ = nullptr;
+	return TRUE;
 }
 
 #pragma endregion Windows-only public functions

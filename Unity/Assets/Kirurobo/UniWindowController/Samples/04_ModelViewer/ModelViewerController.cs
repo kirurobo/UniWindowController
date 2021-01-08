@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Kirurobo;
 using UnityEngine;
@@ -15,6 +16,13 @@ namespace Kirurobo
             //UniWinCore.DebugMonitorInfo();
 
             uniwin = GameObject.FindObjectOfType<UniWindowController>();
+            uniwin.OnAppCommand += (key) =>
+            {
+                if (key > 0)
+                {
+                    Debug.Log("AppCommand: " + key.ToString());
+                }
+            };
         }
 
         // Update is called once per frame
