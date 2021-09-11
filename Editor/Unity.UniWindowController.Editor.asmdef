@@ -1,0 +1,16 @@
+{
+    "name": "Unity.UniWindowController.Editor",
+    "references": [
+        "Unity.UniWindowController"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

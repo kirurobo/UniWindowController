@@ -1,0 +1,4 @@
+# Includes DLLs
+!Plugins/Windows/*/*.dll
+!Plugins/MacOS/*.bundle
+!Plugins/MacOS/*.bundle/*
