@@ -216,7 +216,8 @@ public class LibUniWinC : NSObject {
         // Get each screen rectangle
         for i in 0..<monitorCount {
             let screen = NSScreen.screens[i]
-            monitorRectangles.append(screen.visibleFrame)
+            //monitorRectangles.append(screen.visibleFrame)
+            monitorRectangles.append(screen.frame)
             monitorIndices.append(i)
         }
         
@@ -484,7 +485,7 @@ public class LibUniWinC : NSObject {
         if let window: NSWindow = targetWindow {
             if (isTopmost) {
                 window.collectionBehavior = [.fullScreenAuxiliary]
-                window.level = NSWindow.Level.floating
+                window.level = NSWindow.Level.popUpMenu
             } else {
                 window.collectionBehavior = orgWindowInfo.collectionBehavior
                 window.level = orgWindowInfo.level
@@ -518,7 +519,7 @@ public class LibUniWinC : NSObject {
         }
     }
 
-    /// ウィンドウを最大化
+    /// Maximize the window
     @objc public static func setMaximized(isZoomed: Bool) -> Void {
         if (targetWindow != nil) {
             if (state.isTransparent) {
@@ -539,9 +540,9 @@ public class LibUniWinC : NSObject {
                     targetWindow?.setFrame(frame, display: true)
                 }
             } else {
-                // 透過していない場合の処理
+                // The window is opaque
                 if (targetWindow!.isZoomed != isZoomed) {
-                    // 挙動がトグルとなっている
+                    // Toggle
                     targetWindow!.zoom(nil)
                 }
             }
