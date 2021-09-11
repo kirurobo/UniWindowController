@@ -8,6 +8,13 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.8.1] - 2021-09-11
+### Changed
+for macOS.
+- Use screen.frame intead of screen.visibleFrame.
+- Use NSWindow.Level.popUpMenu instead of Level.floating to bring the window to the front of the menu bar.
+
+
 ## [v0.8.0] - 2020-12-27
 ### Added
 - Fullscreen demo.

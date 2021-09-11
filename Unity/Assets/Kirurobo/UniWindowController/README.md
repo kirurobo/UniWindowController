@@ -41,10 +41,9 @@ https://github.com/kirurobo/UniWindowController/releases に .unitypackage フ�
 
 ## 動作環境
 - Unity 2018 以降
-  - 開発は Unity 2018.4.20f1 で行っています
+  - 開発は Unity 2018.4.30f1 で行っています
 - Windows 10 or macOS
-  - macOS の開発は 10.15.7 で行っています
-    - 手元の1つのMacでしか検証できないので、動かした人がいたら教えてほしいです！
+  - macOS の開発は 11.5.2 で行っています
 
 
 ## ヒットテストについて
