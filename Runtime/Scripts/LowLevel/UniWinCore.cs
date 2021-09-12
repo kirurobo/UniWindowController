@@ -73,6 +73,9 @@ namespace Kirurobo
             public static extern bool DetachWindow();
 
             [DllImport("LibUniWinC")]
+            public static extern void Update();
+
+            [DllImport("LibUniWinC")]
             public static extern void SetTransparent(bool bEnabled);
 
             [DllImport("LibUniWinC")]
@@ -343,6 +346,13 @@ namespace Kirurobo
         #endregion
 
         #region About window status
+        /// <summary>
+        /// Call this periodically to maintain window style
+        /// </summary>
+        public void Update()
+        {
+            LibUniWinC.Update();
+        }
 
         /// <summary>
         /// 透過を設定／解除
