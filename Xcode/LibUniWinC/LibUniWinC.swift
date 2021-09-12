@@ -161,17 +161,31 @@ public class LibUniWinC : NSObject {
     }
 
     @objc public static func isMaximized() -> Bool {
-        if (state.isTransparent) {
-            return state.isZoomed
-        } else {
-            return (targetWindow?.isZoomed ?? false)
-        }
+        return state.isZoomed
+        //return _isZoomedActually()
     }
     
     @objc public static func isMinimized() -> Bool {
         return (targetWindow?.isMiniaturized ?? false)
     }
-    
+
+    private static func _isZoomedActually() -> Bool {
+        if (targetWindow == nil) {
+            return false
+        } else if (targetWindow!.isMiniaturized) {
+            return false
+        } else if (state.isTransparent) {
+            // When the window is transparent
+            let monitorIndex = getCurrentMonitor()
+            let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
+            let frame = targetWindow!.frame
+            return (frame.size == rect.size) && (frame.origin == rect.origin)
+        } else {
+            // When the window is opaque
+            return targetWindow!.isZoomed
+        }
+    }
+
     // MARK: - Initialize, window handling
     
     /// Initialize
@@ -278,7 +292,8 @@ public class LibUniWinC : NSObject {
         center.addObserver(self, selector: #selector(_fullScreenChangedObserver(notification:)), name: NSWindow.didExitFullScreenNotification, object: window)
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didMiniaturizeNotification, object: window)
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didDeminiaturizeNotification, object: window)
-        center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
+        //center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
+        center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didEndLiveResizeNotification, object: window)
         center.addObserver(self, selector: #selector(_keepBottommostObserver(notification:)), name: NSWindow.didBecomeKeyNotification, object: window)
     }
  
@@ -289,7 +304,8 @@ public class LibUniWinC : NSObject {
             center.removeObserver(self, name: NSWindow.didExitFullScreenNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didMiniaturizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didDeminiaturizeNotification, object: targetWindow)
-            center.removeObserver(self, name: NSWindow.didResizeNotification, object: targetWindow)
+            //center.removeObserver(self, name: NSWindow.didResizeNotification, object: targetWindow)
+            center.removeObserver(self, name: NSWindow.didEndLiveResizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: targetWindow)
 
             //center.removeObserver(self)
@@ -318,8 +334,12 @@ public class LibUniWinC : NSObject {
     }
     
     @objc static func _resizedObserver(notification: Notification) {
-        if ((targetWindow != nil) && (targetWindow!.isZoomed != state.isZoomed)) {
-            state.isZoomed = targetWindow!.isZoomed
+        if (targetWindow != nil) {
+            let zoomed = _isZoomedActually()
+
+            if (state.isZoomed != zoomed) {
+                state.isZoomed = zoomed
+            }
             _doWindowStyleChangedCallback(num: EventType.Size)
         }
     }
@@ -329,6 +349,23 @@ public class LibUniWinC : NSObject {
             targetWindow!.level = orgWindowInfo.level
             targetWindow!.order(NSWindow.OrderingMode.below, relativeTo:0)
             _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+    }
+    
+    /// Call this periodically to maintain window state.
+    @objc public static func update() {
+        if (targetWindow != nil) {
+            if (state.isTransparent) {
+                // Keep window transparent
+                if (targetWindow!.isOpaque) {
+                    _setWindowTransparent(window: targetWindow!, isTransparent: true)
+                }
+                
+                // Keep contentView transparent
+                if (targetWindow!.contentView?.layer?.isOpaque ?? false) {
+                    _setContentViewTransparent(window: targetWindow!, isTransparent: true)
+                }
+            }
         }
     }
     
@@ -461,26 +498,24 @@ public class LibUniWinC : NSObject {
         state.isTransparent = isTransparent
     }
 
-    /// ウィンドウ枠を消去／復帰
-    /// - Parameter isBorderless: trueなら透過ウィンドウにする
+    /// Hide or show the window border
+    /// - Parameter isBorderless: true for borderless
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
-            if (isMaximized()) {
-                ////  最大化状態なら、一度解除して枠を変更して再度最大化
-                ////   ↑枠の分の隙間をなくせるかと思ったが、枠なしで最大化しても意味ないようだった
-                //setMaximized(isZoomed: false)
-                _setWindowBorderless(window: window, isBorderless: isBorderless)
-                //setMaximized(isZoomed: true)
-            } else {
-                // 最大化されていなければ、そのままウィンドウ枠を変更
-                _setWindowBorderless(window: window, isBorderless: isBorderless)
+            _setWindowBorderless(window: window, isBorderless: isBorderless)
+            
+            if (state.isZoomed && isBorderless) {
+                // Zoom to the screen size
+                let monitorIndex = getCurrentMonitor()
+                let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
+                window.setFrame(rect, display: true, animate: false)
             }
         }
         state.isBorderless = isBorderless
     }
 
     /// 常に最前面を有効化／無効化
-    /// - Parameter isTopmost: trueなら最前面
+    /// - Parameter isTopmost: true for topmost (higher than the menu bar)
     @objc public static func setTopmost(isTopmost: Bool) -> Void {
         if let window: NSWindow = targetWindow {
             if (isTopmost) {
@@ -522,32 +557,36 @@ public class LibUniWinC : NSObject {
     /// Maximize the window
     @objc public static func setMaximized(isZoomed: Bool) -> Void {
         if (targetWindow != nil) {
-            if (state.isTransparent) {
-                // 透過中なら、一度透過解除してから最大化を変更してみる
-                //   最大化前のウィンドウサイズが記憶されるが、透過のままだと挙動が直感に反するため
-                setTransparent(isTransparent: false)
-                if (targetWindow!.isZoomed != isZoomed) {
-                    targetWindow!.zoom(nil)
-                }
-                setTransparent(isTransparent: true)
+            if (state.isBorderless) {
+                // The window is ransparent (borderless)
                 if (isZoomed) {
-                    // 透明化状態で zoom() をしてもウィンドウ枠の分小さくなってしまっていたため画面サイズにリサイズ
+                    // The window couldn't be zoomed when it is borderless
                     let monitorIndex = getCurrentMonitor()
                     let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
-                    var frame = targetWindow!.frame
-                    frame.size.width = CGFloat(rect.width)
-                    frame.size.height = CGFloat(rect.height)
-                    targetWindow?.setFrame(frame, display: true)
+                    targetWindow?.setFrame(rect, display: true, animate: false)
+                    state.isZoomed = isZoomed
+                } else {
+                    //setTransparent(isTransparent: false)
+                    setBorderless(isBorderless: false)
+                    if (targetWindow!.isZoomed != isZoomed) {
+                        targetWindow!.zoom(nil)
+                        state.isZoomed = targetWindow!.isZoomed
+                    }
+                    //setTransparent(isTransparent: true)
+                    setBorderless(isBorderless: true)
                 }
             } else {
                 // The window is opaque
                 if (targetWindow!.isZoomed != isZoomed) {
                     // Toggle
                     targetWindow!.zoom(nil)
+                    state.isZoomed = targetWindow!.isZoomed
                 }
             }
+        } else {
+            // Remember the state
+            state.isZoomed = isZoomed
         }
-        state.isZoomed = isZoomed
     }
     
     /// ウィンドウの位置を設定
@@ -604,7 +643,7 @@ public class LibUniWinC : NSObject {
         
         frame.size.width = CGFloat(width)
         frame.size.height = CGFloat(height)
-        targetWindow?.setFrame(frame, display: true)
+        targetWindow?.setFrame(frame, display: true, animate: false)
         return true
     }
     
