@@ -396,6 +396,9 @@ namespace Kirurobo
             if (uniWinCore == null || !uniWinCore.IsActive)
             {
                 UpdateTargetWindow();
+            } else
+            {
+                uniWinCore.Update();
             }
             
             // Process events
