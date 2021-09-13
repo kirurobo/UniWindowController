@@ -34,6 +34,9 @@ public class LibUniWinC : NSObject {
         
         // サイズ変更がなされると不正確となる。透過時にこれを使う
         public var isZoomed: Bool = false
+        
+        // Keep unzoomed size for the borderless window
+        public var normalWindowRect: NSRect = NSRect(x: 0, y: 0, width: 0, height: 0)
     }
     
     /// WindowStyleChangedイベントで返す種類値（仮）
@@ -389,9 +392,11 @@ public class LibUniWinC : NSObject {
     /// Apply current window state
     private static func _reapplyWindowStyles() -> Void {
         if (targetWindow != nil) {
+            setBottommost(isBottommost: state.isBottommost)
             setTopmost(isTopmost: state.isTopmost)
             setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
+            setMaximized(isZoomed: state.isZoomed)
         }
     }
     
@@ -502,13 +507,33 @@ public class LibUniWinC : NSObject {
     /// - Parameter isBorderless: true for borderless
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
+            if (!state.isZoomed) {
+                //if ((!isBorderless && state.isBorderless) || (isBorderless && !state.isBorderless && !_isZoomedActually())) {
+                if (isBorderless != state.isBorderless) {
+                    // Store the window size when the window become borderless
+                    state.normalWindowRect = window.frame
+                }
+            }
+            
             _setWindowBorderless(window: window, isBorderless: isBorderless)
             
-            if (state.isZoomed && isBorderless) {
-                // Zoom to the screen size
-                let monitorIndex = getCurrentMonitor()
-                let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
-                window.setFrame(rect, display: true, animate: false)
+            if (state.isZoomed) {
+                if (!window.isZoomed) {
+                    window.zoom(nil)
+                }
+                if (isBorderless) {
+                    // Stretch to the full-screen size
+                    let monitorIndex = getCurrentMonitor()
+                    let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
+                    window.setFrame(rect, display: true, animate: false)
+                }
+            } else {
+                if (!isBorderless && state.isBorderless) {
+                    // Restore the window size when the window become bordered
+                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
+                        window.setFrame(state.normalWindowRect, display: true, animate: false)
+                    }
+                }
             }
         }
         state.isBorderless = isBorderless
@@ -549,38 +574,38 @@ public class LibUniWinC : NSObject {
 
     /// 操作のクリックスルーを有効化／無効化
     @objc public static func setClickThrough(isTransparent: Bool) -> Void {
-        if (targetWindow != nil) {
-            targetWindow!.ignoresMouseEvents = isTransparent
-        }
+        targetWindow!.ignoresMouseEvents = isTransparent
     }
 
     /// Maximize the window
     @objc public static func setMaximized(isZoomed: Bool) -> Void {
-        if (targetWindow != nil) {
+        if let window: NSWindow = targetWindow {
             if (state.isBorderless) {
-                // The window is ransparent (borderless)
+                // window.zoom() is unavailable if the window is ransparent (borderless)
+                
                 if (isZoomed) {
+                    // Store the window size when the window become zoomed
+                    //if (!state.isZoomed && state.isBorderless && !_isZoomedActually()) {
+                    if (!_isZoomedActually() && state.isBorderless) {
+                        state.normalWindowRect = window.frame
+                    }
+                    
                     // The window couldn't be zoomed when it is borderless
                     let monitorIndex = getCurrentMonitor()
                     let rect = monitorRectangles[monitorIndices[Int(monitorIndex)]]
-                    targetWindow?.setFrame(rect, display: true, animate: false)
-                    state.isZoomed = isZoomed
+                    window.setFrame(rect, display: true, animate: false)
                 } else {
-                    //setTransparent(isTransparent: false)
-                    setBorderless(isBorderless: false)
-                    if (targetWindow!.isZoomed != isZoomed) {
-                        targetWindow!.zoom(nil)
-                        state.isZoomed = targetWindow!.isZoomed
+                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
+                        window.setFrame(state.normalWindowRect, display: true, animate: false)
                     }
-                    //setTransparent(isTransparent: true)
-                    setBorderless(isBorderless: true)
                 }
+                state.isZoomed = isZoomed
             } else {
                 // The window is opaque
-                if (targetWindow!.isZoomed != isZoomed) {
+                if (window.isZoomed != isZoomed) {
                     // Toggle
-                    targetWindow!.zoom(nil)
-                    state.isZoomed = targetWindow!.isZoomed
+                    window.zoom(nil)
+                    state.isZoomed = window.isZoomed
                 }
             }
         } else {
