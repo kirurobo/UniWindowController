@@ -392,8 +392,11 @@ public class LibUniWinC : NSObject {
     /// Apply current window state
     private static func _reapplyWindowStyles() -> Void {
         if (targetWindow != nil) {
-            setBottommost(isBottommost: state.isBottommost)
-            setTopmost(isTopmost: state.isTopmost)
+            if (state.isBottommost) {
+                setBottommost(isBottommost: state.isBottommost)
+            } else {
+                setTopmost(isTopmost: state.isTopmost)
+            }
             setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
             setMaximized(isZoomed: state.isZoomed)
