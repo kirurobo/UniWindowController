@@ -392,6 +392,15 @@ BOOL getTopMost() {
 #pragma region For window style
 
 /// <summary>
+/// ウィンドウ状態が置き換わっているか定期的に調べて、強制的に修正
+/// </summary>
+/// <returns></returns>
+void UNIWINC_API Update() {
+	// 今のところWindowsでは何もしない
+	return;
+}
+
+/// <summary>
 /// 利用可能な状態ならtrueを返す
 /// </summary>
 /// <returns></returns>

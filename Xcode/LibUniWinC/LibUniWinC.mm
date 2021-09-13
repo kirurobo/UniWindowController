@@ -159,3 +159,8 @@ UNIWINC_EXPORT void SetTransparentType(SInt32 type) {
 UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
     [LibUniWinC setKeyColorWithColor: color];
 }
+
+// Call periodically to maintain window state.
+UNIWINC_EXPORT void Update() {
+    [LibUniWinC update];
+}
