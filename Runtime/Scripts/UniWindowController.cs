@@ -650,8 +650,14 @@ namespace Kirurobo
                     uniWinCore.SetTransparentType((UniWinCore.TransparentType)transparentType);
                     uniWinCore.SetKeyColor(keyColor);
                     SetTransparent(_isTransparent);
-                    SetBottommost(_isBottommost);
-                    SetTopmost(_isTopmost);
+                    if (_isBottommost)
+                    {
+                        SetBottommost(_isBottommost);
+                    }
+                    else
+                    {
+                        SetTopmost(_isTopmost);
+                    }
                     SetZoomed(_isZoomed);
                     SetClickThrough(_isClickThrough);
                     SetAllowDrop(_allowDropFiles);
