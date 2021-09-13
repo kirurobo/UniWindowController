@@ -36,6 +36,7 @@ namespace Kirurobo
         public Toggle dragMoveToggle;
         public Toggle allowDropToggle;
         public Dropdown fitWindowDropdown;
+        public Toggle showBorderlineToggle;
         public Button widthDownButton;
         public Button widthUpButton;
         public Button heightDownButton;
@@ -48,6 +49,7 @@ namespace Kirurobo
         public Text messageText;
         public Button menuCloseButton;
         public RectTransform menuPanel;
+        public RectTransform borderlinePanel;
 
         /// <summary>
         /// 初期化
@@ -116,6 +118,9 @@ namespace Kirurobo
                     ShowEventMessage(string.Join(Environment.NewLine, files));
                 };
             }
+
+            // UinWinCが準備できてなくても動くListener
+            showBorderlineToggle?.onValueChanged.AddListener(val => borderlinePanel.gameObject.SetActive(val));
         }
 
         /// <summary>
@@ -380,6 +385,12 @@ namespace Kirurobo
                 
                 // ヒットテスト部分の表示も更新
                 UpdateHitTestUI();
+            }
+
+            // UniWinC 無しでも動作する部分
+            if (showBorderlineToggle && borderlinePanel)
+            {
+                borderlinePanel.gameObject.SetActive(showBorderlineToggle.isOn);
             }
         }
 
