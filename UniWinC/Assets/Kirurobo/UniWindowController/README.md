@@ -108,7 +108,7 @@ DragMoveCanvas というプレハブ内では、透明な全画面を覆うPanel
 利用するだけならば、Release にある unitypackage をダウンロードしていただけばよく、このリポジトリをクローンする必要はありません。  
 ソースを見たい／ビルドしたい方は、このようになっています。
 
-- Unity
+- UniWinC
   - Unity のプロジェクトです。
   - ビルド済みの DLL、bundle も既に含みます。
   - ここの内容が unitypackage としてリリースにあります。
