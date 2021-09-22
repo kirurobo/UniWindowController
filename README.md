@@ -6,7 +6,8 @@ Unified window controller for macOS and Windows
 
 
 ## 概要
-Unity の Windows / macOS 向けビルドで、自ウィンドウの位置、サイズ、透過をコントロールします。
+Unity の Windows / macOS 向けビルドで、自ウィンドウの位置、サイズ、透過をコントロールします。  
+また、ファイル、フォルダのドロップも受け付け可能にできます。
 
 Windows、macOS それぞれではコード例やアセットが見つかりましたが、統一的に扱えるものが無さそうだったため作成しました。
 
@@ -16,24 +17,25 @@ https://twitter.com/i/status/1314440790945361920
 
 ## ダウンロード
 https://github.com/kirurobo/UniWindowController/releases に .unitypackage ファイルがあります。
+ビルドしたサンプルも置いています。
 
-また、アプリとしてビルドしたサンプルも置いています。
 
-
-## 利用法
+## 基本の利用法
 1. Unitypackage から自分の Unity プロジェクトにインポート
-2. Prefabs にある UniWindowController プレハブをシーンに追加
+2. Runtime/Prefabs にある UniWindowController プレハブをシーンに追加
 3. そこで配置された UniWindowController をインスペクターで確認
     1. ProjectSettings を適切に直す（緑のボタンでまとめて設定が変更されます）
-    2. `Is Transparent` 等、設定をお好みに合わせる
-4. PC / Mac スタンドアローンでビルドする
-5. ビルドしたものを起動
+    2. `IsTransparent` 等、設定をお好みに合わせる
+4. 左ドラッグでウィンドウ自体を動かしたい場合、 DragMoveCanvas プレハブも追加
+5. PC / Mac スタンドアローンでビルドする
+6. ビルドしたものを起動
 
 
 ## 制限事項
 - Unityエディタ上では透過はできません。ビルドをしてお試しください。
   - 常に最前面やウィンドウ移動等は動作しますが、実行中にゲームビューを閉じたりドッキングの配置を変えることはお勧めしません。一応、ゲームビューにフォーカスを移すとウィンドウを再取得はします。
 - マウスでは良いのですが、タッチ操作には適切な対応がまだ定まっていません。
+  - Windows の場合、`TransparentType` を Alpha から ColorKey にすると、半透明の表現が失われる代わりにタッチ操作は自然になります。
 - あまり動作検証をできている訳でもなく、安定して動くとは限りません。
 
 既知の問題については [Issues](https://github.com/kirurobo/UniWindowController/issues) もご覧ください。
@@ -41,10 +43,9 @@ https://github.com/kirurobo/UniWindowController/releases に .unitypackage フ�
 
 ## 動作環境
 - Unity 2018 以降
-  - 開発は Unity 2018.4.20f1 で行っています
+  - 開発は Unity 2018.4.30f1 で行っています
 - Windows 10 or macOS
-  - macOS の開発は 10.15.7 で行っています
-    - 手元の1つのMacでしか検証できないので、動かした人がいたら教えてほしいです！
+  - macOS の開発は 11.5.2 で行っています
 
 
 ## ヒットテストについて
@@ -86,7 +87,8 @@ Unityで他のスクリプトから操作できるものです。
 | Name | Type | Description |
 |:-----|:-----|:------------|
 |isTransparent|bool| 透過（非矩形）ウィンドウに設定／解除します|
-|isTopmost|bool| 常に最前面に設定／解除します|
+|isTopmost    |bool| 常に最前面に設定／解除します|
+|isZoomed     |bool| 最大化／解除をします。また現在の状態を取得します |
 |isHitTestEnabled|bool| 自動ヒットテストを有効／無効にします。有効だとマウスカーソル位置により isClickThrough が自動で変化します。 |
 |isClickThrough|bool| クリックスルー状態に設定／解除します|
 |windowPosition|Vector2| ウインドウ位置を取得／設定できます。※メインモニタ左下が原点で上向き正の座標系で、ウィンドウ左下座標です |
@@ -96,7 +98,7 @@ Unityで他のスクリプトから操作できるものです。
 このスクリプトをUI要素（Raycast Targetとなるもの）にアタッチしておくと、そのUI要素のドラッグでウィンドウを移動できるようになります。
 例えば「ここを掴んで移動できます」というハンドルの画像にアタッチする想定です。
 
-一方、サンプルでは DragMoveCanvas というプレハブ内で、透明な全画面を覆うPanelを使っています。 
+DragMoveCanvas というプレハブ内では、透明な全画面を覆うPanelを使っています。 
 このとき Layer を「Ignore Raycast」にすることで、自動ヒットテストが Raycast の場合でも対象外となります。  
 これにより画面のどこでもドラッグできるようになります。  
 ただし他のUI上の操作はドラッグでの移動より優先されます。（DragMoveCanvas で Sort Order を小さくしているため。）
