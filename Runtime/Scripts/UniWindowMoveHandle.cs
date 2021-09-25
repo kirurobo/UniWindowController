@@ -136,7 +136,13 @@ namespace  Kirurobo
                 return;
             }
 
+            // Move the window when the left mouse button is pressed
             if (eventData.button != PointerEventData.InputButton.Left) return;
+
+            // Return if any modifier key is pressed
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
+                || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
+                || Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) return;
 
             // フルスクリーンならウィンドウ移動は行わない
             //  エディタだと true になってしまうようなので、エディタ以外でのみ確認
