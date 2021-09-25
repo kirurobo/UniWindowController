@@ -840,4 +840,19 @@ public class LibUniWinC : NSObject {
         moveEvent?.post(tap: .cgSessionEventTap)
         return true
     }
+    
+    
+    // MARK: - Open file dialog
+    
+    @objc public static func openFileDialog() -> Void {
+        let dlg = NSOpenPanel()
+        dlg.allowsMultipleSelection = false
+        dlg.canChooseDirectories = false
+        dlg.canChooseFiles = true
+        dlg.level = NSWindow.Level.popUpMenu
+        
+        if (dlg.runModal() == NSApplication.ModalResponse.OK) {
+        }
+        
+    }
 }

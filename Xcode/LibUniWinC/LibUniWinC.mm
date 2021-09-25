@@ -164,3 +164,7 @@ UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
 UNIWINC_EXPORT void Update() {
     [LibUniWinC update];
 }
+
+UNIWINC_EXPORT void OpenFileDialog() {
+    [LibUniWinC openFileDialog];
+}

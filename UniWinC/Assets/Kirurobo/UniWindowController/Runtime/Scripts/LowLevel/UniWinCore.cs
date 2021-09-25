@@ -146,6 +146,9 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern void SetKeyColor(uint colorref);
+
+            [DllImport("LibUniWinC")]
+            public static extern void OpenFileDialog();
         }
         #endregion
 
