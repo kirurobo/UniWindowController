@@ -5,6 +5,7 @@
 
 // Headers used in this library
 #include <windows.h>
+#include <commdlg.h>
 #include <dwmapi.h>
 #include <shellapi.h>
 #include <new>

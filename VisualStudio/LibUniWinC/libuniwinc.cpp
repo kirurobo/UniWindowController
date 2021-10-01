@@ -33,7 +33,8 @@ static WNDPROC lpOriginalWndProc_ = NULL;
 //static HHOOK hHook_ = NULL;
 static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
-static DropFilesCallback hDropFilesHandler_ = nullptr;
+static FilesCallback hDropFilesHandler_ = nullptr;
+static FilesCallback hOpenFilesHandler_ = nullptr;
 
 
 // ========================================================================
@@ -1337,7 +1338,7 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 /// </summary>
 /// <param name="callback"></param>
 /// <returns></returns>
-BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback) {
+BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback) {
 	if (callback == nullptr) return FALSE;
 
 	hDropFilesHandler_ = callback;
@@ -1354,6 +1355,39 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 }
 
 #pragma endregion For file dropping and window procedure
+
+
+// ========================================================================
+#pragma region File dialogs
+
+/// <summary>
+/// Register the callback fucnction for open file dialog
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterOpenFilesCallback(FilesCallback callback) {
+	if (callback == nullptr) return FALSE;
+
+	hOpenFilesHandler_ = callback;
+	return TRUE;
+}
+
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterOpenFilesCallback() {
+	hOpenFilesHandler_ = nullptr;
+	return TRUE;
+}
+
+void UNIWINC_API OpenFileDialog(UINT32 flags) {
+	OPENFILENAME ofn;
+
+	return;
+}
+
+#pragma endregion File dialogs
 
 
 // ========================================================================

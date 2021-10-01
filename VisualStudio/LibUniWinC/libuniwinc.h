@@ -36,7 +36,7 @@ using WindowStyleChangedCallback = void(*)(INT32);
 
 // Function called when files have dropped
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
-using DropFilesCallback = void(*)(WCHAR*);
+using FilesCallback = void(*)(WCHAR*);
 
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
@@ -77,8 +77,10 @@ UNIWINC_EXPORT BOOL UNIWINC_API RegisterWindowStyleChangedCallback(WindowStyleCh
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterWindowStyleChangedCallback();
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterOpenFilesCallback(FilesCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterOpenFilesCallback();
 
 
 // Monitor Info.
@@ -91,6 +93,9 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
+
+// Common controll
+UNIWINC_EXPORT void UNIWINC_API OpenFileDialog(const UINT32 flags);
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
