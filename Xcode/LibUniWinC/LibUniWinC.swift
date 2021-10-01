@@ -121,6 +121,7 @@ public class LibUniWinC : NSObject {
     public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
     public typealias intCallback = (@convention(c) (Int32) -> Void)
     public static var dropFilesCallback: stringCallback? = nil
+    public static var openFilesCallback: stringCallback? = nil
     public static var monitorChangedCallback: intCallback? = nil
     public static var windowStyleChangedCallback: intCallback? = nil
     private static var observerObject: Any? = nil
@@ -135,7 +136,8 @@ public class LibUniWinC : NSObject {
     private static var monitorRectangles: [CGRect] = []
     private static var monitorIndices: [Int] = []
 
-    
+    private static let openFilePanel = NSOpenPanel()
+
     // MARK: - Properties
 
     /// 準備完了かどうかを返す
@@ -321,7 +323,10 @@ public class LibUniWinC : NSObject {
                 overlayView?.removeFromSuperview()
                 overlayView = nil
             }
-                        
+            
+            // Close dialog if it is opened
+            openFilePanel.close()
+            
             targetWindow = nil
         }
     }
@@ -811,7 +816,17 @@ public class LibUniWinC : NSObject {
         dropFilesCallback = nil
         return true
     }
+
+    @objc public static func registerOpenFilesCallback(callback: @escaping stringCallback) -> Bool {
+        openFilesCallback = callback
+        return true
+    }
     
+    @objc public static func unregisterOpenFilesCallback() -> Bool {
+        openFilesCallback = nil
+        return true
+    }
+
     
     // MARK: - Mouser curosor
     
@@ -844,15 +859,62 @@ public class LibUniWinC : NSObject {
     
     // MARK: - Open file dialog
     
-    @objc public static func openFileDialog() -> Void {
-        let dlg = NSOpenPanel()
-        dlg.allowsMultipleSelection = false
-        dlg.canChooseDirectories = false
-        dlg.canChooseFiles = true
-        dlg.level = NSWindow.Level.popUpMenu
+    /// Open dialog
+    /// - Parameters:
+    ///   -
+    @objc public static func openFileDialog(flags: UInt32) -> Void {
+        openFilePanel.canChooseFiles = (flags & 0b0001 > 0)
+        openFilePanel.canChooseDirectories = (flags & 0b0010 > 0)
+        openFilePanel.allowsMultipleSelection = (flags & 0b0100 > 0)
+        openFilePanel.canCreateDirectories = false
+
+        openFilePanel.prompt = "Open"
+        openFilePanel.level = NSWindow.Level.popUpMenu
         
-        if (dlg.runModal() == NSApplication.ModalResponse.OK) {
+        openFilePanel.begin { (result) -> Void in
+            if (result == .OK) {
+                if (openFilePanel.urls.count > 0) {
+                    // Make new-line separated string
+                    var text: String = ""
+                    for url in openFilePanel.urls {
+                        text += url.path + "\n"
+                    }
+                    
+                    // Run callback
+                    if (callStringCallback(callback: openFilesCallback, text: text)) {}
+                }
+            }
+        }
+    }
+    
+    /// Call a StringCallback with UTF-16 paramete
+    /// - Parameters:
+    ///   - callback: Registered callback function
+    ///   - text: Parrameter as String
+    /// - Returns: True if success
+    public static func callStringCallback(callback: stringCallback?, text: String) -> Bool {
+        if (callback == nil)
+        {
+            return false
         }
         
+        let count = text.utf16.count
+        if (count <= 0) {
+            return false
+        }
+        
+        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: count + 1)
+        var i = 0
+        for c in text.utf16 {
+            buffer[i] = c
+            i += 1
+        }
+        buffer[count] = uint16.zero     // End of the string
+        
+        // Do callback
+        callback?(buffer)
+
+        buffer.deallocate()
+        return true
     }
 }
