@@ -276,11 +276,17 @@ namespace Kirurobo
         public event OnStateChangedDelegate OnStateChanged;
         public delegate void OnStateChangedDelegate();
 
+        public delegate void FilesDelegate(string[] files);
+
         /// <summary>
         /// Occurs after files or folders were dropped
         /// </summary>
-        public event OnDropFilesDelegate OnDropFiles;
-        public delegate void OnDropFilesDelegate(string[] files);
+        public event FilesDelegate OnDropFiles;
+
+        /// <summary>
+        /// Occurs after files or folders were opened by dialog
+        /// </summary>
+        public event FilesDelegate OnOpenFiles;
 
         /// <summary>
         /// Occurs when the monitor settings or resolution changed
@@ -415,9 +421,14 @@ namespace Kirurobo
         {
             if (uniWinCore == null) return;
 
-            if (uniWinCore.ObserveDroppedFiles(out var files))
+            if (uniWinCore.ObserveDroppedFiles(out var droppedFiles))
             {
-                OnDropFiles?.Invoke(files);
+                OnDropFiles?.Invoke(droppedFiles);
+            }
+
+            if (uniWinCore.ObserveOpenedFiles(out var openedFiles))
+            {
+                OnOpenFiles?.Invoke(openedFiles);
             }
 
             if (uniWinCore.ObserveMonitorChanged())
@@ -811,6 +822,13 @@ namespace Kirurobo
             uniWinCore.SetAllowDrop(enabled);
             _allowDropFiles = enabled;
         }
+
+        public void OpenFilesDialog() {
+            if (uniWinCore == null) return;
+
+            uniWinCore.OpenFilesDialog();
+        }
+
 
         /// <summary>
         /// 接続されているモニタ数を取得

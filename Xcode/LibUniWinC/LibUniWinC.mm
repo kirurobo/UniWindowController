@@ -140,6 +140,14 @@ UNIWINC_EXPORT BOOL UnregisterDropFilesCallback() {
     return [LibUniWinC unregisterDropFilesCallback];
 }
 
+UNIWINC_EXPORT BOOL RegisterOpenFilesCallback(StringCallback callback) {
+    return [LibUniWinC registerOpenFilesCallbackWithCallback: callback];
+}
+
+UNIWINC_EXPORT BOOL UnregisterOpenFilesCallback() {
+    return [LibUniWinC unregisterOpenFilesCallback];
+}
+
 UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
     return [LibUniWinC setAllowDropWithEnabled: enabled];
 }
@@ -163,4 +171,8 @@ UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
 // Call periodically to maintain window state.
 UNIWINC_EXPORT void Update() {
     [LibUniWinC update];
+}
+
+UNIWINC_EXPORT void OpenFileDialog(UInt32 param) {
+    [LibUniWinC openFileDialogWithFlags: param];
 }

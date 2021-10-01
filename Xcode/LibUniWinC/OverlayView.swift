@@ -93,26 +93,10 @@ class OverlayView: NSView {
         }
         
         // Make new-line separated string
-        let files: String = urls.componentsJoined(by: "¥n")
-        
-        let count = files.utf16.count
-        if (count <= 0) {
-            return false
-        }
-        
-        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: count + 1)
-        var i = 0
-        for c in files.utf16 {
-            buffer[i] = c
-            i += 1
-        }
-        buffer[count] = uint16.zero     // End of the string
+        let files: String = urls.componentsJoined(by: "\n")
         
         // Do callback
-        LibUniWinC.dropFilesCallback?(buffer)
-        
-        buffer.deallocate()
-        return true
+        return LibUniWinC.callStringCallback(callback: LibUniWinC.dropFilesCallback, text: files)
     }
     
     override func draw(_ dirtyRect: NSRect) {
