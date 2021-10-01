@@ -32,6 +32,16 @@ namespace Kirurobo
             ColorKey = 2,
         }
 
+        /// <summary>
+        /// ダイアログの設定フラグ
+        /// </summary>
+        protected static class DialogFlag
+        {
+            public const uint ChooseFiles = 1;
+            public const uint ChooseDirectories = 2;
+            public const uint AllowMultipleSelection = 4;
+        }
+
         #region Native functions
         protected class LibUniWinC
         {
@@ -112,6 +122,12 @@ namespace Kirurobo
             public static extern bool UnregisterDropFilesCallback();
 
             [DllImport("LibUniWinC")]
+            public static extern bool RegisterOpenFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
+
+            [DllImport("LibUniWinC")]
+            public static extern bool UnregisterOpenFilesCallback();
+
+            [DllImport("LibUniWinC")]
             public static extern bool RegisterMonitorChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
 
             [DllImport("LibUniWinC")]
@@ -148,12 +164,14 @@ namespace Kirurobo
             public static extern void SetKeyColor(uint colorref);
 
             [DllImport("LibUniWinC")]
-            public static extern void OpenFileDialog();
+            public static extern void OpenFileDialog(uint flags);
         }
         #endregion
 
         static string[] lastDroppedFiles;
+        static string[] lastOpenedFiles;
         static bool wasDropped = false;
+        static bool wasOpened = false;
         static bool wasMonitorChanged = false;
         static bool wasWindowStyleChanged = false;
 
@@ -240,6 +258,7 @@ namespace Kirurobo
 
             // Instead of DetachWindow()
             LibUniWinC.UnregisterDropFilesCallback();
+            LibUniWinC.UnregisterOpenFilesCallback();
             LibUniWinC.UnregisterMonitorChangedCallback();
             LibUniWinC.UnregisterWindowStyleChangedCallback();
         }
@@ -276,7 +295,7 @@ namespace Kirurobo
         /// </summary>
         /// <param name="paths"></param>
         [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
-        private static void _droppedFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
+        private static void _dropFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
         {
             // LF 区切りで届いた文字列を分割してパスの配列に直す
             char[] delimiters = { '\n', '\r', '\t', '\0' };
@@ -290,9 +309,30 @@ namespace Kirurobo
                 wasDropped = true;
             }
         }
-        
+
+        /// <summary>
+        /// ダイアログからファイル、フォルダが開かれた時に呼ばれるコールバック
+        /// 文字列を配列に直すことと、フラグを立てるまで行う
+        /// </summary>
+        /// <param name="paths"></param>
+        [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
+        private static void _openFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
+        {
+            // LF 区切りで届いた文字列を分割してパスの配列に直す
+            char[] delimiters = { '\n', '\r', '\t', '\0' };
+            string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+
+            if (files.Length > 0)
+            {
+                lastOpenedFiles = new string[files.Length];
+                files.CopyTo(lastOpenedFiles, 0);
+
+                wasOpened = true;
+            }
+        }
+
         #endregion
-        
+
         #region Find, attach or detach 
 
         /// <summary>
@@ -326,7 +366,8 @@ namespace Kirurobo
         LibUniWinC.AttachMyWindow();
 #endif
             // Add event handlers
-            LibUniWinC.RegisterDropFilesCallback(_droppedFilesCallback);
+            LibUniWinC.RegisterDropFilesCallback(_openFilesCallback);
+            LibUniWinC.RegisterOpenFilesCallback(_dropFilesCallback);
             LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
             LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
 
@@ -466,11 +507,24 @@ namespace Kirurobo
 
         #endregion
 
-        #region About file dropping
+        #region File opening
         public void SetAllowDrop(bool enabled)
         {
             LibUniWinC.SetAllowDrop(enabled);
         }
+
+        /// <summary>
+        /// Open file selection dialog
+        /// </summary>
+        public void OpenFilesDialog()
+        {
+            uint flags = DialogFlag.AllowMultipleSelection | DialogFlag.ChooseFiles | DialogFlag.ChooseDirectories;
+            LibUniWinC.OpenFileDialog(flags);
+        }
+
+        #endregion
+
+        #region Event observers
 
         /// <summary>
         /// Check files dropping and unset the dropped flag
@@ -484,6 +538,21 @@ namespace Kirurobo
             if (!wasDropped || files == null) return false;
 
             wasDropped = false;
+            return true;
+        }
+
+        /// <summary>
+        /// Check files opening and unset the opened flag
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns>true if files were dropped</returns>
+        public bool ObserveOpenedFiles(out string[] files)
+        {
+            files = lastOpenedFiles;
+
+            if (!wasOpened || files == null) return false;
+
+            wasOpened = false;
             return true;
         }
 

@@ -117,6 +117,10 @@ namespace Kirurobo
                 {
                     ShowEventMessage(string.Join(Environment.NewLine, files));
                 };
+                uniwinc.OnOpenFiles += files =>
+                {
+                    ShowEventMessage(string.Join(Environment.NewLine, files));
+                };
             }
 
             // UinWinCが準備できてなくても動くListener
@@ -204,6 +208,11 @@ namespace Kirurobo
                 {
                     uniwinc.isClickThrough = false;
                 }
+            }
+
+            if (Input.GetKeyUp(KeyCode.O))
+            {
+                uniwinc.OpenFilesDialog();
             }
 
             // Quit or stop playing when pressed [ESC]
