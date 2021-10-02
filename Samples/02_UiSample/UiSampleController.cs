@@ -117,10 +117,6 @@ namespace Kirurobo
                 {
                     ShowEventMessage(string.Join(Environment.NewLine, files));
                 };
-                uniwinc.OnOpenFiles += files =>
-                {
-                    ShowEventMessage(string.Join(Environment.NewLine, files));
-                };
             }
 
             // UinWinCが準備できてなくても動くListener
@@ -212,7 +208,11 @@ namespace Kirurobo
 
             if (Input.GetKeyUp(KeyCode.O))
             {
-                uniwinc.OpenFilesDialog();
+                FileDialog.OpenFilePanelAsync((files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+            }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                FileDialog.SaveFilePanelAsync((files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
 
             // Quit or stop playing when pressed [ESC]
@@ -325,7 +325,14 @@ namespace Kirurobo
             {
                 menuPanel.gameObject.SetActive(false);
             }
-        } 
+        }
+
+        public void OpenFile()
+        {
+            FileDialog.OpenFilePanelAsync((files) => {
+                ShowEventMessage(string.Join(Environment.NewLine, files));
+            });
+        }
 
         /// <summary>
         /// 実際の状態をUI表示に反映

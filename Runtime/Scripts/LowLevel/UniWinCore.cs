@@ -36,11 +36,14 @@ namespace Kirurobo
         /// <summary>
         /// ダイアログの設定フラグ
         /// </summary>
-        protected static class DialogFlag
+        [Flags]
+        protected enum DialogFlag
         {
-            public const uint ChooseFiles = 1;
-            public const uint ChooseDirectories = 2;
-            public const uint AllowMultipleSelection = 4;
+            None = 0,
+            ChooseFiles = 1,
+            ChooseDirectories = 2,
+            AllowMultipleSelection = 4,
+            CanCreateDirectories = 16,
         }
 
         #region Native functions
@@ -129,6 +132,12 @@ namespace Kirurobo
             public static extern bool UnregisterOpenFilesCallback();
 
             [DllImport("LibUniWinC")]
+            public static extern bool RegisterSaveFileCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
+
+            [DllImport("LibUniWinC")]
+            public static extern bool UnregisterSaveFileCallback();
+
+            [DllImport("LibUniWinC")]
             public static extern bool RegisterMonitorChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
 
             [DllImport("LibUniWinC")]
@@ -165,7 +174,10 @@ namespace Kirurobo
             public static extern void SetKeyColor(uint colorref);
 
             [DllImport("LibUniWinC")]
-            public static extern void OpenFileDialog(uint flags);
+            public static extern void ShowOpenFilePanel(uint flags);
+
+            [DllImport("LibUniWinC")]
+            public static extern void ShowSaveFilePanel(uint flags);
         }
         #endregion
 
@@ -339,7 +351,7 @@ namespace Kirurobo
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        private static string[] parsePaths(string text)
+        internal static string[] parsePaths(string text)
         {
             System.Collections.Generic.List<string> list = new System.Collections.Generic.List<string>();
             bool inEscaped = false;
@@ -575,10 +587,19 @@ namespace Kirurobo
         /// <summary>
         /// Open file selection dialog
         /// </summary>
-        public void OpenFilesDialog()
+        public static void ShowOpenFilePanel()
         {
-            uint flags = DialogFlag.AllowMultipleSelection | DialogFlag.ChooseFiles | DialogFlag.ChooseDirectories;
-            LibUniWinC.OpenFileDialog(flags);
+            var flags = DialogFlag.AllowMultipleSelection | DialogFlag.ChooseFiles | DialogFlag.ChooseDirectories;
+            LibUniWinC.ShowOpenFilePanel((uint)flags);
+        }
+
+        /// <summary>
+        /// Open file selection dialog
+        /// </summary>
+        public static void ShowSaveFilePanel()
+        {
+            var flags = DialogFlag.CanCreateDirectories;
+            LibUniWinC.ShowSaveFilePanel((uint)flags);
         }
 
         #endregion
