@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using AOT;
 using Kirurobo;
 using UnityEngine;
+using System.Text;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -298,8 +299,9 @@ namespace Kirurobo
         private static void _dropFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
         {
             // LF 区切りで届いた文字列を分割してパスの配列に直す
-            char[] delimiters = { '\n', '\r', '\t', '\0' };
-            string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+            //char[] delimiters = { '\n', '\0' };
+            //string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+            string[] files = parsePaths(paths);
 
             if (files.Length > 0)
             {
@@ -319,8 +321,9 @@ namespace Kirurobo
         private static void _openFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
         {
             // LF 区切りで届いた文字列を分割してパスの配列に直す
-            char[] delimiters = { '\n', '\r', '\t', '\0' };
-            string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+            //char[] delimiters = { '\n', '\0' };
+            //string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
+            string[] files = parsePaths(paths);
 
             if (files.Length > 0)
             {
@@ -329,6 +332,62 @@ namespace Kirurobo
 
                 wasOpened = true;
             }
+        }
+
+        /// <summary>
+        /// ダブルクオーテーション囲み、LF（またはnull）区切りの文字列を配列に直して返す
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private static string[] parsePaths(string text)
+        {
+            System.Collections.Generic.List<string> list = new System.Collections.Generic.List<string>();
+            bool inEscaped = false;
+            int len = text.Length;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < len; i++)
+            {
+                char c = text[i];
+                if (c == '"')
+                {
+                    if (inEscaped)
+                    {
+                        if (((i + 1) < len) && text[i + 1] == '"')
+                        {
+                            i++;
+                            sb.Append(c);   // 連続ダブルクォーテーションは１つのダブルクオーテーションとする
+                            continue;
+                        }
+                    }
+                    inEscaped = !inEscaped; // 連続でなければ囲み内か否かの切り替え
+                } else if (c == '\n') {
+                    if (inEscaped)
+                    {
+                        // 囲み内ならパスの一部とする
+                        sb.Append(c);
+                    } else
+                    {
+                        // 囲み内でなければ、区切りとして、次のパスに移る
+                        list.Add(sb.ToString());
+                        sb.Clear();
+                    }
+                } else if (c == '\0') {
+                    // ヌル文字は、常に区切りとして、次のパスに移る
+                    list.Add(sb.ToString());
+                    sb.Clear();
+                } else
+                {
+                    sb.Append(c);
+                }
+            }
+            if (sb.Length > 0)
+            {
+                list.Add(sb.ToString());
+            }
+
+            // 空文字列の要素は除去
+            list.RemoveAll(v => v.Length == 0);
+            return list.ToArray();
         }
 
         #endregion

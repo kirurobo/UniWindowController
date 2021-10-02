@@ -877,13 +877,18 @@ public class LibUniWinC : NSObject {
                     // Make new-line separated string
                     var text: String = ""
                     for url in openFilePanel.urls {
-                        text += url.path + "\n"
+                        text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+                        //text += '"' + url.path + '"' + "\n"
                     }
                     
                     // Run callback
                     if (callStringCallback(callback: openFilesCallback, text: text)) {}
+                    return
                 }
             }
+            
+            // Canceled or failed
+            if (callStringCallback(callback: openFilesCallback, text: "")) {}
         }
     }
     

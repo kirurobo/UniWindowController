@@ -132,6 +132,8 @@ UNIWINC_EXPORT BOOL UnregisterWindowStyleChangedCallback() {
     return [LibUniWinC unregisterWindowStyleChangedCallback];
 }
 
+// コールバックにファイルはダブルクオーテーションで囲まれ改行区切りとなった文字列で渡ります。
+//  e.g. "/Dir/File1.txt"\n"/Dir/File2.txt"\n"/Dir/File""3"".txt"\n
 UNIWINC_EXPORT BOOL RegisterDropFilesCallback(StringCallback callback) {
     return [LibUniWinC registerDropFilesCallbackWithCallback: callback];
 }
@@ -140,6 +142,10 @@ UNIWINC_EXPORT BOOL UnregisterDropFilesCallback() {
     return [LibUniWinC unregisterDropFilesCallback];
 }
 
+// コールバックに複数パスがダブルクオーテーションで囲まれ改行区切りとなった文字列で渡ります。
+// パスにダブルクオーテーションが含まれる場合は連続ダブルクォーテーションになります。
+//  e.g. "/Dir/File1.txt"\n"/Dir/File2.txt"\n"/Dir/File""3"".txt"\n
+//  ファイル選択キャンセル時には空文字列が渡されます
 UNIWINC_EXPORT BOOL RegisterOpenFilesCallback(StringCallback callback) {
     return [LibUniWinC registerOpenFilesCallbackWithCallback: callback];
 }
