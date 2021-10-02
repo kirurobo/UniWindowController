@@ -91,14 +91,14 @@ namespace Kirurobo
             shouldClose = true;
         }
 
-        public static void OpenFilePanel(DialogSettings settings, Action<string[]> action)
+        public static async void OpenFilePanel(DialogSettings settings, Action<string[]> action)
         {
-            OpenFilePanelAsync(settings, action);
+            await OpenFilePanelAsync(settings, action);
         }
 
-        public static void SaveFilePanel(DialogSettings settings, Action<string[]> action)
+        public static async void SaveFilePanel(DialogSettings settings, Action<string[]> action)
         {
-            SaveFilePanelAsync(settings, action);
+            await SaveFilePanelAsync(settings, action);
         }
 
         public static async Task OpenFilePanelAsync(DialogSettings settings, Action<string[]> action)
