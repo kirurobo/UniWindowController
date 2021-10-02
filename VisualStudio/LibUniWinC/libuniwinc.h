@@ -34,7 +34,7 @@ enum class EventType : int {
 //   param: The argument is indicate the kind of event
 using WindowStyleChangedCallback = void(*)(INT32);
 
-// Function called when files have dropped
+// Function called when files have selected
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
 using FilesCallback = void(*)(WCHAR*);
 
@@ -81,6 +81,8 @@ UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterOpenFilesCallback(FilesCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterOpenFilesCallback();
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterSaveFileCallback(FilesCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API UnregisterSaveFileCallback();
 
 
 // Monitor Info.
@@ -94,8 +96,9 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 
-// Common controll
-UNIWINC_EXPORT void UNIWINC_API OpenFileDialog(const UINT32 flags);
+// Dialogs
+UNIWINC_EXPORT void UNIWINC_API ShowOpenFilePanel(const UINT32 flags);
+UNIWINC_EXPORT void UNIWINC_API ShowSaveFilePanel(const UINT32 flags);
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);

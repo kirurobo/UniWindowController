@@ -35,6 +35,8 @@ static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 static FilesCallback hDropFilesHandler_ = nullptr;
 static FilesCallback hOpenFilesHandler_ = nullptr;
+static FilesCallback hSaveFileHandler_ = nullptr;
+static HANDLE hFilePanelThread = nullptr;
 
 
 // ========================================================================
@@ -1088,6 +1090,8 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 /// <param name="hDrop"></param>
 /// <returns></returns>
 BOOL ReceiveDropFiles(HDROP hDrop) {
+	// TODO: Windowsでは特殊文字がファイル名に入る例はまず無さそうだが、macOSと同様にダブルクォーテーション囲みにした方がよい
+	//		CSVと同様にダブルクォーテーションが文字としてあれば二重にする
 	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
 
 	if (num > 0) {
@@ -1381,10 +1385,71 @@ BOOL UNIWINC_API UnregisterOpenFilesCallback() {
 	return TRUE;
 }
 
-void UNIWINC_API OpenFileDialog(UINT32 flags) {
+/// <summary>
+/// Register the callback fucnction for open file dialog
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+BOOL UNIWINC_API RegisterSaveFileCallback(FilesCallback callback) {
+	if (callback == nullptr) return FALSE;
+
+	hSaveFileHandler_ = callback;
+	return TRUE;
+}
+
+/// <summary>
+/// Unregister the callback function
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API UnregisterSaveFileCallback() {
+	hSaveFileHandler_ = nullptr;
+	return TRUE;
+}
+
+void UNIWINC_API ShowOpenFilePanel(UINT32 flags) {
+	WCHAR path[MAX_PATH];
+
 	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hTargetWnd_;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFile = path;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+
+
+	GetOpenFileName(&ofn);
+
 
 	return;
+}
+
+void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
+	WCHAR path[MAX_PATH];
+
+	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hTargetWnd_;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFile = path;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+
+	GetSaveFileName(&ofn);
+
+	return;
+}
+
+void StopThread() {
+	if (hFilePanelThread != nullptr) {
+		LPDWORD lpExitCode;
+		if (GetExitCodeThread(hFilePanelThread, lpExitCode)) {
+			if (*lpExitCode == STILL_ACTIVE) {
+				TerminateThread(hFilePanelThread, false);
+			}
+		}
+		hFilePanelThread == nullptr;
+	}
 }
 
 #pragma endregion File dialogs
