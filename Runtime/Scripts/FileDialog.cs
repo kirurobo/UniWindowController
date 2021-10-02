@@ -38,13 +38,23 @@ namespace Kirurobo
         /// ダイアログの設定フラグ
         /// </summary>
         [Flags]
-        protected enum DialogFlag
+        public enum DialogFlag
         {
             None = 0,
             ChooseFiles = 1,
             ChooseDirectories = 2,
             AllowMultipleSelection = 4,
             CanCreateDirectories = 16,
+        }
+
+        /// <summary>
+        /// Parameters for file dialog
+        /// </summary>
+        public struct DialogSettings
+        {
+            public string title;
+            public string filter;
+            public DialogFlag flags;
         }
 
         /// <summary>
@@ -81,22 +91,22 @@ namespace Kirurobo
             shouldClose = true;
         }
 
-        public static void OpenFilePanel()
+        public static void OpenFilePanel(DialogSettings settings, Action<string[]> action)
         {
-            UniWinCore.ShowOpenFilePanel();
+            OpenFilePanelAsync(settings, action);
         }
 
-        public static void SaveFilePanel()
+        public static void SaveFilePanel(DialogSettings settings, Action<string[]> action)
         {
-            UniWinCore.ShowSaveFilePanel();
+            SaveFilePanelAsync(settings, action);
         }
 
-        public static async Task OpenFilePanelAsync(Action<string[]> action)
+        public static async Task OpenFilePanelAsync(DialogSettings settings, Action<string[]> action)
         {
             LibUniWinC.RegisterOpenFilesCallback(_openFilesCallback);
 
             wasOpened = false;
-            UniWinCore.ShowOpenFilePanel();
+            LibUniWinC.ShowOpenFilePanel((uint)settings.flags);
 
             while (!wasOpened && !shouldClose)
             {
@@ -108,12 +118,12 @@ namespace Kirurobo
             action.Invoke(files);
         }
 
-        public static async Task SaveFilePanelAsync(Action<string[]> action)
+        public static async Task SaveFilePanelAsync(DialogSettings settings, Action<string[]> action)
         {
             LibUniWinC.RegisterSaveFileCallback(_saveFilesCallback);
 
             wasSaved = false;
-            UniWinCore.ShowSaveFilePanel();
+            LibUniWinC.ShowSaveFilePanel((uint)settings.flags);
 
             while (!wasSaved && !shouldClose)
             {

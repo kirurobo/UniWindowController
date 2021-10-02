@@ -208,11 +208,21 @@ namespace Kirurobo
 
             if (Input.GetKeyUp(KeyCode.O))
             {
-                FileDialog.OpenFilePanelAsync((files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+                FileDialog.DialogSettings ds = new FileDialog.DialogSettings
+                {
+                    flags = FileDialog.DialogFlag.AllowMultipleSelection | FileDialog.DialogFlag.ChooseFiles | FileDialog.DialogFlag.ChooseDirectories,
+                    title = "Open!"
+                };
+                FileDialog.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
             if (Input.GetKeyDown(KeyCode.S))
             {
-                FileDialog.SaveFilePanelAsync((files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+                FileDialog.DialogSettings ds = new FileDialog.DialogSettings
+                {
+                    flags = FileDialog.DialogFlag.ChooseFiles | FileDialog.DialogFlag.CanCreateDirectories,
+                    title = "Save!"
+                };
+                FileDialog.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
 
             // Quit or stop playing when pressed [ESC]
@@ -325,13 +335,6 @@ namespace Kirurobo
             {
                 menuPanel.gameObject.SetActive(false);
             }
-        }
-
-        public void OpenFile()
-        {
-            FileDialog.OpenFilePanelAsync((files) => {
-                ShowEventMessage(string.Join(Environment.NewLine, files));
-            });
         }
 
         /// <summary>
