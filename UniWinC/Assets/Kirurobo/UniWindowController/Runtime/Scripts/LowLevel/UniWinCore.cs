@@ -33,19 +33,6 @@ namespace Kirurobo
             ColorKey = 2,
         }
 
-        /// <summary>
-        /// ダイアログの設定フラグ
-        /// </summary>
-        [Flags]
-        protected enum DialogFlag
-        {
-            None = 0,
-            ChooseFiles = 1,
-            ChooseDirectories = 2,
-            AllowMultipleSelection = 4,
-            CanCreateDirectories = 16,
-        }
-
         #region Native functions
         protected class LibUniWinC
         {
@@ -126,18 +113,6 @@ namespace Kirurobo
             public static extern bool UnregisterDropFilesCallback();
 
             [DllImport("LibUniWinC")]
-            public static extern bool RegisterOpenFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
-
-            [DllImport("LibUniWinC")]
-            public static extern bool UnregisterOpenFilesCallback();
-
-            [DllImport("LibUniWinC")]
-            public static extern bool RegisterSaveFileCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
-
-            [DllImport("LibUniWinC")]
-            public static extern bool UnregisterSaveFileCallback();
-
-            [DllImport("LibUniWinC")]
             public static extern bool RegisterMonitorChangedCallback([MarshalAs(UnmanagedType.FunctionPtr)] IntCallback callback);
 
             [DllImport("LibUniWinC")]
@@ -172,12 +147,6 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern void SetKeyColor(uint colorref);
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowOpenFilePanel(uint flags);
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowSaveFilePanel(uint flags);
         }
         #endregion
 
@@ -271,7 +240,6 @@ namespace Kirurobo
 
             // Instead of DetachWindow()
             LibUniWinC.UnregisterDropFilesCallback();
-            LibUniWinC.UnregisterOpenFilesCallback();
             LibUniWinC.UnregisterMonitorChangedCallback();
             LibUniWinC.UnregisterWindowStyleChangedCallback();
         }
@@ -438,7 +406,6 @@ namespace Kirurobo
 #endif
             // Add event handlers
             LibUniWinC.RegisterDropFilesCallback(_openFilesCallback);
-            LibUniWinC.RegisterOpenFilesCallback(_dropFilesCallback);
             LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
             LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
 
@@ -582,24 +549,6 @@ namespace Kirurobo
         public void SetAllowDrop(bool enabled)
         {
             LibUniWinC.SetAllowDrop(enabled);
-        }
-
-        /// <summary>
-        /// Open file selection dialog
-        /// </summary>
-        public static void ShowOpenFilePanel()
-        {
-            var flags = DialogFlag.AllowMultipleSelection | DialogFlag.ChooseFiles | DialogFlag.ChooseDirectories;
-            LibUniWinC.ShowOpenFilePanel((uint)flags);
-        }
-
-        /// <summary>
-        /// Open file selection dialog
-        /// </summary>
-        public static void ShowSaveFilePanel()
-        {
-            var flags = DialogFlag.CanCreateDirectories;
-            LibUniWinC.ShowSaveFilePanel((uint)flags);
         }
 
         #endregion
