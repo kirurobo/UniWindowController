@@ -122,6 +122,7 @@ public class LibUniWinC : NSObject {
     public typealias intCallback = (@convention(c) (Int32) -> Void)
     public static var dropFilesCallback: stringCallback? = nil
     public static var openFilesCallback: stringCallback? = nil
+    public static var saveFilesCallback: stringCallback? = nil
     public static var monitorChangedCallback: intCallback? = nil
     public static var windowStyleChangedCallback: intCallback? = nil
     private static var observerObject: Any? = nil
@@ -136,7 +137,8 @@ public class LibUniWinC : NSObject {
     private static var monitorRectangles: [CGRect] = []
     private static var monitorIndices: [Int] = []
 
-    private static let openFilePanel = NSOpenPanel()
+    private static let openPanel = NSOpenPanel()
+    private static let savePanel = NSSavePanel()
 
     // MARK: - Properties
 
@@ -325,7 +327,7 @@ public class LibUniWinC : NSObject {
             }
             
             // Close dialog if it is opened
-            openFilePanel.close()
+            openPanel.close()
             
             targetWindow = nil
         }
@@ -827,6 +829,16 @@ public class LibUniWinC : NSObject {
         return true
     }
 
+    @objc public static func registerSaveFileCallback(callback: @escaping stringCallback) -> Bool {
+        saveFilesCallback = callback
+        return true
+    }
+    
+    @objc public static func unregisterSaveFileCallback() -> Bool {
+        saveFilesCallback = nil
+        return true
+    }
+
     
     // MARK: - Mouser curosor
     
@@ -857,41 +869,58 @@ public class LibUniWinC : NSObject {
     }
     
     
-    // MARK: - Open file dialog
+    // MARK: - File dialogs
     
     /// Open dialog
     /// - Parameters:
     ///   -
-    @objc public static func openFileDialog(flags: UInt32) -> Void {
-        openFilePanel.canChooseFiles = (flags & 0b0001 > 0)
-        openFilePanel.canChooseDirectories = (flags & 0b0010 > 0)
-        openFilePanel.allowsMultipleSelection = (flags & 0b0100 > 0)
-        openFilePanel.canCreateDirectories = false
+    @objc public static func showOpenFilePanel(flags: UInt32) -> Void {
+        openPanel.canChooseFiles = (flags & 1 > 0)
+        openPanel.canChooseDirectories = (flags & 2 > 0)
+        openPanel.allowsMultipleSelection = (flags & 4 > 0)
+        openPanel.canCreateDirectories = (flags & 16 > 0)
 
-        openFilePanel.prompt = "Open"
-        openFilePanel.level = NSWindow.Level.popUpMenu
+        openPanel.prompt = "Open"
+        openPanel.level = NSWindow.Level.popUpMenu
         
-        openFilePanel.begin { (result) -> Void in
+        openPanel.begin { (result) -> Void in
+            var text: String = ""
             if (result == .OK) {
-                if (openFilePanel.urls.count > 0) {
+                if (openPanel.urls.count > 0) {
                     // Make new-line separated string
-                    var text: String = ""
-                    for url in openFilePanel.urls {
+                    for url in openPanel.urls {
                         text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
                         //text += '"' + url.path + '"' + "\n"
                     }
-                    
-                    // Run callback
-                    if (callStringCallback(callback: openFilesCallback, text: text)) {}
-                    return
                 }
             }
             
-            // Canceled or failed
-            if (callStringCallback(callback: openFilesCallback, text: "")) {}
+            // Run callback. The arcument will empty if canceled or failed.
+            if (callStringCallback(callback: openFilesCallback, text: text)) {}
         }
     }
     
+    /// Open dialog
+    /// - Parameters:
+    ///   -
+    @objc public static func showSaveFilePanel(flags: UInt32) -> Void {
+        savePanel.canCreateDirectories = (flags & 16 > 0)
+
+        savePanel.prompt = "Save"
+        savePanel.level = NSWindow.Level.popUpMenu
+        
+        savePanel.begin { (result) -> Void in
+            var text: String = ""
+            if (result == .OK && (savePanel.url != nil)) {
+                let url: String = savePanel.url!.path
+                text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+            }
+            
+            // Run callback. The arcument will empty if canceled or failed.
+            if (callStringCallback(callback: saveFilesCallback, text: text)) {}
+        }
+    }
+
     /// Call a StringCallback with UTF-16 paramete
     /// - Parameters:
     ///   - callback: Registered callback function

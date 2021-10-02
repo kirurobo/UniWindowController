@@ -289,6 +289,11 @@ namespace Kirurobo
         public event FilesDelegate OnOpenFiles;
 
         /// <summary>
+        /// Occurs after files or folders were selected by dialog
+        /// </summary>
+        public event FilesDelegate OnSaveFile;
+
+        /// <summary>
         /// Occurs when the monitor settings or resolution changed
         /// </summary>
         public event OnMonitorChangedDelegate OnMonitorChanged;
@@ -424,11 +429,6 @@ namespace Kirurobo
             if (uniWinCore.ObserveDroppedFiles(out var droppedFiles))
             {
                 OnDropFiles?.Invoke(droppedFiles);
-            }
-
-            if (uniWinCore.ObserveOpenedFiles(out var openedFiles))
-            {
-                OnOpenFiles?.Invoke(openedFiles);
             }
 
             if (uniWinCore.ObserveMonitorChanged())
@@ -821,12 +821,6 @@ namespace Kirurobo
 
             uniWinCore.SetAllowDrop(enabled);
             _allowDropFiles = enabled;
-        }
-
-        public void OpenFilesDialog() {
-            if (uniWinCore == null) return;
-
-            uniWinCore.OpenFilesDialog();
         }
 
 
