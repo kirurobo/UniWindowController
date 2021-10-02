@@ -151,9 +151,7 @@ namespace Kirurobo
         #endregion
 
         static string[] lastDroppedFiles;
-        static string[] lastOpenedFiles;
         static bool wasDropped = false;
-        static bool wasOpened = false;
         static bool wasMonitorChanged = false;
         static bool wasWindowStyleChanged = false;
 
@@ -293,28 +291,6 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// ダイアログからファイル、フォルダが開かれた時に呼ばれるコールバック
-        /// 文字列を配列に直すことと、フラグを立てるまで行う
-        /// </summary>
-        /// <param name="paths"></param>
-        [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
-        private static void _openFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
-        {
-            // LF 区切りで届いた文字列を分割してパスの配列に直す
-            //char[] delimiters = { '\n', '\0' };
-            //string[] files = paths.Split(delimiters).Where(s => s != "").ToArray();
-            string[] files = parsePaths(paths);
-
-            if (files.Length > 0)
-            {
-                lastOpenedFiles = new string[files.Length];
-                files.CopyTo(lastOpenedFiles, 0);
-
-                wasOpened = true;
-            }
-        }
-
-        /// <summary>
         /// ダブルクオーテーション囲み、LF（またはnull）区切りの文字列を配列に直して返す
         /// </summary>
         /// <param name="text"></param>
@@ -405,7 +381,7 @@ namespace Kirurobo
         LibUniWinC.AttachMyWindow();
 #endif
             // Add event handlers
-            LibUniWinC.RegisterDropFilesCallback(_openFilesCallback);
+            LibUniWinC.RegisterDropFilesCallback(_dropFilesCallback);
             LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
             LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
 
@@ -567,21 +543,6 @@ namespace Kirurobo
             if (!wasDropped || files == null) return false;
 
             wasDropped = false;
-            return true;
-        }
-
-        /// <summary>
-        /// Check files opening and unset the opened flag
-        /// </summary>
-        /// <param name="files"></param>
-        /// <returns>true if files were dropped</returns>
-        public bool ObserveOpenedFiles(out string[] files)
-        {
-            files = lastOpenedFiles;
-
-            if (!wasOpened || files == null) return false;
-
-            wasOpened = false;
             return true;
         }
 
