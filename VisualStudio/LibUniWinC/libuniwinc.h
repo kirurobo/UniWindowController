@@ -30,6 +30,21 @@ enum class WindowStateEventType : int {
 	Resized = 2
 };
 
+// Struct to transmit file panel settings
+#pragma pack(push, 1)
+typedef struct tagPANELSETTINGS {
+	UINT32 nStructSize;
+	UINT32 nFlags;
+	UINT32 nTitleLength;
+	LPWSTR lpTitleText;
+	UINT32 nFilterLength;
+	LPWSTR lpFilterText;
+	UINT32 nDefaultPathLength;
+	LPWSTR lpDefaultPath;
+
+} PANELSETTINGS, * LPPANELSETTINGS;
+#pragma pack(pop)
+
 // Function called when window style (e.g. maximized, transparetize, etc.)
 //   param: The argument is indicate the kind of event
 using WindowStyleChangedCallback = void(*)(INT32);
@@ -96,9 +111,12 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 
-// Dialogs
+// File panels
 UNIWINC_EXPORT void UNIWINC_API ShowOpenFilePanel(const UINT32 flags);
 UNIWINC_EXPORT void UNIWINC_API ShowSaveFilePanel(const UINT32 flags);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenFolderPanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);

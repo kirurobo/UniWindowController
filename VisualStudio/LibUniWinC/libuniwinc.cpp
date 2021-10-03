@@ -1483,6 +1483,37 @@ void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
 	return;
 }
 
+BOOL UNIWINC_API OpenFilePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
+	WCHAR path[MAX_PATH];
+	ZeroMemory(path, sizeof(path));
+
+	OPENFILENAMEW ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hTargetWnd_;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFile = path;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
+
+	if (GetOpenFileNameW(&ofn)) {
+		//if (hOpenFilesHandler_ != nullptr) {
+		//	//hOpenFilesHandler_(ofn.lpstrFile);
+		//}
+
+		RunFileCallback(hOpenFilesHandler_, ofn.lpstrFile, ofn.nMaxFile);
+	}
+
+	return false;
+}
+
+
+BOOL UNIWINC_API OpenFolderPanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
+	return false;
+}
+
+BOOL UNIWINC_API OpenSavePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
+	return false;
+}
 
 #pragma endregion File dialogs
 
