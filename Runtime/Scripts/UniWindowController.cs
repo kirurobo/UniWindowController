@@ -38,7 +38,7 @@ namespace Kirurobo
         /// <summary>
         /// The same as UniWinCore.TransparentType
         /// </summary>
-        public enum TransparentType
+        public enum TransparentType : int
         {
             None = 0,
             Alpha = 1,
@@ -48,13 +48,23 @@ namespace Kirurobo
         /// <summary>
         /// 透明化の方式
         /// </summary>
-        public enum HitTestType
+        public enum HitTestType : int
         {
             None = 0,
             Opacity = 1,
             Raycast = 2,
         }
-        
+
+        /// <summary>
+        /// 透明化の方式
+        /// </summary>
+        public enum WindowStateEventType : int
+        {
+            None = 0,
+            StyleChanged = 1,
+            Resized = 2
+        }
+
         /// <summary>
         /// Low level class
         /// </summary>
@@ -274,7 +284,7 @@ namespace Kirurobo
         /// Occurs when the window style changed
         /// </summary>
         public event OnStateChangedDelegate OnStateChanged;
-        public delegate void OnStateChangedDelegate();
+        public delegate void OnStateChangedDelegate(WindowStateEventType type);
 
         public delegate void FilesDelegate(string[] files);
 
@@ -282,16 +292,6 @@ namespace Kirurobo
         /// Occurs after files or folders were dropped
         /// </summary>
         public event FilesDelegate OnDropFiles;
-
-        /// <summary>
-        /// Occurs after files or folders were opened by dialog
-        /// </summary>
-        public event FilesDelegate OnOpenFiles;
-
-        /// <summary>
-        /// Occurs after files or folders were selected by dialog
-        /// </summary>
-        public event FilesDelegate OnSaveFile;
 
         /// <summary>
         /// Occurs when the monitor settings or resolution changed
@@ -436,7 +436,7 @@ namespace Kirurobo
                 OnMonitorChanged?.Invoke();
             }
 
-            if (uniWinCore.ObserveWindowStyleChanged())
+            if (uniWinCore.ObserveWindowStyleChanged(out var type))
             {
                 // // モニタへのフィット指定がある状態で最大化解除された場合
                 // if (shouldFitMonitor && !uniWinCore.GetZoomed())
@@ -447,7 +447,7 @@ namespace Kirurobo
                 // }
                 if (_shouldFitMonitor) StartCoroutine("ForceZoomed"); // 時間差で最大化を強制
                 
-                OnStateChanged?.Invoke();
+                OnStateChanged?.Invoke((WindowStateEventType)type);
             }
         }
 

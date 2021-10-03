@@ -103,9 +103,9 @@ namespace Kirurobo
 #endif
                 
                 // Add events
-                uniwinc.OnStateChanged += () =>
+                uniwinc.OnStateChanged += (type) =>
                 {
-                    Debug.Log("Style changed");
+                    Debug.Log("Window state changed: " + type);
                     UpdateUI();
                 };
                 uniwinc.OnMonitorChanged += () => {
@@ -208,21 +208,21 @@ namespace Kirurobo
 
             if (Input.GetKeyUp(KeyCode.O))
             {
-                FileDialog.DialogSettings ds = new FileDialog.DialogSettings
+                FilePanel.Settings ds = new FilePanel.Settings
                 {
-                    flags = FileDialog.DialogFlag.AllowMultipleSelection | FileDialog.DialogFlag.ChooseFiles | FileDialog.DialogFlag.ChooseDirectories,
+                    flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.ChooseFiles | FilePanel.Flag.ChooseDirectories,
                     title = "Open!"
                 };
-                FileDialog.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+                FilePanel.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
             if (Input.GetKeyDown(KeyCode.S))
             {
-                FileDialog.DialogSettings ds = new FileDialog.DialogSettings
+                FilePanel.Settings ds = new FilePanel.Settings
                 {
-                    flags = FileDialog.DialogFlag.ChooseFiles | FileDialog.DialogFlag.CanCreateDirectories,
+                    flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
                     title = "Save!"
                 };
-                FileDialog.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+                FilePanel.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
 
             // Quit or stop playing when pressed [ESC]

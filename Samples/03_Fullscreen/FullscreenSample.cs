@@ -63,10 +63,10 @@ namespace Kirurobo
                 menuCloseButton?.onClick.AddListener(CloseMenu);
 
                 // Add events
-                uniwinc.OnStateChanged += () =>
+                uniwinc.OnStateChanged += (type) =>
                 {
                     UpdateUI();
-                    //ShowEventMessage("Style changed");
+                    //ShowEventMessage("Window state changed: " + type);
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
