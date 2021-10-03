@@ -126,6 +126,11 @@ namespace TestLibUniWinC
             PrintWindowInfo();
         }
 
+        private void buttonOpenFile_Click(object sender, EventArgs e)
+        {
+            UniWinC.ShowOpenFilePanel(0b0111);
+        }
+
         /// <summary>
         /// 選択されたモニタにウィンドウを移動
         /// </summary>

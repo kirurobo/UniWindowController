@@ -171,6 +171,9 @@ public class UniWinC : IDisposable
     [DllImport("LibUniWinC.dll")]
     public static extern uint GetMyProcessId();
 
+    [DllImport("LibUniWinC.dll")]
+    public static extern void ShowOpenFilePanel(UInt32 flags);
+
 
     /// <summary>
     /// ウィンドウ制御のコンストラクタ
