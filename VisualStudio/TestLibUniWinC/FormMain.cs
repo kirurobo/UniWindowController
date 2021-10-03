@@ -41,6 +41,24 @@ namespace TestLibUniWinC
             UniWinC.RegisterDropFilesCallback(msg => {
                 droppedFiles = msg;
                 filesDropped = true;
+                Console.WriteLine("Drop");
+                //Console.WriteLine(msg);
+            });
+
+            // ファイルオープンでもさしあたりドロップと同様に表示
+            UniWinC.RegisterOpenFilesCallback(msg => {
+                droppedFiles = msg;
+                filesDropped = true;
+                Console.WriteLine("Open");
+                //Console.WriteLine(msg);
+            });
+
+            // ファイル保存ダイアログでもさしあたりドロップと同様に表示
+            UniWinC.RegisterSaveFileCallback(msg => {
+                droppedFiles = msg;
+                filesDropped = true;
+                Console.WriteLine("Save");
+                //Console.WriteLine(msg);
             });
 
             // 解像度変更時、モニター一覧を更新
@@ -128,7 +146,12 @@ namespace TestLibUniWinC
 
         private void buttonOpenFile_Click(object sender, EventArgs e)
         {
-            UniWinC.ShowOpenFilePanel(0b0111);
+            UniWinC.ShowOpenFilePanel(0xFF);
+        }
+
+        private void buttonSaveFile_Click(object sender, EventArgs e)
+        {
+            UniWinC.ShowSaveFilePanel(0xFF);
         }
 
         /// <summary>
@@ -213,6 +236,7 @@ namespace TestLibUniWinC
             {
                 // ファイルがドロップされた後の処理
                 Console.WriteLine(droppedFiles);
+                textBoxMessage.Text = droppedFiles;
                 filesDropped = false;
             }
         }

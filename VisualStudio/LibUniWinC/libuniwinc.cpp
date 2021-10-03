@@ -51,7 +51,6 @@ void updateScreenSize();
 //void EndHook();
 void CreateCustomWindowProcedure();
 void DestroyCustomWindowProcedure();
-void StopThread();
 
 
 /// <summary>
@@ -59,8 +58,6 @@ void StopThread();
 /// </summary>
 void detachWindow()
 {
-	StopThread();
-
 	if (hTargetWnd_) {
 		// Restore the original window procedure
 		DestroyCustomWindowProcedure();
@@ -1136,6 +1133,35 @@ BOOL ReceiveDropFiles(HDROP hDrop) {
 }
 
 /// <summary>
+/// Process files callback
+/// </summary>
+/// <param name="callback"></param>
+/// <returns></returns>
+void RunFileCallback(FilesCallback callback, LPWSTR lpstr, UINT szStr) {
+	UINT bufferSize = szStr;
+
+	// Allocate buffer
+	LPWSTR buffer;
+	buffer = new (std::nothrow)WCHAR[bufferSize];
+
+	if (buffer != NULL) {
+		// Retrieve file paths
+		UINT bufferIndex = 0;
+		for (UINT i = 0; i < szStr; i++) {
+			buffer[bufferIndex] = lpstr[i];
+			bufferIndex++;
+		}
+
+		// Do callback function
+		if (callback != nullptr) {
+			callback((WCHAR*)buffer);	// Charset of this project must be set U
+		}
+
+		delete[] buffer;
+	}
+}
+
+/// <summary>
 /// Custom window proceture to accept dropped files and display-changed event
 /// </summary>
 /// <param name="hWnd"></param>
@@ -1410,77 +1436,25 @@ BOOL UNIWINC_API UnregisterSaveFileCallback() {
 	return TRUE;
 }
 
-void StopThread() {
-	// 終了フラグを立てる
-	bShouldStopThread = TRUE;
-
-	if (hFilePanelThread != nullptr) {
-		DWORD exitCode;
-		for (int i = 0; i < 20; i++) {
-			if (GetExitCodeThread(hFilePanelThread, &exitCode)) {
-				if (exitCode == STILL_ACTIVE) {
-					Sleep(100);
-				}
-				else {
-					if (CloseHandle(hFilePanelThread)) {
-						hFilePanelThread = nullptr;
-					}
-				}
-			}
-		}
-
-		// 待っても終了しなかった場合は強制終了
-		if (hFilePanelThread != nullptr) {
-			if (!CloseHandle(hFilePanelThread)) {
-				TerminateThread(hFilePanelThread, false);
-			}
-		}
-		hFilePanelThread = nullptr;
-	}
-
-	// 終了フラグを戻す
-	bShouldStopThread = FALSE;
-}
-
-DWORD WINAPI ThreadOpenFilePanel(LPVOID lpOfn) {
-	WCHAR path[MAX_PATH];
-
-	OPENFILENAME ofn;
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = nullptr;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrFile = path;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
-
-	SetMaximized(true);
-	GetOpenFileName(&ofn);
-	//if (!bShouldStopThread) {
-	//	GetOpenFileName((OPENFILENAME*)lpOfn);
-	//}
-	
-	ExitThread(0);
-}
-
 void UNIWINC_API ShowOpenFilePanel(UINT32 flags) {
 	WCHAR path[MAX_PATH];
+	ZeroMemory(path, sizeof(path));
 
-	OPENFILENAME ofn;
+	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrFile = path;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
+	if (GetOpenFileNameW(&ofn)) {
+		//if (hOpenFilesHandler_ != nullptr) {
+		//	//hOpenFilesHandler_(ofn.lpstrFile);
+		//}
 
-	//GetOpenFileName(&ofn);
-
-	StopThread();
-	hFilePanelThread = CreateThread(
-		0, 0, (LPTHREAD_START_ROUTINE)ThreadOpenFilePanel, &ofn, 0, NULL
-	);
-	Sleep(2000);
+		RunFileCallback(hOpenFilesHandler_, ofn.lpstrFile, ofn.nMaxFile);
+	}
 
 	return;
 }
@@ -1488,8 +1462,9 @@ void UNIWINC_API ShowOpenFilePanel(UINT32 flags) {
 
 void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
 	WCHAR path[MAX_PATH];
+	ZeroMemory(path, sizeof(path));
 
-	OPENFILENAME ofn;
+	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
@@ -1497,7 +1472,13 @@ void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
 	ofn.lpstrFile = path;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
-	GetSaveFileName(&ofn);
+	if (GetSaveFileNameW(&ofn)) {
+		//if (hOpenFilesHandler_ != nullptr) {
+		//	hOpenFilesHandler_(ofn.lpstrFile);
+		//}
+
+		RunFileCallback(hSaveFileHandler_, ofn.lpstrFile, ofn.nMaxFile);
+	}
 
 	return;
 }

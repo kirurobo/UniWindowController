@@ -161,6 +161,24 @@ public class UniWinC : IDisposable
     [DllImport("LibUniWinC.dll")]
     public static extern bool UnregisterMonitorChangedCallback();
 
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool RegisterOpenFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] FileDropped callback);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool UnregisterOpenFilesCallback();
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool RegisterSaveFileCallback([MarshalAs(UnmanagedType.FunctionPtr)] FileDropped callback);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern bool UnregisterSaveFileCallback();
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern void ShowOpenFilePanel(UInt32 flags);
+
+    [DllImport("LibUniWinC.dll")]
+    public static extern void ShowSaveFilePanel(UInt32 flags);
+
     // for development & testing. Windows only.
     [DllImport("LibUniWinC.dll")]
     public static extern IntPtr GetWindowHandle();
@@ -170,9 +188,6 @@ public class UniWinC : IDisposable
 
     [DllImport("LibUniWinC.dll")]
     public static extern uint GetMyProcessId();
-
-    [DllImport("LibUniWinC.dll")]
-    public static extern void ShowOpenFilePanel(UInt32 flags);
 
 
     /// <summary>

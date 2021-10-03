@@ -40,7 +40,7 @@
             this.timerMainLoop = new System.Windows.Forms.Timer(this.components);
             this.checkBoxBottommost = new System.Windows.Forms.CheckBox();
             this.buttonOpenFile = new System.Windows.Forms.Button();
-            this.buttonClose = new System.Windows.Forms.Button();
+            this.buttonSaveFile = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonCheck
@@ -160,22 +160,22 @@
             this.buttonOpenFile.Location = new System.Drawing.Point(36, 177);
             this.buttonOpenFile.Margin = new System.Windows.Forms.Padding(5);
             this.buttonOpenFile.Name = "buttonOpenFile";
-            this.buttonOpenFile.Size = new System.Drawing.Size(100, 35);
+            this.buttonOpenFile.Size = new System.Drawing.Size(161, 35);
             this.buttonOpenFile.TabIndex = 0;
-            this.buttonOpenFile.Text = "Open";
+            this.buttonOpenFile.Text = "Open-panel";
             this.buttonOpenFile.UseVisualStyleBackColor = true;
             this.buttonOpenFile.Click += new System.EventHandler(this.buttonOpenFile_Click);
             // 
-            // buttonClose
+            // buttonSaveFile
             // 
-            this.buttonClose.Location = new System.Drawing.Point(146, 177);
-            this.buttonClose.Margin = new System.Windows.Forms.Padding(5);
-            this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(100, 35);
-            this.buttonClose.TabIndex = 0;
-            this.buttonClose.Text = "Close";
-            this.buttonClose.UseVisualStyleBackColor = true;
-            this.buttonClose.Click += new System.EventHandler(this.buttonOpenFile_Click);
+            this.buttonSaveFile.Location = new System.Drawing.Point(208, 177);
+            this.buttonSaveFile.Margin = new System.Windows.Forms.Padding(5);
+            this.buttonSaveFile.Name = "buttonSaveFile";
+            this.buttonSaveFile.Size = new System.Drawing.Size(161, 35);
+            this.buttonSaveFile.TabIndex = 0;
+            this.buttonSaveFile.Text = "Save-panel";
+            this.buttonSaveFile.UseVisualStyleBackColor = true;
+            this.buttonSaveFile.Click += new System.EventHandler(this.buttonSaveFile_Click);
             // 
             // FormMain
             // 
@@ -191,7 +191,7 @@
             this.Controls.Add(this.textBoxMessage);
             this.Controls.Add(this.buttonFitMonitor);
             this.Controls.Add(this.buttonShowMonitorInfo);
-            this.Controls.Add(this.buttonClose);
+            this.Controls.Add(this.buttonSaveFile);
             this.Controls.Add(this.buttonOpenFile);
             this.Controls.Add(this.buttonCheck);
             this.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
@@ -217,7 +217,7 @@
         private System.Windows.Forms.Timer timerMainLoop;
         private System.Windows.Forms.CheckBox checkBoxBottommost;
         private System.Windows.Forms.Button buttonOpenFile;
-        private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.Button buttonSaveFile;
     }
 }
 
