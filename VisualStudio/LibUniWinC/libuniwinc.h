@@ -23,11 +23,11 @@ enum class TransparentType : int {
 	ColorKey = 2
 };
 
-// Event type (Experimental)
-enum class EventType : int {
+// State changed event type (Experimental)
+enum class WindowStateEventType : int {
 	None = 0,
-	Style = 1,
-	Size = 2
+	StyleChanged = 1,
+	Resized = 2
 };
 
 // Function called when window style (e.g. maximized, transparetize, etc.)

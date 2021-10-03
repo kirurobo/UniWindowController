@@ -692,7 +692,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 		// Run callback if the topmost state changed
 		if (bIsTopmost_ != bTopmost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -720,7 +720,7 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 		// Run callback if the bottommost state changed
 		if (bIsBottommost_ != bBottommost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -762,7 +762,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 		// Run callback if the bottommost state changed
 		if (bIsBackground_!= bEnabled) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -1202,7 +1202,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	case WM_STYLECHANGED:	// スタイルの変化を検出
 		// Run callback
 		if (hWindowStyleChangedHandler_ != nullptr) {
-			hWindowStyleChangedHandler_((INT32)EventType::Style);
+			hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 		}
 		break;
 
@@ -1214,7 +1214,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		case SIZE_MINIMIZED:
 			// Run callback
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Size);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::Resized);
 			}
 			break;
 		}

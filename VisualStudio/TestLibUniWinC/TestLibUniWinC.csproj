@@ -90,7 +90,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UniWinC.cs" />
+    <Compile Include="LowLevel\FilePanel.cs" />
+    <Compile Include="UnityEmulation\AOT.cs" />
+    <Compile Include="UnityEmulation\UnityEngine.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,6 +101,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LowLevel\UniWinCore.cs" />
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
     </EmbeddedResource>
@@ -125,4 +128,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>@fc /W "$(ProjectDir)LowLevel\UniWinCore.cs" "$(SolutionDir)..\UniWinC\Assets\Kirurobo\UniWindowController\Runtime\Scripts\LowLevel\UniWinCore.cs"
+if errorlevel 1 @echo $(ProjectDir)\LowLevel\UniWinCore.cs(1): warning 0: Warning: UniWinCore.cs is dfferent from the one in Assets folder. 
+@fc /W "$(ProjectDir)LowLevel\FilePanel.cs" "$(SolutionDir)..\UniWinC\Assets\Kirurobo\UniWindowController\Runtime\Scripts\LowLevel\FilePanel.cs"
+if errorlevel 1 @echo $(ProjectDir)\LowLevel\FilePanel.cs(1): warning 0: Warning: FilePanel.cs is dfferent from the one in Assets folder. 
+set ERRORLEVEL=0
+</PreBuildEvent>
+  </PropertyGroup>
 </Project>
