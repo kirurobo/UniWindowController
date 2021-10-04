@@ -361,15 +361,21 @@ namespace Kirurobo
                     else
                     {
                         // 囲み内でなければ、区切りとして、次のパスに移る
+                        if (sb.Length > 0)
+                        {
                         list.Add(sb.ToString());
                         sb.Clear();
                     }
                 }
+                }
                 else if (c == '\0')
                 {
                     // ヌル文字は、常に区切りとして、次のパスに移る
+                    if (sb.Length > 0)
+                    {
                     list.Add(sb.ToString());
                     sb.Clear();
+                    }
                 }
                 else
                 {
