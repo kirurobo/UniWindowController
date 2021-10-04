@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "libuniwinc.h"
+#include <iostream>
 
 
 static HWND hTargetWnd_ = NULL;
@@ -1495,12 +1496,17 @@ BOOL UNIWINC_API OpenFilePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer
 	ofn.lpstrFile = path;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
-	if (GetOpenFileNameW(&ofn)) {
-		//if (hOpenFilesHandler_ != nullptr) {
-		//	//hOpenFilesHandler_(ofn.lpstrFile);
-		//}
+	std::cout << "OpenFilePanel: lpBuffer " << lpResultBuffer << " nBufferSize " << nBufferSize;
 
-		RunFileCallback(hOpenFilesHandler_, ofn.lpstrFile, ofn.nMaxFile);
+	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(lpResultBuffer, nBufferSize);
+		ofn.lpstrFile = lpResultBuffer;
+		ofn.nMaxFile = nBufferSize;
+	}
+
+
+	if (GetOpenFileNameW(&ofn)) {
+		return true;
 	}
 
 	return false;
@@ -1512,6 +1518,24 @@ BOOL UNIWINC_API OpenFolderPanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuff
 }
 
 BOOL UNIWINC_API OpenSavePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
+	OPENFILENAMEW ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hTargetWnd_;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
+
+	std::cout << "SaveFilePanel: lpBuffer " << lpResultBuffer << " nBufferSize " << nBufferSize;
+
+	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(lpResultBuffer, nBufferSize);
+		ofn.lpstrFile = lpResultBuffer;
+		ofn.nMaxFile = nBufferSize;
+	}
+
+	if (GetSaveFileNameW(&ofn)) {
+		return true;
+	}
+
 	return false;
 }
 
