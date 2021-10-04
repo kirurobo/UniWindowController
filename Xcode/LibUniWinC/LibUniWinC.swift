@@ -46,6 +46,18 @@ public class LibUniWinC : NSObject {
         case Size = 2
     }
     
+
+    public struct PanelSettings {
+        public var structSize: UInt32 = 0;
+        public var flags: UInt32 = 0;
+        public var titleLength: UInt32 = 0;
+        public var titleText: String = "";
+        public var filterLength: UInt32 = 0;
+        public var filterText: String = "";
+        public var defaultPathLength: UInt32 = 0;
+        public var defaultPath: String = "";
+    }
+    
     /// ウィンドウの初期状態を保持するクラス
     private class OriginalWindowInfo {
         /// 元々のStyleMaskをここに記憶
@@ -920,6 +932,85 @@ public class LibUniWinC : NSObject {
             if (callStringCallback(callback: saveFilesCallback, text: text)) {}
         }
     }
+    
+    /// Open dialog
+    /// - Parameters:
+    ///   -
+    @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+        let ps = pPanelSettings.pointee;
+        
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
+        openPanel.canCreateDirectories = (ps.flags & 16 > 0)
+
+        openPanel.prompt = "Open"
+        openPanel.level = NSWindow.Level.popUpMenu
+        
+        let result = openPanel.runModal();
+        
+        var text: String = ""
+        if (result == .OK) {
+            if (openPanel.urls.count > 0) {
+                // Make new-line separated string
+                for url in openPanel.urls {
+                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+                    //text += '"' + url.path + '"' + "\n"
+                }
+            }
+        }
+        
+        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    }
+    
+    @objc public static func openFolderPanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+        let ps = pPanelSettings.pointee;
+        
+        openPanel.canChooseFiles = false
+        openPanel.canChooseDirectories = true
+        openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
+        openPanel.canCreateDirectories = (ps.flags & 16 > 0)
+
+        openPanel.prompt = "Open"
+        openPanel.level = NSWindow.Level.popUpMenu
+        
+        let result = openPanel.runModal();
+        
+        var text: String = ""
+        if (result == .OK) {
+            if (openPanel.urls.count > 0) {
+                // Make new-line separated string
+                for url in openPanel.urls {
+                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+                    //text += '"' + url.path + '"' + "\n"
+                }
+            }
+        }
+        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    }
+    
+    @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+        let ps = pPanelSettings.pointee;
+        
+        savePanel.canCreateDirectories = (ps.flags & 16 > 0)
+
+        savePanel.prompt = "Save"
+        savePanel.level = NSWindow.Level.popUpMenu
+        
+        let result = savePanel.runModal();
+        
+        var text: String = ""
+        if (result == .OK && (savePanel.url != nil)) {
+            let url: String = savePanel.url!.path
+            text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+        }
+        
+        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    }
+
 
     /// Call a StringCallback with UTF-16 paramete
     /// - Parameters:
@@ -949,6 +1040,34 @@ public class LibUniWinC : NSObject {
         callback?(buffer)
 
         buffer.deallocate()
+        return true
+    }
+
+    /// Return an UTF-16 string by using a pointer
+    /// - Parameters:
+    ///     - text: Parrameter as String
+    ///     - lpBuffer: UTF-16 string buffer that allocated  by caller
+    ///     - bufferSize: Size of the string buffer
+    /// - Returns: True if success
+    private static func outputToStringBuffer(text: String, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+        let size = Int(bufferSize)
+        let buffer = lpBuffer.bindMemory(to: uint16.self, capacity: size)
+        
+        // Fill in zero
+        for i in 0..<size {
+            buffer[i] = uint16.zero
+        }
+        
+        let count = text.utf16.count
+        if (count <= 0) {
+            return false
+        }
+        
+        var i = 0
+        for c in text.utf16 {
+            buffer[i] = c
+            i += 1
+        }
         return true
     }
 }

@@ -198,3 +198,16 @@ UNIWINC_EXPORT void ShowOpenFilePanel(UInt32 param) {
 UNIWINC_EXPORT void ShowSaveFilePanel(UInt32 param) {
     [LibUniWinC showSaveFilePanelWithFlags: param];
 }
+
+UNIWINC_EXPORT BOOL OpenFilePanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
+    return [LibUniWinC openFilePanelWithLpSettings: lpPanelSettings lpBuffer:lpwsBuffer bufferSize: bufferSize];
+}
+
+UNIWINC_EXPORT BOOL OpenFolderPanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
+    return [LibUniWinC openFolderPanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
+}
+
+UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
+    return [LibUniWinC openSavePanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
+}
+
