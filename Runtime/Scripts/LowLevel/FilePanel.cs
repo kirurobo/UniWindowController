@@ -1,6 +1,7 @@
 ﻿using AOT;
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Kirurobo
@@ -33,6 +34,39 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern void ShowSaveFilePanel(uint flags);
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool OpenFilePanel([MarshalAs(UnmanagedType.LPStruct)] PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool OpenSavePanel([MarshalAs(UnmanagedType.LPStruct)] PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+
+
+            public struct PanelSettings {
+                public UInt32 structSize;
+                public UInt32 flags;
+                public UInt32 titleLength;
+                public IntPtr lpTitleText;
+                public UInt32 filterLength;
+                public IntPtr lpFilterText;
+                public UInt32 defaultPathLength;
+                public IntPtr lpDefaultPath;
+
+                //public PanelSettings()
+                //{
+                //    this.structSize = (UInt32)Marshal.SizeOf<PanelSettings>();
+                //    this.flags = 0;
+                //    this.titleLength = 0;
+                //    this.lpTitleText = IntPtr.Zero;
+                //    this.filterLength = 0;
+                //    this.lpFilterText = IntPtr.Zero;
+                //    this.defaultPathLength = 0;
+                //    this.lpDefaultPath = IntPtr.Zero;
+                //}
+            }
+
         }
 
         /// <summary>
@@ -92,14 +126,31 @@ namespace Kirurobo
             shouldClose = true;
         }
 
-        public static async void OpenFilePanel(Settings settings, Action<string[]> action)
+        public static void OpenFilePanel(Settings settings, Action<string[]> action)
         {
-            await OpenFilePanelAsync(settings, action);
+            //await OpenFilePanelAsync(settings, action);
+
+            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings();
+            StringBuilder sb = new StringBuilder(1024);
+
+            if (LibUniWinC.OpenFilePanel(ps, sb, (uint)sb.Length))
+            {
+                string[] files = UniWinCore.parsePaths(sb.ToString());
+                action.Invoke(files);
+            }
         }
 
-        public static async void SaveFilePanel(Settings settings, Action<string[]> action)
+        public static void SaveFilePanel(Settings settings, Action<string[]> action)
         {
-            await SaveFilePanelAsync(settings, action);
+            //await SaveFilePanelAsync(settings, action);
+            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings();
+            StringBuilder sb = new StringBuilder(1024);
+
+            if (LibUniWinC.OpenSavePanel(ps, sb, (uint)sb.Length))
+            {
+                string[] files = UniWinCore.parsePaths(sb.ToString());
+                action.Invoke(files);
+            }
         }
 
         public static async Task OpenFilePanelAsync(Settings settings, Action<string[]> action)
