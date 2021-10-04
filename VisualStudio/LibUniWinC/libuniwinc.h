@@ -33,13 +33,13 @@ enum class WindowStateEventType : int {
 // Struct to transmit file panel settings
 #pragma pack(push, 1)
 typedef struct tagPANELSETTINGS {
-	UINT32 nStructSize;
-	UINT32 nFlags;
-	UINT32 nTitleLength;
+	INT32 nStructSize;
+	INT32 nFlags;
+	INT32 nTitleLength;
 	LPWSTR lpTitleText;
-	UINT32 nFilterLength;
+	INT32 nFilterLength;
 	LPWSTR lpFilterText;
-	UINT32 nDefaultPathLength;
+	INT32 nDefaultPathLength;
 	LPWSTR lpDefaultPath;
 
 } PANELSETTINGS, * LPPANELSETTINGS;

@@ -6,6 +6,7 @@
 
 
 static HWND hTargetWnd_ = NULL;
+static HWND hPanelOwnerWnd_ = NULL;
 static WINDOWINFO originalWindowInfo;
 static WINDOWPLACEMENT originalWindowPlacement;
 static HWND hParentWnd_ = NULL;
@@ -37,7 +38,6 @@ static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 static FilesCallback hDropFilesHandler_ = nullptr;
 static FilesCallback hOpenFilesHandler_ = nullptr;
 static FilesCallback hSaveFileHandler_ = nullptr;
-static HANDLE hFilePanelThread = nullptr;
 static BOOL bShouldStopThread = FALSE;
 
 
@@ -129,13 +129,13 @@ void attachWindow(const HWND hWnd) {
 	}
 }
 
-/// <summary>
-/// オーナーウィンドウハンドルを探す際のコールバック
+
+/// オーナーウィンドウハンドルを探してアタッチする際のコールバック
 /// </summary>
 /// <param name="hWnd"></param>
 /// <param name="lParam"></param>
 /// <returns></returns>
-BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
+BOOL CALLBACK attachOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 {
 	DWORD currentPid = (DWORD)lParam;
 	DWORD pid;
@@ -163,6 +163,38 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 		//	hTargetWnd_ = hWnd;
 		//	return FALSE;
 		//}
+	}
+
+	return TRUE;
+}
+
+/// <summary>
+/// オーナーウィンドウハンドルを探す際のコールバック
+/// </summary>
+/// <param name="hWnd"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
+BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
+{
+	DWORD currentPid = (DWORD)lParam;
+	DWORD pid;
+	GetWindowThreadProcessId(hWnd, &pid);
+
+	// プロセスIDが一致すれば自分のウィンドウとする
+	if (pid == currentPid) {
+
+		// オーナーウィンドウを探す
+		// Unityエディタだと本体が選ばれて独立Gameビューが選ばれない…
+		HWND hOwner = GetWindow(hWnd, GW_OWNER);
+		if (hOwner) {
+			// あればオーナーを選択
+			hPanelOwnerWnd_ = hOwner;
+		}
+		else {
+			// オーナーが無ければこのウィンドウを選択
+			hPanelOwnerWnd_ = hWnd;
+		}
+		return FALSE;
 	}
 
 	return TRUE;
@@ -495,7 +527,19 @@ BOOL UNIWINC_API AttachMyWindow() {
 /// <returns></returns>
 BOOL UNIWINC_API AttachMyOwnerWindow() {
 	DWORD currentPid = GetCurrentProcessId();
-	return EnumWindows(findOwnerWindowProc, (LPARAM)currentPid);
+	return EnumWindows(attachOwnerWindowProc, (LPARAM)currentPid);
+}
+
+/// <summary>
+/// Find owner window handle
+/// </summary>
+/// <returns></returns>
+HWND FindOwnerWindowHandle() {
+	DWORD currentPid = GetCurrentProcessId();
+	if (EnumWindows(attachOwnerWindowProc, (LPARAM)currentPid)) {
+		return hPanelOwnerWnd_;
+	}
+	return NULL;
 }
 
 /// <summary>
@@ -1484,29 +1528,122 @@ void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
 	return;
 }
 
-BOOL UNIWINC_API OpenFilePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
-	WCHAR path[MAX_PATH];
-	ZeroMemory(path, sizeof(path));
+/// <summary>
+/// Convert multi-selection files string to new-line separated string
+/// </summary>
+/// <param name="lpBuffer"></param>
+/// <param name="nBufferSize"></param>
+BOOL ParsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
+	// 複製を保存するのに必要な長さを調べる
+	int bufferSize = nBufferSize;
+	int length = bufferSize;	// OPENFILENAME中で実際に利用した長さ
+	int pathCount = 0;			// NULL区切りでみた行数。複数選択時は1より大きくなる
+	int firstLineLength = bufferSize;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
+	for (int i = 0; i < bufferSize; i++) {
+		if (lpBuffer[i] == NULL) {
+			if (firstLineLength == bufferSize) firstLineLength = i;
+			pathCount++;
+
+			if ((i < (bufferSize - 1)) && (lpBuffer[i + 1] == NULL)) {
+				// NULLが連続していれば終端とみなす（連続する後ろがもう無い場合も終端）
+				length = i;
+				break;
+			}
+			else
+			{
+				// 次の文字がNULLでなければスキップできる
+				i++;
+			}
+		}
+	}
+
+	// NULLが最後に来なかった場合は行数追加できていないので、1増やしておく
+	if (length == bufferSize) pathCount++;
+
+	// 複数選択でない場合は改行区切りやフォルダ名追加の必要はなく、そのままの値で終了
+	if (pathCount <= 1) return true;
+
+
+	// パスのリストが返却バッファに入りきらない場合は失敗として空で返す
+	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferSize) {
+		// 結果返却バッファをクリア
+		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+		return false;
+	}
+
+	// 完全なパスを改行区切り文字列で生成
+
+	LPWSTR buffer = new (std::nothrow)WCHAR[length];
+	if (buffer == NULL) {
+		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+		return false;
+	}
+	ZeroMemory(buffer, length * sizeof(WCHAR));
+
+	// 一時バッファに内容を退避
+	memcpy(buffer, lpBuffer, length * sizeof(WCHAR));
+
+	// 結果返却バッファをクリア
+	ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+
+
+	int offset = 0;
+	int index = firstLineLength;
+	for (int i = firstLineLength; i < length; i++) {
+		if (buffer[i] == NULL) {
+			// 改行で区切り
+			if (offset > 0) {
+				lpBuffer[offset] = L'\n';
+				offset++;
+			}
+
+			//  フォルダ名部分を複製
+			memcpy(lpBuffer + offset, buffer, firstLineLength * sizeof(WCHAR));
+			offset += firstLineLength;
+			lpBuffer[offset] = L'\\';	// パスの区切り文字も追加
+			offset++;
+		}
+		else
+		{
+			// NULL文字でなければファイル名の一部として追加
+			lpBuffer[offset] = buffer[i];
+			offset++;
+		}
+	}
+
+	// デバッグ用
+	//swprintf_s(lpBuffer, bufferSize, L"Files: bufferSize %d, length %d, pathCount %d, firstLineLength %d, Dir %s", bufferSize, length, pathCount, firstLineLength, buffer);
+
+	delete[] buffer;
+	return true;
+}
+
+BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize) {
+	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
+	HWND hwnd = hTargetWnd_;
+	if (hwnd == NULL) {
+		hwnd = hPanelOwnerWnd_;
+		if (hwnd == NULL) {
+			hwnd = hPanelOwnerWnd_ = FindOwnerWindowHandle();
+		}
+	}
 
 	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrFile = path;
+	ofn.lpstrTitle = lpSettings->lpTitleText;
+	ofn.lpstrFilter = lpSettings->lpFilterText;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
-	std::cout << "OpenFilePanel: lpBuffer " << lpResultBuffer << " nBufferSize " << nBufferSize;
-
 	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
-		ZeroMemory(lpResultBuffer, nBufferSize);
+		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
 		ofn.lpstrFile = lpResultBuffer;
 		ofn.nMaxFile = nBufferSize;
-	}
 
-
-	if (GetOpenFileNameW(&ofn)) {
-		return true;
+		if (GetOpenFileNameW(&ofn)) {
+			return ParsePaths(lpResultBuffer, nBufferSize);
+		}
 	}
 
 	return false;
@@ -1522,18 +1659,18 @@ BOOL UNIWINC_API OpenSavePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
+	ofn.lpstrTitle = lpSettings->lpTitleText;
+	ofn.lpstrFilter = lpSettings->lpFilterText;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
-	std::cout << "SaveFilePanel: lpBuffer " << lpResultBuffer << " nBufferSize " << nBufferSize;
-
 	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
-		ZeroMemory(lpResultBuffer, nBufferSize);
+		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
 		ofn.lpstrFile = lpResultBuffer;
 		ofn.nMaxFile = nBufferSize;
-	}
 
-	if (GetSaveFileNameW(&ofn)) {
-		return true;
+		if (GetSaveFileNameW(&ofn)) {
+			return ParsePaths(lpResultBuffer, nBufferSize);
+		}
 	}
 
 	return false;

@@ -107,6 +107,14 @@ namespace TestLibUniWinC
             textBoxMessage.Text = message;
         }
 
+        private void DumpStringArray(string[] array)
+        {
+            string text = String.Join(Environment.NewLine, array);
+
+            Console.WriteLine(text);
+            textBoxMessage.Text = text;
+        }
+
         private void buttonCheck_Click(object sender, EventArgs e)
         {
             PrintWindowInfo();
@@ -115,13 +123,15 @@ namespace TestLibUniWinC
         private void buttonOpenFile_Click(object sender, EventArgs e)
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
-            Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { });
+            //ds.title = "ふぁいるを開く";
+            Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
         }
 
         private void buttonSaveFile_Click(object sender, EventArgs e)
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
-            Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { });
+            //ds.title = "ほぞん";
+            Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });
         }
 
         /// <summary>
