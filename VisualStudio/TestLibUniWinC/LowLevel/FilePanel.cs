@@ -44,16 +44,21 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
 
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool OpenFolderPanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+
+
             [StructLayout(LayoutKind.Sequential)]
             public struct PanelSettings {
                 public Int32 structSize;
                 public Int32 flags;
                 public Int32 titleLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public string lpTitleText;
+                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpTitleText;
                 public Int32 filterLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public string lpFilterText;
+                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpFilterText;
                 public Int32 defaultPathLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public string lpDefaultPath;
+                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpDefaultPath;
 
                 public PanelSettings(Flag flags, string title, string filter, string path)
                 {

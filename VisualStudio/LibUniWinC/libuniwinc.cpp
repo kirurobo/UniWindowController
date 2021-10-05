@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "libuniwinc.h"
-#include <iostream>
 
 
 static HWND hTargetWnd_ = NULL;
@@ -1648,7 +1647,6 @@ BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResult
 
 	return false;
 }
-
 
 BOOL UNIWINC_API OpenFolderPanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
 	return false;
