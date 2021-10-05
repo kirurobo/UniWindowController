@@ -35,9 +35,6 @@ static WNDPROC lpOriginalWndProc_ = NULL;
 static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 static FilesCallback hDropFilesHandler_ = nullptr;
-static FilesCallback hOpenFilesHandler_ = nullptr;
-static FilesCallback hSaveFileHandler_ = nullptr;
-static BOOL bShouldStopThread = FALSE;
 
 
 // ========================================================================
@@ -1439,95 +1436,6 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 #pragma region File dialogs
 
 /// <summary>
-/// Register the callback fucnction for open file dialog
-/// </summary>
-/// <param name="callback"></param>
-/// <returns></returns>
-BOOL UNIWINC_API RegisterOpenFilesCallback(FilesCallback callback) {
-	if (callback == nullptr) return FALSE;
-
-	hOpenFilesHandler_ = callback;
-	return TRUE;
-}
-
-/// <summary>
-/// Unregister the callback function
-/// </summary>
-/// <returns></returns>
-BOOL UNIWINC_API UnregisterOpenFilesCallback() {
-	hOpenFilesHandler_ = nullptr;
-	return TRUE;
-}
-
-/// <summary>
-/// Register the callback fucnction for open file dialog
-/// </summary>
-/// <param name="callback"></param>
-/// <returns></returns>
-BOOL UNIWINC_API RegisterSaveFileCallback(FilesCallback callback) {
-	if (callback == nullptr) return FALSE;
-
-	hSaveFileHandler_ = callback;
-	return TRUE;
-}
-
-/// <summary>
-/// Unregister the callback function
-/// </summary>
-/// <returns></returns>
-BOOL UNIWINC_API UnregisterSaveFileCallback() {
-	hSaveFileHandler_ = nullptr;
-	return TRUE;
-}
-
-void UNIWINC_API ShowOpenFilePanel(UINT32 flags) {
-	WCHAR path[MAX_PATH];
-	ZeroMemory(path, sizeof(path));
-
-	OPENFILENAMEW ofn;
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hTargetWnd_;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrFile = path;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
-
-	if (GetOpenFileNameW(&ofn)) {
-		//if (hOpenFilesHandler_ != nullptr) {
-		//	//hOpenFilesHandler_(ofn.lpstrFile);
-		//}
-
-		RunFileCallback(hOpenFilesHandler_, ofn.lpstrFile, ofn.nMaxFile);
-	}
-
-	return;
-}
-
-
-void UNIWINC_API ShowSaveFilePanel(UINT32 flags) {
-	WCHAR path[MAX_PATH];
-	ZeroMemory(path, sizeof(path));
-
-	OPENFILENAMEW ofn;
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hTargetWnd_;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrFile = path;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
-
-	if (GetSaveFileNameW(&ofn)) {
-		//if (hOpenFilesHandler_ != nullptr) {
-		//	hOpenFilesHandler_(ofn.lpstrFile);
-		//}
-
-		RunFileCallback(hSaveFileHandler_, ofn.lpstrFile, ofn.nMaxFile);
-	}
-
-	return;
-}
-
-/// <summary>
 /// Convert multi-selection files string to new-line separated string
 /// </summary>
 /// <param name="lpBuffer"></param>
@@ -1645,10 +1553,6 @@ BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResult
 		}
 	}
 
-	return false;
-}
-
-BOOL UNIWINC_API OpenFolderPanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
 	return false;
 }
 

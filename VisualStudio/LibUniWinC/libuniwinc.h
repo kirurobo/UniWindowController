@@ -91,10 +91,6 @@ UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCal
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterOpenFilesCallback(FilesCallback callback);
-UNIWINC_EXPORT BOOL UNIWINC_API UnregisterOpenFilesCallback();
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterSaveFileCallback(FilesCallback callback);
-UNIWINC_EXPORT BOOL UNIWINC_API UnregisterSaveFileCallback();
 
 
 // Monitor Info.
@@ -109,10 +105,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 
 // File panels
-UNIWINC_EXPORT void UNIWINC_API ShowOpenFilePanel(const UINT32 flags);
-UNIWINC_EXPORT void UNIWINC_API ShowSaveFilePanel(const UINT32 flags);
 UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
-UNIWINC_EXPORT BOOL UNIWINC_API OpenFolderPanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
 UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize);
 
 // Windows only

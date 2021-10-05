@@ -10,31 +10,6 @@ namespace Kirurobo
     {
         protected class LibUniWinC
         {
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
-            public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool RegisterOpenFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
-
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool UnregisterOpenFilesCallback();
-
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool RegisterSaveFileCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool UnregisterSaveFileCallback();
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowOpenFilePanel(uint flags);
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowSaveFilePanel(uint flags);
-
             [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.Bool)]
             //public static extern bool OpenFilePanel(ref PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
@@ -136,6 +111,7 @@ namespace Kirurobo
         public static void OpenFilePanel(Settings settings, Action<string[]> action)
         {
             LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings(settings);
+
             StringBuilder sb = new StringBuilder(pathBufferSize);
 
             if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
@@ -144,7 +120,7 @@ namespace Kirurobo
                 action.Invoke(files);
             }
 
-            ps.Dispose();
+            ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
 
         /// <summary>
@@ -164,7 +140,7 @@ namespace Kirurobo
                 action.Invoke(files);
             }
 
-            ps.Dispose();
+            ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
     }
 }
