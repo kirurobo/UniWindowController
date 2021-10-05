@@ -35,11 +35,8 @@ enum class WindowStateEventType : int {
 typedef struct tagPANELSETTINGS {
 	INT32 nStructSize;
 	INT32 nFlags;
-	INT32 nTitleLength;
 	LPWSTR lpTitleText;
-	INT32 nFilterLength;
 	LPWSTR lpFilterText;
-	INT32 nDefaultPathLength;
 	LPWSTR lpDefaultPath;
 
 } PANELSETTINGS, * LPPANELSETTINGS;

@@ -50,63 +50,47 @@ namespace Kirurobo
 
 
             [StructLayout(LayoutKind.Sequential)]
-            public struct PanelSettings {
+            public struct PanelSettings : IDisposable {
                 public Int32 structSize;
                 public Int32 flags;
-                public Int32 titleLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpTitleText;
-                public Int32 filterLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpFilterText;
-                public Int32 defaultPathLength;
-                [MarshalAs(UnmanagedType.LPWStr)] public readonly string lpDefaultPath;
-
-                public PanelSettings(Flag flags, string title, string filter, string path)
-                {
-                    this.structSize = Marshal.SizeOf<PanelSettings>();
-                    this.flags = (Int32)flags;
-                    this.titleLength = title.Length;
-                    this.lpTitleText = title;
-                    this.filterLength = filter.Length;
-                    this.lpFilterText = filter;
-                    this.defaultPathLength = path.Length;
-                    this.lpDefaultPath = path;
-                }
+                public IntPtr lpTitleText;
+                public IntPtr lpFilterText;
+                public IntPtr lpDefaultPath;
 
                 public PanelSettings(Settings settings)
                 {
+                    //this.structSize = 4 * 2 + Marshal.SizeOf<IntPtr>() * 3;
                     this.structSize = Marshal.SizeOf<PanelSettings>();
                     this.flags = (Int32)settings.flags;
 
-                    if (settings.title == null)
+                    //this.lpTitleText = IntPtr.Zero;
+                    //this.lpFilterText = IntPtr.Zero;
+                    //this.lpDefaultPath = IntPtr.Zero;
+                    this.lpTitleText = Marshal.StringToHGlobalUni(settings.title);
+                    this.lpFilterText = Marshal.StringToHGlobalUni(settings.filter);
+                    this.lpDefaultPath = Marshal.StringToHGlobalUni(settings.path);
+
+                    //this.structSize = Marshal.SizeOf(this);
+                }
+
+                public void Dispose()
+                {
+                    if (this.lpTitleText != IntPtr.Zero)
                     {
-                        this.titleLength = 0;
-                        this.lpTitleText = null;
-                    } else
-                    {
-                        this.titleLength = settings.title.Length;
-                        this.lpTitleText = settings.title;
+                        Marshal.FreeHGlobal(lpTitleText);
+                        this.lpTitleText = IntPtr.Zero;
                     }
 
-                    if (settings.filter == null)
+                    if (this.lpFilterText!= IntPtr.Zero)
                     {
-                        this.filterLength = 0;
-                        this.lpFilterText = null;
-                    }
-                    else
-                    {
-                        this.filterLength = settings.filter.Length;
-                        this.lpFilterText = settings.filter;
+                        Marshal.FreeHGlobal(lpFilterText);
+                        this.lpFilterText= IntPtr.Zero;
                     }
 
-                    if (settings.path == null)
+                    if (this.lpDefaultPath!= IntPtr.Zero)
                     {
-                        this.defaultPathLength = 0;
-                        this.lpDefaultPath = null;
-                    }
-                    else
-                    {
-                        this.defaultPathLength = settings.path.Length;
-                        this.lpDefaultPath = settings.path;
+                        Marshal.FreeHGlobal(lpDefaultPath);
+                        this.lpDefaultPath= IntPtr.Zero;
                     }
                 }
             }
@@ -159,6 +143,8 @@ namespace Kirurobo
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
+
+            ps.Dispose();
         }
 
         /// <summary>
@@ -177,6 +163,8 @@ namespace Kirurobo
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
+
+            ps.Dispose();
         }
     }
 }

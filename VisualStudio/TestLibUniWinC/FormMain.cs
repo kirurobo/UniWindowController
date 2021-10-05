@@ -123,14 +123,14 @@ namespace TestLibUniWinC
         private void buttonOpenFile_Click(object sender, EventArgs e)
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
-            //ds.title = "ふぁいるを開く";
+            ds.title = "Open files";
             Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
         }
 
         private void buttonSaveFile_Click(object sender, EventArgs e)
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
-            //ds.title = "ほぞん";
+            ds.title = "Save file (Actually not be written)";
             Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });
         }
 
