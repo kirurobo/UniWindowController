@@ -1540,13 +1540,19 @@ BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResult
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
 	ofn.lpstrTitle = lpSettings->lpTitleText;
-	ofn.lpstrFilter = lpSettings->lpFilterText;
+	//ofn.lpstrFilter = lpSettings->lpFilterText;
+	ofn.lpstrInitialDir = lpSettings->lpInitialDir;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
 	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
 		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
 		ofn.lpstrFile = lpResultBuffer;
 		ofn.nMaxFile = nBufferSize;
+
+		// Default path
+		if (lpSettings->lpInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, lpSettings->lpInitialFile);
+		}
 
 		if (GetOpenFileNameW(&ofn)) {
 			return ParsePaths(lpResultBuffer, nBufferSize);
@@ -1562,13 +1568,19 @@ BOOL UNIWINC_API OpenSavePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hTargetWnd_;
 	ofn.lpstrTitle = lpSettings->lpTitleText;
-	ofn.lpstrFilter = lpSettings->lpFilterText;
+	//ofn.lpstrFilter = lpSettings->lpFilterText;
+	ofn.lpstrInitialDir = lpSettings->lpInitialDir;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
 	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
 		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
 		ofn.lpstrFile = lpResultBuffer;
 		ofn.nMaxFile = nBufferSize;
+
+		// Default path
+		if (lpSettings->lpInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, lpSettings->lpInitialFile);
+		}
 
 		if (GetSaveFileNameW(&ofn)) {
 			return ParsePaths(lpResultBuffer, nBufferSize);

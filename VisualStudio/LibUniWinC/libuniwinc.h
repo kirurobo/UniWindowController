@@ -37,7 +37,8 @@ typedef struct tagPANELSETTINGS {
 	INT32 nFlags;
 	LPWSTR lpTitleText;
 	LPWSTR lpFilterText;
-	LPWSTR lpDefaultPath;
+	LPWSTR lpInitialFile;
+	LPWSTR lpInitialDir;
 
 } PANELSETTINGS, * LPPANELSETTINGS;
 #pragma pack(pop)

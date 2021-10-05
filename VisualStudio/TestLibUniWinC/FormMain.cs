@@ -124,6 +124,8 @@ namespace TestLibUniWinC
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
             ds.title = "Open files";
+            ds.filter = "Documens (*.txt,*.doc)|*.txt;*.doc|All files (*.*)|*.*";
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
         }
 
@@ -131,6 +133,7 @@ namespace TestLibUniWinC
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
             ds.title = "Save file (Actually not be written)";
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });
         }
 

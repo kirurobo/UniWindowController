@@ -30,7 +30,8 @@ namespace Kirurobo
                 public Int32 flags;
                 public IntPtr lpTitleText;
                 public IntPtr lpFilterText;
-                public IntPtr lpDefaultPath;
+                public IntPtr lpInitialFile;
+                public IntPtr lpInitialDir;
 
                 public PanelSettings(Settings settings)
                 {
@@ -43,7 +44,8 @@ namespace Kirurobo
                     //this.lpDefaultPath = IntPtr.Zero;
                     this.lpTitleText = Marshal.StringToHGlobalUni(settings.title);
                     this.lpFilterText = Marshal.StringToHGlobalUni(settings.filter);
-                    this.lpDefaultPath = Marshal.StringToHGlobalUni(settings.path);
+                    this.lpInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
+                    this.lpInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
 
                     //this.structSize = Marshal.SizeOf(this);
                 }
@@ -62,10 +64,16 @@ namespace Kirurobo
                         this.lpFilterText= IntPtr.Zero;
                     }
 
-                    if (this.lpDefaultPath!= IntPtr.Zero)
+                    if (this.lpInitialFile!= IntPtr.Zero)
                     {
-                        Marshal.FreeHGlobal(lpDefaultPath);
-                        this.lpDefaultPath= IntPtr.Zero;
+                        Marshal.FreeHGlobal(lpInitialFile);
+                        this.lpInitialFile= IntPtr.Zero;
+                    }
+
+                    if (this.lpInitialDir != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpInitialDir);
+                        this.lpInitialDir = IntPtr.Zero;
                     }
                 }
             }
@@ -82,6 +90,7 @@ namespace Kirurobo
             ChooseFiles = 1,
             ChooseDirectories = 2,
             AllowMultipleSelection = 4,
+            RetrieveLinkTarget = 8,
             CanCreateDirectories = 16,
         }
 
@@ -92,7 +101,8 @@ namespace Kirurobo
         {
             public string title;
             public string filter;
-            public string path;
+            public string initialDirectory;
+            public string initialFile;
             public Flag flags;
         }
 
