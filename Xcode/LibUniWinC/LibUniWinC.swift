@@ -867,16 +867,23 @@ public class LibUniWinC : NSObject {
     ///   -
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
-        let ps = pPanelSettings.pointee;
-        
+        let ps = pPanelSettings.pointee
+        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+
         openPanel.canChooseFiles = true
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
-        openPanel.canCreateDirectories = (ps.flags & 16 > 0)
+        openPanel.canCreateDirectories = true   //(ps.flags & 16 > 0)
 
-        openPanel.prompt = getStringFromUtf16Array(textPointer: ps.titleText)
-        openPanel.directoryURL = URL(string: getStringFromUtf16Array(textPointer: ps.initialDirectory))
-        openPanel.level = NSWindow.Level.modalPanel
+        openPanel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        if (initialDir != "") {
+            openPanel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+        } else if (initialFile.deletingLastPathComponent != "") {
+            savePanel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+        }
+        openPanel.nameFieldStringValue = initialFile.lastPathComponent
+        openPanel.level = NSWindow.Level.popUpMenu
         openPanel.orderFrontRegardless()
 
         let result = openPanel.runModal();
@@ -898,13 +905,21 @@ public class LibUniWinC : NSObject {
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
-        
-        savePanel.canCreateDirectories = (ps.flags & 16 > 0)
+        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
 
-        savePanel.prompt = getStringFromUtf16Array(textPointer: ps.titleText)
-        openPanel.directoryURL = URL(string: getStringFromUtf16Array(textPointer: ps.initialDirectory))
-        savePanel.representedFilename = getStringFromUtf16Array(textPointer: ps.initialFile)
+        savePanel.canCreateDirectories = true   //(ps.flags & 16 > 0)
+
+        savePanel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        if (initialDir != "") {
+            savePanel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+        } else if (initialFile.deletingLastPathComponent != "") {
+            savePanel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+        }
+        savePanel.nameFieldStringValue = initialFile.lastPathComponent
         savePanel.level = NSWindow.Level.popUpMenu
+        savePanel.orderFrontRegardless()
+
         
         let result = savePanel.runModal();
         
@@ -913,7 +928,7 @@ public class LibUniWinC : NSObject {
             let url: String = savePanel.url!.path
             text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
         }
-        
+
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     //

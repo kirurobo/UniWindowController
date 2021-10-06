@@ -206,6 +206,7 @@ namespace Kirurobo
                 }
             }
 
+            // Test for OpenFilePanel
             if (Input.GetKeyUp(KeyCode.O))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
@@ -213,16 +214,21 @@ namespace Kirurobo
                     flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.ChooseFiles | FilePanel.Flag.ChooseDirectories,
                     title = "Open!",
                     filter = "Image files (*.png;*.jpg,*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*",
+                    initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                    initialFile = "test.png",
                 };
                 FilePanel.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
+
+            // Test for SaveFilePanel
             if (Input.GetKeyDown(KeyCode.S))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
                     flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
                     title = "Save!",
-                    initialFile = "Test",
+                    initialFile = "Test.txt",
+                    initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 };
                 FilePanel.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
