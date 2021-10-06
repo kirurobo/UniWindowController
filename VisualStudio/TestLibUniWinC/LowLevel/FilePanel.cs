@@ -9,18 +9,20 @@ namespace Kirurobo
     {
         protected class LibUniWinC
         {
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
 
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-            public static extern void OpenFilePanelTest();
-            //public static extern bool OpenFilePanelTest([MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer);
-            //public static extern bool OpenFilePanelTest(ref PanelSettings settings);
-
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            //[DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenSavePanel(in PanelSettings settings, StringBuilder buffer, UInt32 bufferSize);
+            //public static extern bool OpenFilePanelTest();
+            public static extern bool OpenFilePanelTest([MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
+            //public static extern bool OpenFilePanelTest([In] PanelSettings settings);
+
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
 
 
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -133,14 +135,17 @@ namespace Kirurobo
 
             StringBuilder sb = new StringBuilder(pathBufferSize);
 
-            LibUniWinC.OpenFilePanelTest();
-            if (false)
+            // LibUniWinC.OpenFilePanelTest(ps);
+            //if (false)
             //if (LibUniWinC.OpenFilePanelTest(0))
-            //if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
+            //if (LibUniWinC.OpenFilePanelTest(sb, (uint)sb.Capacity))
+            if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
+            Console.WriteLine("C# PanelSettings: " + ps.structSize);
+            Console.WriteLine(sb);
 
             ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }

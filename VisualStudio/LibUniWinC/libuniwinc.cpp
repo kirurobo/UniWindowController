@@ -1524,8 +1524,13 @@ LPWSTR createFilterString(LPWSTR lpsFormTypeFilterText) {
 }
 
 //BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer) {
-void UNIWINC_API OpenFilePanelTest() {
-	return;
+BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer, const UINT32 nBufferSize) {
+	PANELSETTINGS ps = { 0 };
+	ps.nStructSize = sizeof(ps);
+
+	wsprintf(pResultBuffer, L"%d", ps.nStructSize);
+
+	return FALSE;
 }
 
 BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {

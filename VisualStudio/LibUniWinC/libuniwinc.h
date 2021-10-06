@@ -116,9 +116,10 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 
 // File panels
-UNIWINC_EXPORT void UNIWINC_API OpenFilePanelTest();	// LPWSTR pResultBuffer);
-UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS lpSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
-UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS lpSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
+//UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanelTest(const PPANELSETTINGS pSettings);	// LPWSTR pResultBuffer);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer, const UINT32 nBufferSize);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
