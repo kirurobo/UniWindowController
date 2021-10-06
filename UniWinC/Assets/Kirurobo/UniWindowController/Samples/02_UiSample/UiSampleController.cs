@@ -211,7 +211,8 @@ namespace Kirurobo
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
                     flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.ChooseFiles | FilePanel.Flag.ChooseDirectories,
-                    title = "Open!"
+                    title = "Open!",
+                    filter = "Image files (*.png;*.jpg,*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*",
                 };
                 FilePanel.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
@@ -220,7 +221,8 @@ namespace Kirurobo
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
                     flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
-                    title = "Save!"
+                    title = "Save!",
+                    initialFile = "Test",
                 };
                 FilePanel.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }

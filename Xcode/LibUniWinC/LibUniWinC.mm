@@ -142,30 +142,6 @@ UNIWINC_EXPORT BOOL UnregisterDropFilesCallback() {
     return [LibUniWinC unregisterDropFilesCallback];
 }
 
-// コールバックに複数パスがダブルクオーテーションで囲まれ改行区切りとなった文字列で渡ります。
-// パスにダブルクオーテーションが含まれる場合は連続ダブルクォーテーションになります。
-//  e.g. "/Dir/File1.txt"\n"/Dir/File2.txt"\n"/Dir/File""3"".txt"\n
-//  ファイル選択キャンセル時には空文字列が渡されます
-UNIWINC_EXPORT BOOL RegisterOpenFilesCallback(StringCallback callback) {
-    return [LibUniWinC registerOpenFilesCallbackWithCallback: callback];
-}
-
-UNIWINC_EXPORT BOOL UnregisterOpenFilesCallback() {
-    return [LibUniWinC unregisterOpenFilesCallback];
-}
-
-// コールバックに複数パスがダブルクオーテーションで囲まれ改行区切りとなった文字列で渡ります。
-// パスにダブルクオーテーションが含まれる場合は連続ダブルクォーテーションになります。
-//  e.g. "/Dir/File1.txt"\n"/Dir/File2.txt"\n"/Dir/File""3"".txt"\n
-//  ファイル選択キャンセル時には空文字列が渡されます
-UNIWINC_EXPORT BOOL RegisterSaveFileCallback(StringCallback callback) {
-    return [LibUniWinC registerSaveFileCallbackWithCallback: callback];
-}
-
-UNIWINC_EXPORT BOOL UnregisterSaveFilesCallback() {
-    return [LibUniWinC unregisterSaveFileCallback];
-}
-
 UNIWINC_EXPORT BOOL SetAllowDrop(BOOL enabled) {
     return [LibUniWinC setAllowDropWithEnabled: enabled];
 }
@@ -191,23 +167,11 @@ UNIWINC_EXPORT void Update() {
     [LibUniWinC update];
 }
 
-UNIWINC_EXPORT void ShowOpenFilePanel(UInt32 param) {
-    [LibUniWinC showOpenFilePanelWithFlags: param];
-}
-
-UNIWINC_EXPORT void ShowSaveFilePanel(UInt32 param) {
-    [LibUniWinC showSaveFilePanelWithFlags: param];
-}
-
-UNIWINC_EXPORT BOOL OpenFilePanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
+UNIWINC_EXPORT BOOL OpenFilePanel(const void* lpPanelSettings, UniChar* lpwsBuffer, UInt32 bufferSize) {
     return [LibUniWinC openFilePanelWithLpSettings: lpPanelSettings lpBuffer:lpwsBuffer bufferSize: bufferSize];
 }
 
-UNIWINC_EXPORT BOOL OpenFolderPanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
-    return [LibUniWinC openFolderPanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
-}
-
-UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, void* lpwsBuffer, UInt32 bufferSize) {
+UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, UniChar* lpwsBuffer, UInt32 bufferSize) {
     return [LibUniWinC openSavePanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
 }
 

@@ -48,14 +48,13 @@ public class LibUniWinC : NSObject {
     
 
     public struct PanelSettings {
-        public var structSize: UInt32 = 0;
-        public var flags: UInt32 = 0;
-        public var titleLength: UInt32 = 0;
-        public var titleText: String = "";
-        public var filterLength: UInt32 = 0;
-        public var filterText: String = "";
-        public var defaultPathLength: UInt32 = 0;
-        public var defaultPath: String = "";
+        public var structSize: Int32 = 0;
+        public var flags: Int32 = 0;
+        public var titleText: UnsafePointer<UniChar>?;
+        public var filterText: UnsafePointer<UniChar>?;
+        public var initialFile: UnsafePointer<UniChar>?;
+        public var initialDirectory: UnsafePointer<UniChar>?;
+        public var defaultExt: UnsafePointer<UniChar>?;
     }
     
     /// ウィンドウの初期状態を保持するクラス
@@ -831,26 +830,6 @@ public class LibUniWinC : NSObject {
         return true
     }
 
-    @objc public static func registerOpenFilesCallback(callback: @escaping stringCallback) -> Bool {
-        openFilesCallback = callback
-        return true
-    }
-    
-    @objc public static func unregisterOpenFilesCallback() -> Bool {
-        openFilesCallback = nil
-        return true
-    }
-
-    @objc public static func registerSaveFileCallback(callback: @escaping stringCallback) -> Bool {
-        saveFilesCallback = callback
-        return true
-    }
-    
-    @objc public static func unregisterSaveFileCallback() -> Bool {
-        saveFilesCallback = nil
-        return true
-    }
-
     
     // MARK: - Mouser curosor
     
@@ -886,57 +865,7 @@ public class LibUniWinC : NSObject {
     /// Open dialog
     /// - Parameters:
     ///   -
-    @objc public static func showOpenFilePanel(flags: UInt32) -> Void {
-        openPanel.canChooseFiles = (flags & 1 > 0)
-        openPanel.canChooseDirectories = (flags & 2 > 0)
-        openPanel.allowsMultipleSelection = (flags & 4 > 0)
-        openPanel.canCreateDirectories = (flags & 16 > 0)
-
-        openPanel.prompt = "Open"
-        openPanel.level = NSWindow.Level.popUpMenu
-        
-        openPanel.begin { (result) -> Void in
-            var text: String = ""
-            if (result == .OK) {
-                if (openPanel.urls.count > 0) {
-                    // Make new-line separated string
-                    for url in openPanel.urls {
-                        text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-                        //text += '"' + url.path + '"' + "\n"
-                    }
-                }
-            }
-            
-            // Run callback. The arcument will empty if canceled or failed.
-            if (callStringCallback(callback: openFilesCallback, text: text)) {}
-        }
-    }
-    
-    /// Open dialog
-    /// - Parameters:
-    ///   -
-    @objc public static func showSaveFilePanel(flags: UInt32) -> Void {
-        savePanel.canCreateDirectories = (flags & 16 > 0)
-
-        savePanel.prompt = "Save"
-        savePanel.level = NSWindow.Level.popUpMenu
-        
-        savePanel.begin { (result) -> Void in
-            var text: String = ""
-            if (result == .OK && (savePanel.url != nil)) {
-                let url: String = savePanel.url!.path
-                text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-            }
-            
-            // Run callback. The arcument will empty if canceled or failed.
-            if (callStringCallback(callback: saveFilesCallback, text: text)) {}
-        }
-    }
-    
-    /// Open dialog
-    /// - Parameters:
-    ///   -
-    @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+    @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         
@@ -945,37 +874,11 @@ public class LibUniWinC : NSObject {
         openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
         openPanel.canCreateDirectories = (ps.flags & 16 > 0)
 
-        openPanel.prompt = "Open"
-        openPanel.level = NSWindow.Level.popUpMenu
-        
-        let result = openPanel.runModal();
-        
-        var text: String = ""
-        if (result == .OK) {
-            if (openPanel.urls.count > 0) {
-                // Make new-line separated string
-                for url in openPanel.urls {
-                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-                    //text += '"' + url.path + '"' + "\n"
-                }
-            }
-        }
-        
-        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
-    }
-    
-    @objc public static func openFolderPanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
-        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
-        let ps = pPanelSettings.pointee;
-        
-        openPanel.canChooseFiles = false
-        openPanel.canChooseDirectories = true
-        openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
-        openPanel.canCreateDirectories = (ps.flags & 16 > 0)
+        openPanel.prompt = getStringFromUtf16Array(textPointer: ps.titleText)
+        openPanel.directoryURL = URL(string: getStringFromUtf16Array(textPointer: ps.initialDirectory))
+        openPanel.level = NSWindow.Level.modalPanel
+        openPanel.orderFrontRegardless()
 
-        openPanel.prompt = "Open"
-        openPanel.level = NSWindow.Level.popUpMenu
-        
         let result = openPanel.runModal();
         
         var text: String = ""
@@ -988,16 +891,19 @@ public class LibUniWinC : NSObject {
                 }
             }
         }
+        
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     
-    @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+    @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         
         savePanel.canCreateDirectories = (ps.flags & 16 > 0)
 
-        savePanel.prompt = "Save"
+        savePanel.prompt = getStringFromUtf16Array(textPointer: ps.titleText)
+        openPanel.directoryURL = URL(string: getStringFromUtf16Array(textPointer: ps.initialDirectory))
+        savePanel.representedFilename = getStringFromUtf16Array(textPointer: ps.initialFile)
         savePanel.level = NSWindow.Level.popUpMenu
         
         let result = savePanel.runModal();
@@ -1010,7 +916,47 @@ public class LibUniWinC : NSObject {
         
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
+    //
+    //    /// Open folder (Not in used)
+    //    @objc public static func openFolderPanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+    //        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+    //        let ps = pPanelSettings.pointee;
+    //
+    //        openPanel.canChooseFiles = false
+    //        openPanel.canChooseDirectories = true
+    //        openPanel.allowsMultipleSelection = (ps.flags & 4 > 0)
+    //        openPanel.canCreateDirectories = (ps.flags & 16 > 0)
+    //
+    //        openPanel.prompt = "Open"
+    //        openPanel.level = NSWindow.Level.popUpMenu
+    //        openPanel.orderFrontRegardless()
+    //
+    //        let result = openPanel.runModal();
+    //
+    //        var text: String = ""
+    //        if (result == .OK) {
+    //            if (openPanel.urls.count > 0) {
+    //                // Make new-line separated string
+    //                for url in openPanel.urls {
+    //                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+    //                    //text += '"' + url.path + '"' + "\n"
+    //                }
+    //            }
+    //        }
+    //        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    //    }
 
+    /// Parse an UTF-16 null terminated string pointer to String
+    public static func getStringFromUtf16Array(textPointer: UnsafePointer<UniChar>?) -> String {
+        if (textPointer == nil) {
+            return ""
+        }
+        var len = 0
+        while textPointer![len] != UniChar.zero {
+            len += 1
+        }
+        return String(utf16CodeUnits: textPointer!, count: len)
+    }
 
     /// Call a StringCallback with UTF-16 paramete
     /// - Parameters:
@@ -1028,13 +974,13 @@ public class LibUniWinC : NSObject {
             return false
         }
         
-        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: count + 1)
+        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: count + 1)
         var i = 0
         for c in text.utf16 {
             buffer[i] = c
             i += 1
         }
-        buffer[count] = uint16.zero     // End of the string
+        buffer[count] = UniChar.zero     // End of the string
         
         // Do callback
         callback?(buffer)
@@ -1049,22 +995,26 @@ public class LibUniWinC : NSObject {
     ///     - lpBuffer: UTF-16 string buffer that allocated  by caller
     ///     - bufferSize: Size of the string buffer
     /// - Returns: True if success
-    private static func outputToStringBuffer(text: String, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
+    private static func outputToStringBuffer(text: String, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let size = Int(bufferSize)
-        let buffer = lpBuffer.bindMemory(to: uint16.self, capacity: size)
+        //let buffer = lpBuffer.bindMemory(to: UniChar.self, capacity: size)
+        guard let buffer = lpBuffer else {
+            return false
+        }
         
         // Fill in zero
         for i in 0..<size {
-            buffer[i] = uint16.zero
+            buffer[i] = UniChar.zero
         }
         
-        let count = text.utf16.count
+        let utf16text = text.utf16
+        let count = utf16text.count
         if (count <= 0) {
             return false
         }
         
         var i = 0
-        for c in text.utf16 {
+        for c in utf16text {
             buffer[i] = c
             i += 1
         }
