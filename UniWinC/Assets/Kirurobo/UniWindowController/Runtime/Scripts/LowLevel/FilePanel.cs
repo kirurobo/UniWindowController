@@ -10,61 +10,80 @@ namespace Kirurobo
     {
         protected class LibUniWinC
         {
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
-            public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
-
-            [DllImport("LibUniWinC")]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool RegisterOpenFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
+            //public static extern bool OpenFilePanel(ref PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
 
-            [DllImport("LibUniWinC")]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool UnregisterOpenFilesCallback();
+            public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
 
-            [DllImport("LibUniWinC")]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool RegisterSaveFileCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool UnregisterSaveFileCallback();
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowOpenFilePanel(uint flags);
-
-            [DllImport("LibUniWinC")]
-            public static extern void ShowSaveFilePanel(uint flags);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenFilePanel([MarshalAs(UnmanagedType.LPStruct)] PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenSavePanel([MarshalAs(UnmanagedType.LPStruct)] PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenFolderPanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
 
 
-            public struct PanelSettings {
-                public UInt32 structSize;
-                public UInt32 flags;
-                public UInt32 titleLength;
-                public IntPtr lpTitleText;
-                public UInt32 filterLength;
-                public IntPtr lpFilterText;
-                public UInt32 defaultPathLength;
-                public IntPtr lpDefaultPath;
+            [StructLayout(LayoutKind.Sequential)]
+            public struct PanelSettings : IDisposable {
+                public Int32 structSize;
+                public Int32 flags;
+                public IntPtr lpszTitle;
+                public IntPtr lpszFilter;
+                public IntPtr lpszInitialFile;
+                public IntPtr lpszInitialDir;
+                public IntPtr lpszDefaultExt;
 
-                //public PanelSettings()
-                //{
-                //    this.structSize = (UInt32)Marshal.SizeOf<PanelSettings>();
-                //    this.flags = 0;
-                //    this.titleLength = 0;
-                //    this.lpTitleText = IntPtr.Zero;
-                //    this.filterLength = 0;
-                //    this.lpFilterText = IntPtr.Zero;
-                //    this.defaultPathLength = 0;
-                //    this.lpDefaultPath = IntPtr.Zero;
-                //}
+                public PanelSettings(Settings settings)
+                {
+                    //this.structSize = 4 * 2 + Marshal.SizeOf<IntPtr>() * 3;
+                    this.structSize = Marshal.SizeOf<PanelSettings>();
+                    this.flags = (Int32)settings.flags;
+
+                    //this.lpTitleText = IntPtr.Zero;
+                    //this.lpFilterText = IntPtr.Zero;
+                    //this.lpDefaultPath = IntPtr.Zero;
+                    this.lpszTitle = Marshal.StringToHGlobalUni(settings.title);
+                    this.lpszFilter = Marshal.StringToHGlobalUni(settings.filter);
+                    this.lpszInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
+                    this.lpszInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
+                    this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
+
+                    //this.structSize = Marshal.SizeOf(this);
+                }
+
+                public void Dispose()
+                {
+                    if (this.lpszTitle != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszTitle);
+                        this.lpszTitle = IntPtr.Zero;
+                    }
+
+                    if (this.lpszFilter!= IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszFilter);
+                        this.lpszFilter= IntPtr.Zero;
+                    }
+
+                    if (this.lpszInitialFile!= IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszInitialFile);
+                        this.lpszInitialFile= IntPtr.Zero;
+                    }
+
+                    if (this.lpszInitialDir != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszInitialDir);
+                        this.lpszInitialDir = IntPtr.Zero;
+                    }
+
+                    if (this.lpszDefaultExt != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszDefaultExt);
+                        this.lpszDefaultExt = IntPtr.Zero;
+                    }
+                }
             }
 
         }
@@ -79,6 +98,7 @@ namespace Kirurobo
             ChooseFiles = 1,
             ChooseDirectories = 2,
             AllowMultipleSelection = 4,
+            RetrieveLinkTarget = 8,
             CanCreateDirectories = 16,
         }
 
@@ -89,102 +109,57 @@ namespace Kirurobo
         {
             public string title;
             public string filter;
+            public string initialDirectory;
+            public string initialFile;
+            public string defaultExtension;
             public Flag flags;
         }
 
         /// <summary>
-        /// ダイアログからファイル、フォルダが開かれた時に呼ばれるコールバック
-        /// 文字列を配列に直すことと、フラグを立てるまで行う
+        /// ファイルやフォルダ―のパス受け渡しUTF-16バッファの文字数
+        ///     複数パスが改行区切りで入るため 260 では少ない。
         /// </summary>
-        /// <param name="paths"></param>
-        [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
-        private static void _openFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
-        {
-            lastOpenFiles = paths;
-            wasOpened = true;
-        }
+        private const int pathBufferSize = 2560;
+
+
         /// <summary>
-        /// ダイアログからファイルが選択された時に呼ばれるコールバック
-        /// 文字列を配列に直すことと、フラグを立てるまで行う
+        /// Open file selection dialog
         /// </summary>
-        /// <param name="paths"></param>
-        [MonoPInvokeCallback(typeof(LibUniWinC.StringCallback))]
-        private static void _saveFilesCallback([MarshalAs(UnmanagedType.LPWStr)] string paths)
-        {
-            lastSaveFiles = paths;
-            wasSaved = true;
-        }
-
-        static string lastOpenFiles;
-        static string lastSaveFiles;
-        static bool wasSaved = false;
-        static bool wasOpened = false;
-        static bool shouldClose = false;
-
-        public static void CloseAll()
-        {
-            shouldClose = true;
-        }
-
+        /// <param name="settings"></param>
+        /// <param name="action"></param>
         public static void OpenFilePanel(Settings settings, Action<string[]> action)
         {
-            //await OpenFilePanelAsync(settings, action);
+            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings(settings);
 
-            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings();
-            StringBuilder sb = new StringBuilder(1024);
+            StringBuilder sb = new StringBuilder(pathBufferSize);
 
-            if (LibUniWinC.OpenFilePanel(ps, sb, (uint)sb.Length))
+            if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
+
+            ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
 
+        /// <summary>
+        /// Open save-file selection dialog
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="action"></param>
         public static void SaveFilePanel(Settings settings, Action<string[]> action)
         {
-            //await SaveFilePanelAsync(settings, action);
-            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings();
-            StringBuilder sb = new StringBuilder(1024);
+            LibUniWinC.PanelSettings ps = new LibUniWinC.PanelSettings(settings);
 
-            if (LibUniWinC.OpenSavePanel(ps, sb, (uint)sb.Length))
+            StringBuilder sb = new StringBuilder(pathBufferSize);
+
+            if (LibUniWinC.OpenSavePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
-        }
 
-        public static async Task OpenFilePanelAsync(Settings settings, Action<string[]> action)
-        {
-            LibUniWinC.RegisterOpenFilesCallback(_openFilesCallback);
-
-            wasOpened = false;
-            LibUniWinC.ShowOpenFilePanel((uint)settings.flags);
-
-            while (!wasOpened && !shouldClose)
-            {
-                await Task.Delay(100);
-            }
-            LibUniWinC.UnregisterOpenFilesCallback();
-
-            string[] files = UniWinCore.parsePaths(lastOpenFiles);
-            action.Invoke(files);
-        }
-
-        public static async Task SaveFilePanelAsync(Settings settings, Action<string[]> action)
-        {
-            LibUniWinC.RegisterSaveFileCallback(_saveFilesCallback);
-
-            wasSaved = false;
-            LibUniWinC.ShowSaveFilePanel((uint)settings.flags);
-
-            while (!wasSaved && !shouldClose)
-            {
-                await Task.Delay(100);
-            }
-            LibUniWinC.UnregisterSaveFileCallback();
-
-            string[] files = UniWinCore.parsePaths(lastSaveFiles);
-            action.Invoke(files);
+            ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
     }
 }

@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Kirurobo
 {
@@ -10,70 +9,79 @@ namespace Kirurobo
     {
         protected class LibUniWinC
         {
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            //public static extern bool OpenFilePanel(ref PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
             public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
 
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            public static extern void OpenFilePanelTest();
+            //public static extern bool OpenFilePanelTest([MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer);
+            //public static extern bool OpenFilePanelTest(ref PanelSettings settings);
+
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
-
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenFolderPanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenSavePanel(in PanelSettings settings, StringBuilder buffer, UInt32 bufferSize);
 
 
-            [StructLayout(LayoutKind.Sequential)]
+            [StructLayout(LayoutKind.Sequential, Pack = 1)]
             public struct PanelSettings : IDisposable {
                 public Int32 structSize;
                 public Int32 flags;
-                public IntPtr lpTitleText;
-                public IntPtr lpFilterText;
-                public IntPtr lpInitialFile;
-                public IntPtr lpInitialDir;
+                public IntPtr lpszTitle;
+                public IntPtr lpszFilter;
+                public IntPtr lpszInitialFile;
+                public IntPtr lpszInitialDir;
+                public IntPtr lpszDefaultExt;
 
                 public PanelSettings(Settings settings)
                 {
+                    this.structSize = 0;
                     //this.structSize = 4 * 2 + Marshal.SizeOf<IntPtr>() * 3;
-                    this.structSize = Marshal.SizeOf<PanelSettings>();
                     this.flags = (Int32)settings.flags;
 
                     //this.lpTitleText = IntPtr.Zero;
                     //this.lpFilterText = IntPtr.Zero;
                     //this.lpDefaultPath = IntPtr.Zero;
-                    this.lpTitleText = Marshal.StringToHGlobalUni(settings.title);
-                    this.lpFilterText = Marshal.StringToHGlobalUni(settings.filter);
-                    this.lpInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
-                    this.lpInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
+                    this.lpszTitle = Marshal.StringToHGlobalUni(settings.title);
+                    this.lpszFilter = Marshal.StringToHGlobalUni(settings.filter);
+                    this.lpszInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
+                    this.lpszInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
+                    this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
 
                     //this.structSize = Marshal.SizeOf(this);
+                    this.structSize = Marshal.SizeOf(this);
                 }
 
                 public void Dispose()
                 {
-                    if (this.lpTitleText != IntPtr.Zero)
+                    if (this.lpszTitle != IntPtr.Zero)
                     {
-                        Marshal.FreeHGlobal(lpTitleText);
-                        this.lpTitleText = IntPtr.Zero;
+                        Marshal.FreeHGlobal(lpszTitle);
+                        this.lpszTitle = IntPtr.Zero;
                     }
 
-                    if (this.lpFilterText!= IntPtr.Zero)
+                    if (this.lpszFilter!= IntPtr.Zero)
                     {
-                        Marshal.FreeHGlobal(lpFilterText);
-                        this.lpFilterText= IntPtr.Zero;
+                        Marshal.FreeHGlobal(lpszFilter);
+                        this.lpszFilter= IntPtr.Zero;
                     }
 
-                    if (this.lpInitialFile!= IntPtr.Zero)
+                    if (this.lpszInitialFile!= IntPtr.Zero)
                     {
-                        Marshal.FreeHGlobal(lpInitialFile);
-                        this.lpInitialFile= IntPtr.Zero;
+                        Marshal.FreeHGlobal(lpszInitialFile);
+                        this.lpszInitialFile= IntPtr.Zero;
                     }
 
-                    if (this.lpInitialDir != IntPtr.Zero)
+                    if (this.lpszInitialDir != IntPtr.Zero)
                     {
-                        Marshal.FreeHGlobal(lpInitialDir);
-                        this.lpInitialDir = IntPtr.Zero;
+                        Marshal.FreeHGlobal(lpszInitialDir);
+                        this.lpszInitialDir = IntPtr.Zero;
+                    }
+
+                    if (this.lpszDefaultExt != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(lpszDefaultExt);
+                        this.lpszDefaultExt = IntPtr.Zero;
                     }
                 }
             }
@@ -103,6 +111,7 @@ namespace Kirurobo
             public string filter;
             public string initialDirectory;
             public string initialFile;
+            public string defaultExtension;
             public Flag flags;
         }
 
@@ -124,7 +133,10 @@ namespace Kirurobo
 
             StringBuilder sb = new StringBuilder(pathBufferSize);
 
-            if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
+            LibUniWinC.OpenFilePanelTest();
+            if (false)
+            //if (LibUniWinC.OpenFilePanelTest(0))
+            //if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);

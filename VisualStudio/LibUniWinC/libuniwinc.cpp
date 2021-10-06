@@ -6,8 +6,8 @@
 
 static HWND hTargetWnd_ = NULL;
 static HWND hPanelOwnerWnd_ = NULL;
-static WINDOWINFO originalWindowInfo;
-static WINDOWPLACEMENT originalWindowPlacement;
+static WINDOWINFO originalWindowInfo_;
+static WINDOWPLACEMENT originalWindowPlacement_;
 static HWND hParentWnd_ = NULL;
 static BOOL bExpedtDesktopWnd = FALSE;
 static HWND hDesktopWnd_ = NULL;
@@ -44,10 +44,10 @@ void attachWindow(const HWND hWnd);
 void detachWindow();
 void refreshWindow();
 void updateScreenSize();
-//void BeginHook();
-//void EndHook();
-void CreateCustomWindowProcedure();
-void DestroyCustomWindowProcedure();
+//void beginHook();
+//void endHook();
+void createCustomWindowProcedure();
+void destroyCustomWindowProcedure();
 
 
 /// <summary>
@@ -57,14 +57,14 @@ void detachWindow()
 {
 	if (hTargetWnd_) {
 		// Restore the original window procedure
-		DestroyCustomWindowProcedure();
+		destroyCustomWindowProcedure();
 
 		//// Unhook if exist
-		//EndHook();
+		//endHook();
 
 		if (IsWindow(hTargetWnd_)) {
 			// 透明化は、起動時は無効であるものとして、戻すときは無効化
-			SetTransparent(false);
+			SetTransparent(FALSE);
 
 			//// 壁紙化が試みられていればウィンドウの親を戻す
 			//if (hDesktopWnd_ != NULL) {
@@ -75,11 +75,11 @@ void detachWindow()
 			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
 
 			// 最初のスタイルに戻す
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
-			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo.dwExStyle);
+			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
+			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo_.dwExStyle);
 
 			// ウィンドウ位置を戻す
-			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
+			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement_);
 
 			// 表示を更新
 			refreshWindow();
@@ -107,8 +107,8 @@ void attachWindow(const HWND hWnd) {
 
 	if (hWnd) {
 		// Save the original state
-		GetWindowInfo(hWnd, &originalWindowInfo);
-		GetWindowPlacement(hWnd, &originalWindowPlacement);
+		GetWindowInfo(hWnd, &originalWindowInfo_);
+		GetWindowPlacement(hWnd, &originalWindowPlacement_);
 		//hParentWnd_ = GetParent(hWnd);
 
 		// Apply current settings
@@ -121,7 +121,7 @@ void attachWindow(const HWND hWnd) {
 		SetAllowDrop(bAllowDropFile_);
 
 		// Replace the window procedure
-		CreateCustomWindowProcedure();
+		createCustomWindowProcedure();
 	}
 }
 
@@ -336,7 +336,7 @@ void disableTransparentBySetLayered()
 	COLORREF cref = { 0 };
 	SetLayeredWindowAttributes(hTargetWnd_, cref, 0xFF, LWA_ALPHA);
 
-	LONG exstyle = originalWindowInfo.dwExStyle;
+	LONG exstyle = originalWindowInfo_.dwExStyle;
 	//exstyle &= ~WinApi.WS_EX_LAYERED;
 	SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
 }
@@ -434,7 +434,7 @@ void UNIWINC_API Update() {
 }
 
 /// <summary>
-/// 利用可能な状態ならtrueを返す
+/// 利用可能な状態ならTRUEを返す
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsActive() {
@@ -506,7 +506,7 @@ BOOL UNIWINC_API IsMinimized() {
 /// <returns></returns>
 BOOL UNIWINC_API DetachWindow() {
 	detachWindow();
-	return true;
+	return TRUE;
 }
 
 /// <summary>
@@ -672,10 +672,10 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		}
 		else {
 			// ウィンドウスタイルを戻す
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
+			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
 
-			int dx = (originalWindowInfo.rcWindow.right - originalWindowInfo.rcWindow.left) - (originalWindowInfo.rcClient.right - originalWindowInfo.rcClient.left);
-			int dy = (originalWindowInfo.rcWindow.bottom - originalWindowInfo.rcWindow.top) - (originalWindowInfo.rcClient.bottom - originalWindowInfo.rcClient.top);
+			int dx = (originalWindowInfo_.rcWindow.right - originalWindowInfo_.rcWindow.left) - (originalWindowInfo_.rcClient.right - originalWindowInfo_.rcClient.left);
+			int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
 			int bw = dx / 2;	// 枠の片側幅 [px]
 
 			newW = rcCli.right - rcCli.left + dx;
@@ -720,7 +720,7 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 /// <returns></returns>
 void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 	// 最背面化されていたら、解除
-	bIsBottommost_ = false;
+	bIsBottommost_ = FALSE;
 
 	if (hTargetWnd_) {
 		SetWindowPos(
@@ -748,7 +748,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 /// <returns></returns>
 void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 	// 最前面化されていたら、解除
-	bIsTopmost_ = false;
+	bIsTopmost_ = FALSE;
 
 	if (hTargetWnd_) {
 		SetWindowPos(
@@ -784,7 +784,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 
 			if (hDesktopWnd_ != NULL) {
 				SetParent(hTargetWnd_, hDesktopWnd_);
-				//SetBottommost(true);
+				//SetBottommost(TRUE);
 				//SetWindowPos(
 				//	hTargetWnd_,
 				//	HWND_BOTTOM,
@@ -797,7 +797,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 		else
 		{
 			SetParent(hTargetWnd_, hParentWnd_);
-			//SetBottommost(false);
+			//SetBottommost(FALSE);
 		}
 
 		// Run callback if the bottommost state changed
@@ -845,7 +845,7 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 		{
 			LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_TRANSPARENT;
-			if (!bIsTransparent_ && !(originalWindowInfo.dwExStyle & WS_EX_LAYERED)) {
+			if (!bIsTransparent_ && !(originalWindowInfo_.dwExStyle & WS_EX_LAYERED)) {
 				exstyle &= ~WS_EX_LAYERED;
 			}
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
@@ -934,7 +934,7 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 /// <param name="width">幅 [px]</param>
 /// <param name="height">高さ [px]</param>
 /// <returns>成功すれば true</returns>
-BOOL  UNIWINC_API GetSize(float* width, float* height) {
+BOOL UNIWINC_API GetSize(float* width, float* height) {
 	*width = 0;
 	*height = 0;
 
@@ -1131,7 +1131,7 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 /// </summary>
 /// <param name="hDrop"></param>
 /// <returns></returns>
-BOOL ReceiveDropFiles(HDROP hDrop) {
+BOOL receiveDropFiles(HDROP hDrop) {
 	// TODO: Windowsでは特殊文字がファイル名に入る例はまず無さそうだが、macOSと同様にダブルクォーテーション囲みにした方がよい
 	//		CSVと同様にダブルクォーテーションが文字としてあれば二重にする
 	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
@@ -1174,35 +1174,6 @@ BOOL ReceiveDropFiles(HDROP hDrop) {
 }
 
 /// <summary>
-/// Process files callback
-/// </summary>
-/// <param name="callback"></param>
-/// <returns></returns>
-void RunFileCallback(FilesCallback callback, LPWSTR lpstr, UINT szStr) {
-	UINT bufferSize = szStr;
-
-	// Allocate buffer
-	LPWSTR buffer;
-	buffer = new (std::nothrow)WCHAR[bufferSize];
-
-	if (buffer != NULL) {
-		// Retrieve file paths
-		UINT bufferIndex = 0;
-		for (UINT i = 0; i < szStr; i++) {
-			buffer[bufferIndex] = lpstr[i];
-			bufferIndex++;
-		}
-
-		// Do callback function
-		if (callback != nullptr) {
-			callback((WCHAR*)buffer);	// Charset of this project must be set U
-		}
-
-		delete[] buffer;
-	}
-}
-
-/// <summary>
 /// Custom window proceture to accept dropped files and display-changed event
 /// </summary>
 /// <param name="hWnd"></param>
@@ -1210,7 +1181,7 @@ void RunFileCallback(FilesCallback callback, LPWSTR lpstr, UINT szStr) {
 /// <param name="wParam"></param>
 /// <param name="lParam"></param>
 /// <returns></returns>
-LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK customWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDROP hDrop;
 	INT32 count;
@@ -1219,7 +1190,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	{
 	case WM_DROPFILES:
 		hDrop = (HDROP)wParam;
-		ReceiveDropFiles(hDrop);
+		receiveDropFiles(hDrop);
 		DragFinish(hDrop);
 		break;
 
@@ -1278,7 +1249,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 /// </summary>
 /// <param name="wndProc"></param>
 /// <returns></returns>
-WNDPROC SetWindowProcedure(WNDPROC wndProc) {
+WNDPROC setWindowProcedure(WNDPROC wndProc) {
 	//return (WNDPROC)SetWindowLongPtr(hTargetWnd_, GWLP_WNDPROC, (LONG_PTR)wndProc);
 
 #ifdef _WIN64
@@ -1292,12 +1263,12 @@ WNDPROC SetWindowProcedure(WNDPROC wndProc) {
 /// <summary>
 /// Remove the custom window procedure
 /// </summary>
-void DestroyCustomWindowProcedure() {
+void destroyCustomWindowProcedure() {
 	if (lpMyWndProc_ == NULL) return;
 
 	if (lpOriginalWndProc_ != NULL) {
 		if (hTargetWnd_ != NULL && IsWindow(hTargetWnd_)) {
-			SetWindowProcedure(lpOriginalWndProc_);
+			setWindowProcedure(lpOriginalWndProc_);
 		}
 		lpOriginalWndProc_ = NULL;
 	}
@@ -1307,14 +1278,14 @@ void DestroyCustomWindowProcedure() {
 /// <summary>
 /// Create and attach the custom window procedure
 /// </summary>
-void CreateCustomWindowProcedure() {
+void createCustomWindowProcedure() {
 	if (lpMyWndProc_ != NULL) {
-		DestroyCustomWindowProcedure();
+		destroyCustomWindowProcedure();
 	}
 
 	if (hTargetWnd_ != NULL) {
-		lpMyWndProc_ = CustomWindowProcedure;
-		lpOriginalWndProc_ = SetWindowProcedure(lpMyWndProc_);
+		lpMyWndProc_ = customWindowProcedure;
+		lpOriginalWndProc_ = setWindowProcedure(lpMyWndProc_);
 	}
 }
 
@@ -1329,7 +1300,7 @@ void CreateCustomWindowProcedure() {
 ///// <param name="wParam"></param>
 ///// <param name="lParam"></param>
 ///// <returns></returns>
-//LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+//LRESULT CALLBACK messageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 //	if (nCode < 0) {
 //		return CallNextHookEx(NULL, nCode, wParam, lParam);
 //	}
@@ -1361,7 +1332,7 @@ void CreateCustomWindowProcedure() {
 ///// <summary>
 ///// Set the hook
 ///// </summary>
-//void BeginHook() {
+//void beginHook() {
 //	if (hTargetWnd_ == NULL) return;
 //
 //	// Return if the hook is already set
@@ -1370,13 +1341,13 @@ void CreateCustomWindowProcedure() {
 //	//HMODULE hMod = GetModuleHandle(NULL);
 //	DWORD dwThreadId = GetCurrentThreadId();
 //
-//	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
+//	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, messageHookCallback, NULL, dwThreadId);
 //}
 //
 ///// <summary>
 ///// Unset the hook
 ///// </summary>
-//void EndHook() {
+//void endHook() {
 //	if (hTargetWnd_ == NULL) return;
 //
 //	// Return if the hook is not set
@@ -1399,10 +1370,10 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 	DragAcceptFiles(hTargetWnd_, bAllowDropFile_);
 
 	//if (bEnabled && hHook == NULL) {
-	//	BeginHook();
+	//	beginHook();
 	//}
 	////else if (!bEnabled && hHook != NULL) {
-	////	EndHook();
+	////	endHook();
 	////}
 
 	return TRUE;
@@ -1440,7 +1411,7 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 /// </summary>
 /// <param name="lpBuffer"></param>
 /// <param name="nBufferSize"></param>
-BOOL ParsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
+BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	// 複製を保存するのに必要な長さを調べる
 	int bufferSize = nBufferSize;
 	int length = bufferSize;	// OPENFILENAME中で実際に利用した長さ
@@ -1468,14 +1439,14 @@ BOOL ParsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	if (length == bufferSize) pathCount++;
 
 	// 複数選択でない場合は改行区切りやフォルダ名追加の必要はなく、そのままの値で終了
-	if (pathCount <= 1) return true;
+	if (pathCount <= 1) return TRUE;
 
 
 	// パスのリストが返却バッファに入りきらない場合は失敗として空で返す
 	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferSize) {
 		// 結果返却バッファをクリア
 		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
-		return false;
+		return FALSE;
 	}
 
 	// 完全なパスを改行区切り文字列で生成
@@ -1483,7 +1454,7 @@ BOOL ParsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	LPWSTR buffer = new (std::nothrow)WCHAR[length];
 	if (buffer == NULL) {
 		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
-		return false;
+		return FALSE;
 	}
 	ZeroMemory(buffer, length * sizeof(WCHAR));
 
@@ -1522,10 +1493,42 @@ BOOL ParsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	//swprintf_s(lpBuffer, bufferSize, L"Files: bufferSize %d, length %d, pathCount %d, firstLineLength %d, Dir %s", bufferSize, length, pathCount, firstLineLength, buffer);
 
 	delete[] buffer;
-	return true;
+	return TRUE;
 }
 
-BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, const UINT32 nBufferSize) {
+/// <summary>
+/// Create a null separated filter text from a form app like text
+/// e.g. "Images (*.png,*.jpg,*.jpeg,*.tiff)|*.png;*.jpg;*.jpeg;*.tiff|All files (*.*)|*.*" 
+/// </summary>
+/// <param name="lpsFormTypeFilterText"></param>
+/// <returns></returns>
+LPWSTR createFilterString(LPWSTR lpsFormTypeFilterText) {
+	int filterLength = 0;
+	LPWSTR lpsFilter = nullptr;
+	if (lpsFormTypeFilterText != nullptr) {
+		filterLength = wcslen(lpsFormTypeFilterText) + 2;	// Terminated by two NULL characters
+		lpsFilter = new (std::nothrow)WCHAR[filterLength];
+
+		if (lpsFilter != nullptr) {
+			//ZeroMemory(lpsFilter, filterLength * sizeof(WCHAR));
+			for (int i = 0; i < (filterLength - 2); i++) {
+				WCHAR c = lpsFormTypeFilterText[i];
+				if (c == L'|') c = L'\0';				// Convert to null separated string
+				lpsFilter[i] = c;
+			}
+			lpsFilter[filterLength - 2] = L'\0';
+			lpsFilter[filterLength - 1] = L'\0';		// Terminated by two NULL characters 
+		}
+	}
+	return lpsFilter;
+}
+
+//BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer) {
+void UNIWINC_API OpenFilePanelTest() {
+	return;
+}
+
+BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
 	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
 	HWND hwnd = hTargetWnd_;
 	if (hwnd == NULL) {
@@ -1535,59 +1538,86 @@ BOOL UNIWINC_API OpenFilePanel(const LPPANELSETTINGS lpSettings, LPWSTR lpResult
 		}
 	}
 
+	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
+
 	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hTargetWnd_;
-	ofn.lpstrTitle = lpSettings->lpTitleText;
-	//ofn.lpstrFilter = lpSettings->lpFilterText;
-	ofn.lpstrInitialDir = lpSettings->lpInitialDir;
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrTitle = pSettings->lpszTitle;
+	ofn.lpstrFilter = lpsFilter;
+	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
+	ofn.lpstrDefExt = pSettings->lpszDefaultExt;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
-	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
-		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
-		ofn.lpstrFile = lpResultBuffer;
+	BOOL result = FALSE;
+
+	if ((pResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(pResultBuffer, nBufferSize * sizeof(WCHAR));
+		ofn.lpstrFile = pResultBuffer;
 		ofn.nMaxFile = nBufferSize;
 
 		// Default path
-		if (lpSettings->lpInitialFile != nullptr) {
-			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, lpSettings->lpInitialFile);
+		if (pSettings->lpszInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, pSettings->lpszInitialFile);
 		}
 
-		if (GetOpenFileNameW(&ofn)) {
-			return ParsePaths(lpResultBuffer, nBufferSize);
+		result = GetOpenFileNameW(&ofn);
+	}
+
+	if (lpsFilter != nullptr) delete[] lpsFilter;
+
+	if (result) {
+		return parsePaths(pResultBuffer, nBufferSize);
+	}
+	return FALSE;
+}
+
+BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, UINT32 nBufferSize) {
+	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
+	HWND hwnd = hTargetWnd_;
+	if (hwnd == NULL) {
+		hwnd = hPanelOwnerWnd_;
+		if (hwnd == NULL) {
+			hwnd = hPanelOwnerWnd_ = FindOwnerWindowHandle();
 		}
 	}
 
-	return false;
-}
+	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
 
-BOOL UNIWINC_API OpenSavePanel(LPPANELSETTINGS lpSettings, LPWSTR lpResultBuffer, UINT32 nBufferSize) {
 	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hTargetWnd_;
-	ofn.lpstrTitle = lpSettings->lpTitleText;
-	//ofn.lpstrFilter = lpSettings->lpFilterText;
-	ofn.lpstrInitialDir = lpSettings->lpInitialDir;
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrTitle = pSettings->lpszTitle;
+	ofn.lpstrFilter = lpsFilter;
+	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
+	ofn.lpstrDefExt = pSettings->lpszDefaultExt;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
-	if ((lpResultBuffer != nullptr) && (nBufferSize > 0)) {
-		ZeroMemory(lpResultBuffer, nBufferSize * sizeof(WCHAR));
-		ofn.lpstrFile = lpResultBuffer;
+	BOOL result = FALSE;
+
+	if ((pResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(pResultBuffer, nBufferSize * sizeof(WCHAR));
+		ofn.lpstrFile = pResultBuffer;
 		ofn.nMaxFile = nBufferSize;
 
 		// Default path
-		if (lpSettings->lpInitialFile != nullptr) {
-			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, lpSettings->lpInitialFile);
+		if (pSettings->lpszInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, pSettings->lpszInitialFile);
 		}
 
 		if (GetSaveFileNameW(&ofn)) {
-			return ParsePaths(lpResultBuffer, nBufferSize);
+			return parsePaths(pResultBuffer, nBufferSize);
 		}
 	}
 
-	return false;
+	if (lpsFilter != nullptr) delete[] lpsFilter;
+
+	if (result) {
+		return parsePaths(pResultBuffer, nBufferSize);
+	}
+	return FALSE;
 }
 
 #pragma endregion File dialogs
