@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Kirurobo
 {
@@ -10,21 +9,23 @@ namespace Kirurobo
     {
         protected class LibUniWinC
         {
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            //public static extern bool OpenFilePanel(ref PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
-            public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
 
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            //[DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            //public static extern bool OpenFilePanelTest();
+            public static extern bool OpenFilePanelTest([MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
+            //public static extern bool OpenFilePanelTest([In] PanelSettings settings);
 
-            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool OpenFolderPanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder buffer, UInt32 bufferSize);
+            public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
 
 
-            [StructLayout(LayoutKind.Sequential)]
+            [StructLayout(LayoutKind.Sequential, Pack = 1)]
             public struct PanelSettings : IDisposable {
                 public Int32 structSize;
                 public Int32 flags;
@@ -36,8 +37,8 @@ namespace Kirurobo
 
                 public PanelSettings(Settings settings)
                 {
+                    this.structSize = 0;
                     //this.structSize = 4 * 2 + Marshal.SizeOf<IntPtr>() * 3;
-                    this.structSize = Marshal.SizeOf<PanelSettings>();
                     this.flags = (Int32)settings.flags;
 
                     //this.lpTitleText = IntPtr.Zero;
@@ -50,6 +51,7 @@ namespace Kirurobo
                     this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
 
                     //this.structSize = Marshal.SizeOf(this);
+                    this.structSize = Marshal.SizeOf(this);
                 }
 
                 public void Dispose()
@@ -133,11 +135,17 @@ namespace Kirurobo
 
             StringBuilder sb = new StringBuilder(pathBufferSize);
 
+            // LibUniWinC.OpenFilePanelTest(ps);
+            //if (false)
+            //if (LibUniWinC.OpenFilePanelTest(0))
+            //if (LibUniWinC.OpenFilePanelTest(sb, (uint)sb.Capacity))
             if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
+            Console.WriteLine("C# PanelSettings: " + ps.structSize);
+            Console.WriteLine(sb);
 
             ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
