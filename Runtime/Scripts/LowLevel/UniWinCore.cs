@@ -367,7 +367,8 @@ namespace Kirurobo
                         if (sb.Length > 0)
                         {
                             list.Add(sb.ToString());
-                            sb.Clear();
+                            //sb.Clear();   // for .NET 4 or later
+                            sb.Length = 0;  // for .NET 2
                         }
                     }
                 }
@@ -377,7 +378,8 @@ namespace Kirurobo
                     if (sb.Length > 0)
                     {
                         list.Add(sb.ToString());
-                        sb.Clear();
+                        //sb.Clear();   // for .NET 4 or later
+                        sb.Length = 0;  // for .NET 2
                     }
                 }
                 else
