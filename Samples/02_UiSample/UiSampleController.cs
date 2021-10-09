@@ -108,6 +108,7 @@ namespace Kirurobo
                     UpdateUI();
                     //Debug.Log("Window state changed: " + type);
                     ShowEventMessage("State changed: " + type);
+                    //ShowEventMessage("State changed: " + type + "4:isKey 2:canBecomeKey, 1:canBecomeMain  : " + uniwinc.GetDebugInfo().ToString());
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
@@ -195,25 +196,34 @@ namespace Kirurobo
                 }
             }
 
-            // サンプルとしての処理
+            // キーでも設定変更
             if (uniwinc)
             {
-                // [Space]キーを押すと強制的にクリックスルーを解除
-                // 操作不能となったときの対応
-                // ただし自動判定が有効ならすぐ変化の可能性もある
-                if (Input.GetKeyUp(KeyCode.Space))
-                {
-                    uniwinc.isClickThrough = false;
-                }
-            }
-
-            if (Input.GetKeyUp(KeyCode.T))
-            {
-                if (uniwinc)
+                // Toggle transparent
+                if (Input.GetKeyUp(KeyCode.T))
                 {
                     uniwinc.isTransparent = !uniwinc.isTransparent;
                 }
+
+                // Toggle always on the front
+                if (Input.GetKeyUp(KeyCode.F))
+                {
+                    uniwinc.isTopmost = !uniwinc.isTopmost;
+                }
+
+                // Toggle always on the bottom
+                if (Input.GetKeyUp(KeyCode.B))
+                {
+                    uniwinc.isBottommost = !uniwinc.isBottommost;
+                }
+
+                // Toggle zoom
+                if (Input.GetKeyUp(KeyCode.Z))
+                {
+                    uniwinc.isZoomed = !uniwinc.isZoomed;
+                }
             }
+
 
             // Test for OpenFilePanel
             if (Input.GetKeyUp(KeyCode.O))
