@@ -445,9 +445,11 @@ public class LibUniWinC : NSObject {
     ///   - isTransparent: trueなら透過、falseなら戻す
     private static func _setWindowTransparent(window: NSWindow, isTransparent: Bool) -> Void {
         if (isTransparent) {
-            //window.styleMask = orgWindowInfo.styleMask
-            //window.styleMask = []
+//            window.styleMask = orgWindowInfo.styleMask
+//            //window.styleMask = []
 //            if (state.isBorderless) {
+//                window.titlebarAppearsTransparent = true
+//                window.titleVisibility = .hidden
 //                window.styleMask.insert(.borderless)
 //            }
             window.backgroundColor = NSColor.clear
@@ -490,10 +492,12 @@ public class LibUniWinC : NSObject {
     ///   - isBorderless: 枠なしにするか
     private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
         if (isBorderless) {
-            window.styleMask.insert(.borderless)
+            window.styleMask = [.borderless]
+            //window.styleMask.insert(.borderless)
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
         } else {
+            window.styleMask = orgWindowInfo.styleMask
             if (!orgWindowInfo.styleMask.contains(.borderless)) {
                 // 初期状態で.borderlessだったならばそれは残す
                 window.styleMask.remove(.borderless)
@@ -521,9 +525,6 @@ public class LibUniWinC : NSObject {
         if let window: NSWindow = targetWindow {
             _setWindowTransparent(window: window, isTransparent: isTransparent)
             _setContentViewTransparent(window: window, isTransparent: isTransparent)
-
-            // Reapply borderless state
-            _setWindowBorderless(window: window, isBorderless: state.isBorderless)
         }
         
         if (state.isTransparent != isTransparent) {
@@ -547,6 +548,10 @@ public class LibUniWinC : NSObject {
             
             _setWindowBorderless(window: window, isBorderless: isBorderless)
             
+            // 透過切り替え直後にキー操作が効かなくなるためキーウインドウにしたい。だがうまくはいかないよう。透過だとキーにできないのは仕方がなさそう…
+//            window.makeMain()
+//            window.makeKey()
+
             if (state.isZoomed) {
                 if (!window.isZoomed) {
                     window.zoom(nil)
@@ -558,12 +563,13 @@ public class LibUniWinC : NSObject {
                     window.setFrame(rect, display: true, animate: false)
                 }
             } else {
-                if (!isBorderless && state.isBorderless) {
-                    // Restore the window size when the window become bordered
-                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
-                        window.setFrame(state.normalWindowRect, display: true, animate: false)
-                    }
-                }
+                // 枠なしを切り替えるたびにウィンドウサイズが小さくなったので、これはコメントアウト
+//                if (!isBorderless && state.isBorderless) {
+//                    // Restore the window size when the window become bordered
+//                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
+//                        window.setFrame(state.normalWindowRect, display: true, animate: false)
+//                    }
+//                }
             }
         }
         
@@ -1096,5 +1102,17 @@ public class LibUniWinC : NSObject {
             i += 1
         }
         return true
+    }
+    
+    /// Return some information for debugging
+    @objc public static func getDebugInfo() -> Int32 {
+        var result: Int32 = 0
+        
+        if (targetWindow != nil) {
+            if (targetWindow!.canBecomeMain) { result += 1 }
+            if (targetWindow!.canBecomeKey) { result += 2 }
+            if (targetWindow!.isKeyWindow) { result += 4 }
+        }
+        return result
     }
 }

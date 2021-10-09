@@ -179,6 +179,9 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern void SetKeyColor(uint colorref);
+
+            [DllImport("LibUniWinC")]
+            public static extern int GetDebugInfo();
         }
         #endregion
 
@@ -766,6 +769,17 @@ namespace Kirurobo
                 );
             }
             Debug.Log(message);
+        }
+
+
+        /// <summary>
+        /// Receive information for debugging
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete]
+        public static int GetDebugInfo()
+        {
+            return LibUniWinC.GetDebugInfo();
         }
         #endregion
 

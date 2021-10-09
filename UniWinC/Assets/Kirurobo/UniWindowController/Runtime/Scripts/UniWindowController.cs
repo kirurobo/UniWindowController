@@ -921,5 +921,19 @@ namespace Kirurobo
                 //uniWin.SetFocus();
             }
         }
+
+
+        /// <summary>
+        /// デバッグ専用。その都度参考となる情報を受けるための関数
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete]
+        public int GetDebugInfo()
+        {
+            if (uniWinCore != null) {
+                return UniWinCore.GetDebugInfo();
+            }
+            return 0;
+        }
     }
 }
