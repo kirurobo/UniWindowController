@@ -107,6 +107,7 @@ namespace Kirurobo
                 {
                     Debug.Log("Window state changed: " + type);
                     UpdateUI();
+                    ShowEventMessage("State changed: " + type);
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
@@ -203,6 +204,14 @@ namespace Kirurobo
                 if (Input.GetKeyUp(KeyCode.Space))
                 {
                     uniwinc.isClickThrough = false;
+                }
+            }
+
+            if (Input.GetKeyUp(KeyCode.T))
+            {
+                if (uniwinc)
+                {
+                    uniwinc.isTransparent = !uniwinc.isTransparent;
                 }
             }
 
