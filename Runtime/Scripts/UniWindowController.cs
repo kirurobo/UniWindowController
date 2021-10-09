@@ -78,7 +78,7 @@ namespace Kirurobo
             get { return _isClickThrough; }
             set { SetClickThrough(value); }
         }
-        private bool _isClickThrough = true;
+        private bool _isClickThrough = false;
 
         /// <summary>
         /// Is this window transparent
