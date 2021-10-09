@@ -33,7 +33,7 @@ namespace Kirurobo
         public RectTransform menuPanel;
 
         /// <summary>
-        /// 初期化
+        /// Setup
         /// </summary>
         void Start()
         {
@@ -77,11 +77,12 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// 毎フレーム行う処理
+        /// Perform every frame
         /// </summary>
         private void Update()
         {
-            // マウス右ボタンクリックでメニューを表示させる。閾値以下の移動ならクリックとみなす。
+            // Show the context menu when right clicked.
+            // If mouse movement is closer than a threshold, it is considered a click
             if (Input.GetMouseButtonDown(1))
             {
                 lastMousePosition = Input.mousePosition;
@@ -101,7 +102,7 @@ namespace Kirurobo
                 touchDuration = 0f;
             }
 
-            // ロングタッチでもメニューを表示させる
+            // Show the menu also when long touched
             if (Input.touchSupported && (Input.touchCount > 0))
             {
                 Touch touch = Input.GetTouch(0);
@@ -123,6 +124,20 @@ namespace Kirurobo
                     }
                     mouseMoveSS = 0f;
                     touchDuration = 0f;
+                }
+            }
+
+            // Show the menu also when pressed [Space] key
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                if (menuPanel)
+                {
+                    if (menuPanel.gameObject.activeSelf) {
+                        CloseMenu();
+                    } else {
+                        Vector2 pos = new Vector2(Screen.width / 2, Screen.height / 2);
+                        ShowMenu(pos);
+                    }
                 }
             }
 
