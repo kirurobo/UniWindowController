@@ -422,7 +422,7 @@ public class LibUniWinC : NSObject {
     }
     
     /// Copy UTF-16 string to uint16 buffer and add null for the end of the string
-    private static func _copyUTF16ToBuffer(text: String.UTF16View, buffer: UnsafeMutablePointer<uint16>) -> Bool {
+    private static func _copyUTF16ToBuffer(text: String.UTF16View, buffer: UnsafeMutablePointer<UTF16Char>) -> Bool {
         let count = text.count
         if (count <= 0) {
             return false
@@ -433,7 +433,7 @@ public class LibUniWinC : NSObject {
             buffer[i] = c
             i += 1
         }
-        buffer[count] = uint16.zero     // End of the string
+        buffer[count] = UTF16Char.zero     // End of the string
         return true
     }
 
@@ -445,20 +445,21 @@ public class LibUniWinC : NSObject {
     ///   - isTransparent: trueなら透過、falseなら戻す
     private static func _setWindowTransparent(window: NSWindow, isTransparent: Bool) -> Void {
         if (isTransparent) {
-            window.styleMask = []
-            if (state.isBorderless) {
-                window.styleMask.insert(.borderless)
-            }
+            //window.styleMask = orgWindowInfo.styleMask
+            //window.styleMask = []
+//            if (state.isBorderless) {
+//                window.styleMask.insert(.borderless)
+//            }
             window.backgroundColor = NSColor.clear
             window.isOpaque = false
             window.hasShadow = false
-            
+
             //window.contentView?.wantsLayer = true
         } else {
-            window.styleMask = orgWindowInfo.styleMask
-            if (state.isBorderless) {
-                window.styleMask.insert(.borderless)
-            }
+//            window.styleMask = orgWindowInfo.styleMask
+//            if (state.isBorderless) {
+//                window.styleMask.insert(.borderless)
+//            }
             window.backgroundColor = orgWindowInfo.backgroundColor
             window.isOpaque = orgWindowInfo.isOpaque
             window.hasShadow = orgWindowInfo.hasShadow
@@ -520,7 +521,15 @@ public class LibUniWinC : NSObject {
         if let window: NSWindow = targetWindow {
             _setWindowTransparent(window: window, isTransparent: isTransparent)
             _setContentViewTransparent(window: window, isTransparent: isTransparent)
+
+            // Reapply borderless state
+            _setWindowBorderless(window: window, isBorderless: state.isBorderless)
         }
+        
+        if (state.isTransparent != isTransparent) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isTransparent = isTransparent
     }
 
@@ -557,6 +566,11 @@ public class LibUniWinC : NSObject {
                 }
             }
         }
+        
+        if (state.isBorderless != isBorderless) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isBorderless = isBorderless
     }
 
@@ -572,6 +586,11 @@ public class LibUniWinC : NSObject {
                 window.level = orgWindowInfo.level
             }
         }
+        
+        if (state.isTopmost != isTopmost) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isTopmost = isTopmost
         state.isBottommost = false
     }
@@ -589,6 +608,11 @@ public class LibUniWinC : NSObject {
                 window.level = orgWindowInfo.level
             }
         }
+        
+        if (state.isBottommost != isBottommost) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isBottommost = isBottommost
         state.isTopmost = false
     }
