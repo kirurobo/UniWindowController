@@ -105,8 +105,8 @@ namespace Kirurobo
                 // Add events
                 uniwinc.OnStateChanged += (type) =>
                 {
-                    Debug.Log("Window state changed: " + type);
                     UpdateUI();
+                    //Debug.Log("Window state changed: " + type);
                     ShowEventMessage("State changed: " + type);
                 };
                 uniwinc.OnMonitorChanged += () => {
