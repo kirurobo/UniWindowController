@@ -121,6 +121,10 @@ UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer, const UI
 UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
 UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
 
+// Debug function
+UNIWINC_EXPORT INT32 UNIWINC_API GetDebugInfo();
+
+
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
 UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);

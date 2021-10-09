@@ -111,6 +111,7 @@ namespace Kirurobo
         {
             public string title;
             public string filter;
+            public string[] extensions;
             public string initialDirectory;
             public string initialFile;
             public string defaultExtension;

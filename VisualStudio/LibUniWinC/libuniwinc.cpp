@@ -1506,7 +1506,7 @@ LPWSTR createFilterString(LPWSTR lpsFormTypeFilterText) {
 	int filterLength = 0;
 	LPWSTR lpsFilter = nullptr;
 	if (lpsFormTypeFilterText != nullptr) {
-		filterLength = wcslen(lpsFormTypeFilterText) + 2;	// Terminated by two NULL characters
+		filterLength = (int)wcslen(lpsFormTypeFilterText) + 2;	// Terminated by two NULL characters
 		lpsFilter = new (std::nothrow)WCHAR[filterLength];
 
 		if (lpsFilter != nullptr) {
@@ -1627,6 +1627,14 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 
 #pragma endregion File dialogs
 
+
+/// <summary>
+/// デバッグ時に情報を渡すための関数
+/// </summary>
+/// <returns></returns>
+INT32 UNIWINC_API GetDebugInfo() {
+	return 0;
+}
 
 // ========================================================================
 #pragma region Windows only public functions
