@@ -1411,20 +1411,22 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 /// </summary>
 /// <param name="lpBuffer"></param>
 /// <param name="nBufferSize"></param>
-BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
+BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
 	// 複製を保存するのに必要な長さを調べる
-	int bufferSize = nBufferSize;
-	int length = bufferSize;	// OPENFILENAME中で実際に利用した長さ
+	int bufferLength = nBufferLength;
+	int length = bufferLength;	// OPENFILENAME中で実際に利用した長さ
 	int pathCount = 0;			// NULL区切りでみた行数。複数選択時は1より大きくなる
-	int firstLineLength = bufferSize;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
-	for (int i = 0; i < bufferSize; i++) {
-		if (lpBuffer[i] == NULL) {
-			if (firstLineLength == bufferSize) firstLineLength = i;
-			pathCount++;
+	int firstLineLength = bufferLength;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
 
-			if ((i < (bufferSize - 1)) && (lpBuffer[i + 1] == NULL)) {
+	// 要素の数、全体の文字数を数える
+	for (int i = 0; i < bufferLength; i++) {
+		if (lpBuffer[i] == L'\0') {
+			if (firstLineLength == bufferLength) firstLineLength = i;
+			pathCount++;
+			length = i;		// とりあえずここまでの文字数は利用している
+
+			if ((i < (bufferLength - 1)) && (lpBuffer[i + 1] == L'\0')) {
 				// NULLが連続していれば終端とみなす（連続する後ろがもう無い場合も終端）
-				length = i;
 				break;
 			}
 			else
@@ -1436,16 +1438,18 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	}
 
 	// NULLが最後に来なかった場合は行数追加できていないので、1増やしておく
-	if (length == bufferSize) pathCount++;
+	if (length == bufferLength) pathCount++;
 
 	// 複数選択でない場合は改行区切りやフォルダ名追加の必要はなく、そのままの値で終了
-	if (pathCount <= 1) return TRUE;
+	if (pathCount <= 1) {
+		return TRUE;
+	}
 
 
 	// パスのリストが返却バッファに入りきらない場合は失敗として空で返す
-	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferSize) {
+	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferLength) {
 		// 結果返却バッファをクリア
-		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+		ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
 		return FALSE;
 	}
 
@@ -1453,7 +1457,7 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 
 	LPWSTR buffer = new (std::nothrow)WCHAR[length];
 	if (buffer == NULL) {
-		ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+		ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
 		return FALSE;
 	}
 	ZeroMemory(buffer, length * sizeof(WCHAR));
@@ -1462,7 +1466,7 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 	memcpy(buffer, lpBuffer, length * sizeof(WCHAR));
 
 	// 結果返却バッファをクリア
-	ZeroMemory(lpBuffer, bufferSize * sizeof(WCHAR));
+	ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
 
 
 	int offset = 0;
@@ -1489,7 +1493,7 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 		}
 	}
 
-	// デバッグ用
+	//// デバッグ用
 	//swprintf_s(lpBuffer, bufferSize, L"Files: bufferSize %d, length %d, pathCount %d, firstLineLength %d, Dir %s", bufferSize, length, pathCount, firstLineLength, buffer);
 
 	delete[] buffer;
@@ -1640,14 +1644,17 @@ LPWSTR createFilterString(const LPWSTR lpsFormTypeFilterText) {
 	return lpsResult;
 }
 
-//BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer) {
-BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer, const UINT32 nBufferSize) {
-	PANELSETTINGS ps = { 0 };
-	ps.nStructSize = sizeof(ps);
+DWORD GetPanelFlags(const INT32 flags) {
+	DWORD result = OFN_EXPLORER | OFN_NOCHANGEDIR;	// Default
 
-	wsprintf(pResultBuffer, L"%d", ps.nStructSize);
+	if ((flags & (INT32)PanelFlag::AllowMultiSelect) > 0) result |= OFN_ALLOWMULTISELECT;
+	if ((flags & (INT32)PanelFlag::FileMustExist) > 0) result |= OFN_FILEMUSTEXIST;
+	if ((flags & (INT32)PanelFlag::FolderMustExist) > 0) result |= OFN_PATHMUSTEXIST;
+	if ((flags & (INT32)PanelFlag::ShowHidden) > 0) result |= OFN_FORCESHOWHIDDEN;
+	if ((flags & (INT32)PanelFlag::OverwritePrompt) > 0) result |= OFN_OVERWRITEPROMPT;
+	if ((flags & (INT32)PanelFlag::CreatePrompt) > 0) result |= OFN_CREATEPROMPT;
 
-	return FALSE;
+	return result;
 }
 
 BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
@@ -1672,7 +1679,7 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
 	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
 	ofn.lpstrDefExt = lpszDefaultExt;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
+	ofn.Flags = GetPanelFlags(pSettings->nFlags);
 
 	BOOL result = FALSE;
 
@@ -1698,7 +1705,7 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 	return FALSE;
 }
 
-BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, UINT32 nBufferSize) {
+BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
 	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
 	HWND hwnd = hTargetWnd_;
 	if (hwnd == NULL) {
@@ -1720,7 +1727,7 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
 	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
 	ofn.lpstrDefExt = lpszDefaultExt;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
+	ofn.Flags = GetPanelFlags(pSettings->nFlags);
 
 	BOOL result = FALSE;
 
@@ -1734,9 +1741,7 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, pSettings->lpszInitialFile);
 		}
 
-		if (GetSaveFileNameW(&ofn)) {
-			return parsePaths(pResultBuffer, nBufferSize);
-		}
+		result = GetSaveFileNameW(&ofn);
 	}
 
 	if (lpsFilter != nullptr) delete[] lpsFilter;

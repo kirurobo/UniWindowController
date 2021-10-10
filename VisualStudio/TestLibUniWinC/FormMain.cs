@@ -111,6 +111,7 @@ namespace TestLibUniWinC
         {
             string text = String.Join(Environment.NewLine, array);
 
+            Console.WriteLine("Count: " + array.Length);
             Console.WriteLine(text);
             textBoxMessage.Text = text;
         }
@@ -129,9 +130,11 @@ namespace TestLibUniWinC
                 new FilePanel.Filter("Image files (*.png; *.jpg; *.tiff)", "png", "jpg", "jpeg", "tiff"),
                 new FilePanel.Filter("All files (*.*)", "*"),
             };
-            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             //ds.initialFile = "D:\\tmp\\TEST";
             ds.initialFile = "TEST";
+            ds.flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.FolderMustExist;
+            //ds.flags = FilePanel.Flag.PathMustExist;
             Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
         }
 
@@ -139,14 +142,16 @@ namespace TestLibUniWinC
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
             ds.title = "Save file (Actually not be written)";
-            ds.filters = new FilePanel.Filter[] {
-                new FilePanel.Filter("Plain text (*.txt)", "txt"),
-                new FilePanel.Filter("Word documents (*.doc; *.docx; *.docm)", "doc", "docx", "docm"),
-                new FilePanel.Filter("All files (*.*)", "*"),
-                //new FilePanel.Filter("All files", "*"),
-            };
-            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            //ds.filters = new FilePanel.Filter[] {
+            //    new FilePanel.Filter("Plain text (*.txt)", "txt"),
+            //    new FilePanel.Filter("Word documents (*.doc; *.docx; *.docm)", "doc", "docx", "docm"),
+            //    new FilePanel.Filter("All files (*.*)", "*"),
+            //    //new FilePanel.Filter("All files", "*"),
+            //};
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             ds.initialFile = "Test";
+            ds.flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.CreatePrompt | FilePanel.Flag.OverwritePrompt | FilePanel.Flag.FolderMustExist;
+            //ds.flags = FilePanel.Flag.PathMustExist;
             Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });
         }
 

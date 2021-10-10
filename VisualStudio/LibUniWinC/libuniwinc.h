@@ -31,12 +31,14 @@ enum class WindowStateEventType : int {
 };
 
 enum class PanelFlag : int {
-	OverwritePrompt = 32,
-	AllowMultiSelect = 16,
-	ReferLink = 64,
-	ShowHidden = 128,
-	FileMustExist = 4,
-	FolderMustExist = 8,
+	None = 0,
+	FileMustExist = 1,
+	FolderMustExist = 2,
+	AllowMultiSelect = 4,
+	OverwritePrompt = 256,
+	CreatePrompt = 512,
+	ShowHidden = 4096,
+	ReferLink = 8192,
 };
 
 // Struct to transmit file panel settings
@@ -116,8 +118,6 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
 
 // File panels
-//UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanelTest(const PPANELSETTINGS pSettings);	// LPWSTR pResultBuffer);
-UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer, const UINT32 nBufferSize);
 UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
 UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
 
