@@ -13,13 +13,6 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool OpenFilePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
 
-            //[DllImport("LibUniWinC", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-            [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            //public static extern bool OpenFilePanelTest();
-            public static extern bool OpenFilePanelTest([MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
-            //public static extern bool OpenFilePanelTest([In] PanelSettings settings);
-
             [DllImport("LibUniWinC", CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool OpenSavePanel(in PanelSettings settings, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder buffer, UInt32 bufferSize);
@@ -98,11 +91,14 @@ namespace Kirurobo
         public enum Flag
         {
             None = 0,
-            ChooseFiles = 1,
-            ChooseDirectories = 2,
+            FileMustExist = 1,
+            FolderMustExist = 2,
             AllowMultipleSelection = 4,
-            RetrieveLinkTarget = 8,
-            CanCreateDirectories = 16,
+            //CanCreateDirectories = 16,
+            OverwritePrompt = 256,
+            CreatePrompt = 512,
+            ShowHidden = 4096,
+            RetrieveLink = 8192,
         }
 
         /// <summary>
@@ -149,6 +145,8 @@ namespace Kirurobo
             /// <returns></returns>
             public static string Join(Filter[] filters)
             {
+                if (filters == null) return "";
+
                 string result = "";
                 bool isFirstItem = true;
                 foreach (var filter in filters) {
@@ -178,17 +176,11 @@ namespace Kirurobo
 
             StringBuilder sb = new StringBuilder(pathBufferSize);
 
-            // LibUniWinC.OpenFilePanelTest(ps);
-            //if (false)
-            //if (LibUniWinC.OpenFilePanelTest(0))
-            //if (LibUniWinC.OpenFilePanelTest(sb, (uint)sb.Capacity))
             if (LibUniWinC.OpenFilePanel(in ps, sb, (uint)sb.Capacity))
             {
                 string[] files = UniWinCore.parsePaths(sb.ToString());
                 action.Invoke(files);
             }
-            Console.WriteLine("C# PanelSettings: " + ps.structSize);
-            Console.WriteLine(sb);
 
             ps.Dispose();   // Settings を渡したコンストラクタでメモリが確保されるため、解放が必要
         }
