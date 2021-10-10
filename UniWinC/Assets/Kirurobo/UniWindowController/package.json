@@ -1,6 +1,6 @@
 {
     "name": "com.kirurobo.uniwinc",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
     "unity": "2018.4",
@@ -25,6 +25,11 @@
       "displayName": "UI sample",
       "description": "Use uGUI to change parametes.",
       "path": "Samples/02_UiSample"
+    },
+    {
+      "displayName": "Fit to screen sample",
+      "description": "",
+      "path": "Samples/04_Fullscreen"
     }
   ]
 }
