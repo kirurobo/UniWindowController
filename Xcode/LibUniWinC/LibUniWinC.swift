@@ -39,13 +39,26 @@ public class LibUniWinC : NSObject {
         public var normalWindowRect: NSRect = NSRect(x: 0, y: 0, width: 0, height: 0)
     }
     
-    /// WindowStyleChangedイベントで返す種類値（仮）
+    /// Event types for WindowStyleChanged
     private enum EventType : Int32 {
         case None = 0
         case Style = 1
         case Size = 2
     }
-    
+        
+    /// Flag constants for file dialog
+    private enum PanelFlag : Int32 {
+        case None = 0
+        case ChooseFiles = 1
+        case ChooseDirectories = 2
+        case AllowMultipleSelection = 4
+        case RetrieveLinkTarget = 8
+        case CanCreateDirectories = 16
+        
+        public func containedIn(value: Int32) -> Bool {
+            return (self.rawValue & value > 0)
+        }
+   }
 
     public struct PanelSettings {
         public var structSize: Int32 = 0;
@@ -147,9 +160,6 @@ public class LibUniWinC : NSObject {
     private static var monitorCount: Int = 0
     private static var monitorRectangles: [CGRect] = []
     private static var monitorIndices: [Int] = []
-
-    private static let openPanel = NSOpenPanel()
-    private static let savePanel = NSSavePanel()
 
     // MARK: - Properties
 
@@ -336,9 +346,6 @@ public class LibUniWinC : NSObject {
                 overlayView?.removeFromSuperview()
                 overlayView = nil
             }
-            
-            // Close dialog if it is opened
-            openPanel.close()
             
             targetWindow = nil
         }
@@ -894,33 +901,35 @@ public class LibUniWinC : NSObject {
     
     /// Open dialog
     /// - Parameters:
-    ///   -
+    ///     - lpSettings: Pointer of PanelSettings
+    ///     - lpBuffer: Pointer of UTF-16 string for output
+    ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
-        let panel = openPanel
-        
+        let panel = NSOpenPanel()
+
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = (ps.flags & 4 > 0)
+        panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = false
-        panel.allowedFileTypes = ["jpg", "png", "jpeg"]
+        panel.allowedFileTypes = fileTypes
         panel.allowsOtherFileTypes = false
 
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
-            savePanel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
         
-        panel.accessoryView = createAccesoryViewForExtensions(text: getStringFromUtf16Array(textPointer: ps.filterText), parent: panel)
-        
-        panel.canCreateDirectories = true   //(ps.flags & 16 > 0)
+        panel.canCreateDirectories = true
         //panel.showsTagField = false
         panel.allowsOtherFileTypes = false
         panel.level = NSWindow.Level.popUpMenu
@@ -934,7 +943,6 @@ public class LibUniWinC : NSObject {
                 // Make new-line separated string
                 for url in panel.urls {
                     text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-                    //text += '"' + url.path + '"' + "\n"
                 }
             }
         }
@@ -942,16 +950,23 @@ public class LibUniWinC : NSObject {
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     
+    /// Open file select dialog to save
+    /// - Parameters:
+    ///     - lpSettings: Pointer of PanelSettings
+    ///     - lpBuffer: Pointer of UTF-16 string for output
+    ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
-        let panel = savePanel
+        let panel = NSSavePanel()
         
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
         panel.showsHiddenFiles = false
         
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
@@ -959,14 +974,13 @@ public class LibUniWinC : NSObject {
             panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
-        panel.allowedFileTypes = ["jpg", "png", "jpeg"]
-        panel.accessoryView = createAccesoryViewForExtensions(text: getStringFromUtf16Array(textPointer: ps.filterText), parent: panel)
+        panel.allowedFileTypes = fileTypes
 
-        panel.canCreateDirectories = true   //(ps.flags & 16 > 0)
+        panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
+        panel.canSelectHiddenExtension = false
         //panel.showsTagField = false
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()
-
         
         let result = panel.runModal();
         
@@ -978,37 +992,6 @@ public class LibUniWinC : NSObject {
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
-    //
-    //    /// Open folder (Not in used)
-    //    @objc public static func openFolderPanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutableRawPointer, bufferSize: UInt32) -> Bool {
-    //        let panel = openPanel
-    //
-    //        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
-    //        let ps = pPanelSettings.pointee;
-    //
-    //        panel.canChooseFiles = false
-    //        panel.canChooseDirectories = true
-    //        panel.allowsMultipleSelection = (ps.flags & 4 > 0)
-    //        panel.canCreateDirectories = (ps.flags & 16 > 0)
-    //
-    //        panel.prompt = "Open"
-    //        panel.level = NSWindow.Level.popUpMenu
-    //        panel.orderFrontRegardless()
-    //
-    //        let result = panel.runModal();
-    //
-    //        var text: String = ""
-    //        if (result == .OK) {
-    //            if (panel.urls.count > 0) {
-    //                // Make new-line separated string
-    //                for url in panel.urls {
-    //                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-    //                    //text += '"' + url.path + '"' + "\n"
-    //                }
-    //            }
-    //        }
-    //        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
-    //    }
 
     /// Parse an UTF-16 null terminated string pointer to String
     private static func getStringFromUtf16Array(textPointer: UnsafePointer<UniChar>?) -> String {
@@ -1022,23 +1005,24 @@ public class LibUniWinC : NSObject {
         return String(utf16CodeUnits: textPointer!, count: len)
     }
     
-    private static func createAccesoryViewForExtensions(text: String, parent: NSSavePanel) -> NSView {
-        let accesoryView = NSView(frame: NSRect(x:0, y:0, width:270, height:50))
-        let popup = NSPopUpButton(frame: NSRect(x:130, y:10, width:120, height:25))
-        let label = NSTextField(frame: NSRect(x:20, y:15, width:100, height:18))
+    /// Convert filter text to array for  allowedFileTypes
+    ///  - Parameters:
+    ///     - text: text = "TitleA(TAB)textA1(TAB)extA2(TAB)...extAn(LF)TitleB(TAB)extB1(TAB)extB2...extBn(LF)"
+    ///  - Returns: [extA1, extA2, ..., extAn, extB1, extB2, ..., extBn]
+    private static func getFileTypesArray(text: String) -> [String] {
+        let items = text.components(separatedBy: "\n")
+        var array: [String] = []
+        for item in items {
+            // Drop the first element. Because titles are not supported on macOS yet.
+            array += item.components(separatedBy: "\t").dropFirst()
+        }
+        array.removeAll(where: { $0 == "" })
         
-        popup.addItems(withTitles: ["png", "jpg", "tiff"])
-        //popup.action = #selector(parent.allowedFileTypes = [popup.selectedItem!.title])
-        
-        label.stringValue = "File types :"
-        label.isBordered = false
-        label.isSelectable = false
-        label.isEditable = false
-        
-        accesoryView.addSubview(popup)
-        accesoryView.addSubview(label)
-        
-        return accesoryView
+        if (array.contains("*")) {
+            return []   // If "*" is included, it will eventually be equivalent to no extension specification.
+        } else {
+            return array
+        }
     }
 
     /// Call a StringCallback with UTF-16 paramete
