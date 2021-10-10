@@ -124,11 +124,14 @@ namespace TestLibUniWinC
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
             ds.title = "Open files";
-            ds.filter = "Image files (*.png,*.jpg,*.jpeg,*.tiff)|*.png;*.jpg;*.jpeg;*.tiff|All files (*.*)|*.*";
-            ds.extensions = new string[] { "png", "jpg", "jpeg", "tiff" };
-            ds.defaultExtension = "jpg";
+            //ds.filter = "Image files (*.png,*.jpg,*.jpeg,*.tiff)|*.png;*.jpg;*.jpeg;*.tiff|All files (*.*)|*.*";
+            ds.filters = new FilePanel.Filter[] {
+                new FilePanel.Filter("Image files (*.png; *.jpg; *.tiff)", "png", "jpg", "jpeg", "tiff"),
+                new FilePanel.Filter("All files (*.*)", "*"),
+            };
             ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            ds.initialFile = "D:\\tmp\\TEST";
+            //ds.initialFile = "D:\\tmp\\TEST";
+            ds.initialFile = "TEST";
             Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
         }
 
@@ -136,9 +139,12 @@ namespace TestLibUniWinC
         {
             Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
             ds.title = "Save file (Actually not be written)";
-            ds.filter = "Documens (*.txt,*.doc,*.docx)|*.txt;*.doc;*.docx|All files (*.*)|*.*";
-            ds.extensions = new string[] { "txt", "doc", "docx" };
-            ds.defaultExtension = "txt";
+            ds.filters = new FilePanel.Filter[] {
+                new FilePanel.Filter("Plain text (*.txt)", "txt"),
+                new FilePanel.Filter("Word documents (*.doc; *.docx; *.docm)", "doc", "docx", "docm"),
+                new FilePanel.Filter("All files (*.*)", "*"),
+                //new FilePanel.Filter("All files", "*"),
+            };
             ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             ds.initialFile = "Test";
             Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });

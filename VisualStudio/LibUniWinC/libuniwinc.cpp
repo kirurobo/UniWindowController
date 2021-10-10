@@ -1497,30 +1497,147 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferSize) {
 }
 
 /// <summary>
-/// Create a null separated filter text from a form app like text
-/// e.g. "Images (*.png,*.jpg,*.jpeg,*.tiff)|*.png;*.jpg;*.jpeg;*.tiff|All files (*.*)|*.*" 
+/// Create a null ended extension string from the first extension in the input string
+/// e.g. "TitleA\ttExtA1\tExtA2\t...ExtAn\nTitleB\tExtB1\tExtB2...ExtBn\n"
 /// </summary>
 /// <param name="lpsFormTypeFilterText"></param>
-/// <returns></returns>
-LPWSTR createFilterString(LPWSTR lpsFormTypeFilterText) {
-	int filterLength = 0;
-	LPWSTR lpsFilter = nullptr;
-	if (lpsFormTypeFilterText != nullptr) {
-		filterLength = (int)wcslen(lpsFormTypeFilterText) + 2;	// Terminated by two NULL characters
-		lpsFilter = new (std::nothrow)WCHAR[filterLength];
+/// <returns>Null ended string</returns>
+LPWSTR createDefaultExtString(const LPWSTR lpsFormTypeFilterText) {
+	const int MAX_EXT_LENGTH = 32;
 
-		if (lpsFilter != nullptr) {
-			//ZeroMemory(lpsFilter, filterLength * sizeof(WCHAR));
-			for (int i = 0; i < (filterLength - 2); i++) {
-				WCHAR c = lpsFormTypeFilterText[i];
-				if (c == L'|') c = L'\0';				// Convert to null separated string
-				lpsFilter[i] = c;
+	int resultIndex = 0;
+	LPWSTR lpsResult = nullptr;
+	if (lpsFormTypeFilterText != nullptr) {
+		lpsResult = new (std::nothrow)WCHAR[MAX_EXT_LENGTH];
+
+		if (lpsResult != nullptr) {
+			ZeroMemory(lpsResult, MAX_EXT_LENGTH * sizeof(WCHAR));
+
+			int inputIndex = 0;
+			int section = 0;	// 0:title, 1:extensions
+			bool includesWildCard = false;
+
+			while (resultIndex < (MAX_EXT_LENGTH - 1)) {
+				WCHAR c = lpsFormTypeFilterText[inputIndex++];
+
+				// End of the input string
+				if (c == L'\0') {
+					break;
+				}
+				// Tab separated
+				else if (c == L'\t') {
+					// The first element is title
+					if (section <= 0) {
+						section = 1;
+					}
+					else {
+						break;
+					}
+				}
+				// New line
+				else if (c == L'\n') {
+					break;
+				}
+				// Other character
+				else {
+					if (section == 1) {
+						// Wild card
+						if (c == L'*') {
+							includesWildCard = true;
+							break;
+						}
+
+						// A character of extension
+						lpsResult[resultIndex++] = c;
+					}
+				}
 			}
-			lpsFilter[filterLength - 2] = L'\0';
-			lpsFilter[filterLength - 1] = L'\0';		// Terminated by two NULL characters 
+
+			lpsResult[resultIndex++] = L'\0';
+
+			if (includesWildCard) {
+				delete[] lpsResult;
+				lpsResult = nullptr;
+			}
 		}
 	}
-	return lpsFilter;
+	return lpsResult;
+}
+
+/// <summary>
+/// Create a null separated filter text from tab separated text
+/// e.g. "TitleA\ttExtA1\tExtA2\t...ExtAn\nTitleB\tExtB1\tExtB2...ExtBn\n"
+/// </summary>
+/// <param name="lpsFormTypeFilterText"></param>
+/// <returns>e.g. "TitleA\0*.tExtA1;*.ExtA2;...;*.ExtAn\0TitleB\0*.ExtB1;*.ExtB2;...;*.ExtBn\0\0"</returns>
+LPWSTR createFilterString(const LPWSTR lpsFormTypeFilterText) {
+	const int MAX_FILTER_LENGTH = 1024;
+
+	int resultIndex = 0;
+	LPWSTR lpsResult = nullptr;
+	if (lpsFormTypeFilterText != nullptr) {
+		lpsResult = new (std::nothrow)WCHAR[MAX_FILTER_LENGTH];
+
+		if (lpsResult != nullptr) {
+			//ZeroMemory(lpsFilter, MAX_FILTER_LENGTH * sizeof(WCHAR));
+
+			int firstExtStartIndex = 0;
+			int firstExtEndIndex = 0;
+
+			int inputIndex = 0;
+			int section = 0;	// 0:title, 1:extensions
+			bool isFirstChar = true;
+
+			while (resultIndex < (MAX_FILTER_LENGTH - 2)) {
+				WCHAR c = lpsFormTypeFilterText[inputIndex++];
+
+				// End of the input string
+				if (c == L'\0') {
+					break;
+				}
+				// Tab separated
+				else if (c == L'\t') {
+					// The first element is title
+					if (section <= 0) {
+						lpsResult[resultIndex++] = L'\0';
+						section = 1;
+					}
+					else {
+						// In extensions' section
+						lpsResult[resultIndex++] = ';';
+					}
+					isFirstChar = true;
+				}
+				// New line
+				else if (c == L'\n') {
+					// If there is no extension, add separator to skip to next pair
+					if (section <= 0) {
+						lpsResult[resultIndex++] = L'\0';
+					}
+					// The end of title and extensions pair
+					lpsResult[resultIndex++] = L'\0';
+					section = 0;
+					isFirstChar = true;
+				}
+				// Other character
+				else {
+					// Add "*." before each extension.
+					if (isFirstChar && section == 1) {
+						if (resultIndex >= (MAX_FILTER_LENGTH - 4)) break;
+						lpsResult[resultIndex++] = '*';
+						lpsResult[resultIndex++] = '.';
+					}
+					lpsResult[resultIndex++] = c;
+					isFirstChar = false;
+				}
+			}
+
+			// Terminated by two NULL characters 
+			lpsResult[resultIndex++] = L'\0';
+			lpsResult[resultIndex++] = L'\0';
+		}
+	}
+	return lpsResult;
 }
 
 //BOOL UNIWINC_API OpenFilePanelTest(LPWSTR pResultBuffer) {
@@ -1543,6 +1660,7 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 		}
 	}
 
+	LPWSTR lpszDefaultExt = createDefaultExtString(pSettings->lpszFilter);
 	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
 
 	OPENFILENAMEW ofn;
@@ -1552,7 +1670,8 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 	ofn.lpstrTitle = pSettings->lpszTitle;
 	ofn.lpstrFilter = lpsFilter;
 	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
-	ofn.lpstrDefExt = pSettings->lpszDefaultExt;
+	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
+	ofn.lpstrDefExt = lpszDefaultExt;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
 	BOOL result = FALSE;
@@ -1571,6 +1690,7 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 	}
 
 	if (lpsFilter != nullptr) delete[] lpsFilter;
+	if (lpszDefaultExt!= nullptr) delete[] lpszDefaultExt;
 
 	if (result) {
 		return parsePaths(pResultBuffer, nBufferSize);
@@ -1588,6 +1708,7 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 		}
 	}
 
+	LPWSTR lpszDefaultExt = createDefaultExtString(pSettings->lpszFilter);
 	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
 
 	OPENFILENAMEW ofn;
@@ -1597,7 +1718,8 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 	ofn.lpstrTitle = pSettings->lpszTitle;
 	ofn.lpstrFilter = lpsFilter;
 	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
-	ofn.lpstrDefExt = pSettings->lpszDefaultExt;
+	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
+	ofn.lpstrDefExt = lpszDefaultExt;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_ALLOWMULTISELECT;
 
 	BOOL result = FALSE;
@@ -1618,6 +1740,7 @@ BOOL UNIWINC_API OpenSavePanel(PPANELSETTINGS pSettings, LPWSTR pResultBuffer, U
 	}
 
 	if (lpsFilter != nullptr) delete[] lpsFilter;
+	if (lpszDefaultExt != nullptr) delete[] lpszDefaultExt;
 
 	if (result) {
 		return parsePaths(pResultBuffer, nBufferSize);

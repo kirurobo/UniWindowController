@@ -45,10 +45,11 @@ namespace Kirurobo
                     //this.lpFilterText = IntPtr.Zero;
                     //this.lpDefaultPath = IntPtr.Zero;
                     this.lpszTitle = Marshal.StringToHGlobalUni(settings.title);
-                    this.lpszFilter = Marshal.StringToHGlobalUni(settings.filter);
+                    this.lpszFilter = Marshal.StringToHGlobalUni(Filter.Join(settings.filters));
                     this.lpszInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
                     this.lpszInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
-                    this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
+                    //this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
+                    this.lpszDefaultExt = IntPtr.Zero;
 
                     //this.structSize = Marshal.SizeOf(this);
                     this.structSize = Marshal.SizeOf(this);
@@ -110,12 +111,53 @@ namespace Kirurobo
         public struct Settings
         {
             public string title;
-            public string filter;
-            public string[] extensions;
+            public Filter[] filters;
             public string initialDirectory;
             public string initialFile;
-            public string defaultExtension;
+            public string defaultExtension;    // Not implemented
             public Flag flags;
+        }
+
+        /// <summary>
+        /// File filter
+        /// </summary>
+        public class Filter
+        {
+            protected string title;
+            protected string[] extensions;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="title">Filter title. (Not available on macOS yet)</param>
+            /// <param name="extensions">Extensions like ["png", "jpg", "txt"]</param>
+            public Filter(string title, params string[] extensions)
+            {
+                this.title = title;
+                this.extensions = extensions;
+            }
+
+            public override string ToString()
+            {
+                return title + "\t" + String.Join("\t", extensions);
+            }
+
+            /// <summary>
+            /// Returns converted string from Filter array
+            /// </summary>
+            /// <param name="filters"></param>
+            /// <returns></returns>
+            public static string Join(Filter[] filters)
+            {
+                string result = "";
+                bool isFirstItem = true;
+                foreach (var filter in filters) {
+                    if (!isFirstItem) result += "\n";
+                    result += filter.ToString();
+                    isFirstItem = false;
+                }
+                return result;
+            }
         }
 
         /// <summary>

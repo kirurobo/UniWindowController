@@ -48,7 +48,8 @@ namespace Kirurobo
                     this.lpszFilter = Marshal.StringToHGlobalUni(Filter.Join(settings.filters));
                     this.lpszInitialFile = Marshal.StringToHGlobalUni(settings.initialFile);
                     this.lpszInitialDir = Marshal.StringToHGlobalUni(settings.initialDirectory);
-                    this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
+                    //this.lpszDefaultExt = Marshal.StringToHGlobalUni(settings.defaultExtension);
+                    this.lpszDefaultExt = IntPtr.Zero;
 
                     //this.structSize = Marshal.SizeOf(this);
                     this.structSize = Marshal.SizeOf(this);
@@ -111,10 +112,9 @@ namespace Kirurobo
         {
             public string title;
             public Filter[] filters;
-            public string extensions;
             public string initialDirectory;
             public string initialFile;
-            public string defaultExtension;
+            public string defaultExtension;    // Not implemented
             public Flag flags;
         }
 
