@@ -49,11 +49,14 @@ public class LibUniWinC : NSObject {
     /// Flag constants for file dialog
     private enum PanelFlag : Int32 {
         case None = 0
-        case ChooseFiles = 1
-        case ChooseDirectories = 2
+        case FileMustExist = 1
+        case FolderMustExist = 2
         case AllowMultipleSelection = 4
-        case RetrieveLinkTarget = 8
-        case CanCreateDirectories = 16
+        //case CanCreateDirectories = 16
+        case OverwritePrompt = 256
+        case CreatePrompt = 512
+        case ShowHidden = 4096
+        case RetrieveLink = 8192
         
         public func containedIn(value: Int32) -> Bool {
             return (self.rawValue & value > 0)
@@ -913,12 +916,9 @@ public class LibUniWinC : NSObject {
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
-        panel.showsHiddenFiles = false
+        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.allowedFileTypes = fileTypes
-        panel.allowsOtherFileTypes = false
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -929,6 +929,9 @@ public class LibUniWinC : NSObject {
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
         
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsOtherFileTypes = false
         panel.canCreateDirectories = true
         //panel.showsTagField = false
         panel.allowsOtherFileTypes = false
@@ -964,8 +967,7 @@ public class LibUniWinC : NSObject {
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
-        panel.showsHiddenFiles = false
-        
+        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
@@ -975,9 +977,10 @@ public class LibUniWinC : NSObject {
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
         panel.allowedFileTypes = fileTypes
+        panel.allowsOtherFileTypes = true
 
         panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
-        panel.canSelectHiddenExtension = false
+        //panel.canSelectHiddenExtension = false
         //panel.showsTagField = false
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()

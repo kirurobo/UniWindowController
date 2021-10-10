@@ -247,7 +247,7 @@ namespace Kirurobo
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
-                    //flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
+                    flags = FilePanel.Flag.AllowMultipleSelection,
                     title = "Save!",
                     filters = new FilePanel.Filter[]{
                         new FilePanel.Filter("Shell script", "sh"),

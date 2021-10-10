@@ -91,14 +91,14 @@ namespace Kirurobo
         public enum Flag
         {
             None = 0,
-            FileMustExist = 1,
-            FolderMustExist = 2,
+            //FileMustExist = 1,            // Windows only
+            //FolderMustExist = 2,          // Windows only
             AllowMultipleSelection = 4,
-            //CanCreateDirectories = 16,
-            OverwritePrompt = 256,
-            CreatePrompt = 512,
-            ShowHidden = 4096,
-            RetrieveLink = 8192,
+            //CanCreateDirectories = 16,    // macOS only
+            //OverwritePrompt = 256,        // Always enabled on macOS
+            //CreatePrompt = 512,           // Always enabled on macOS
+            ShowHiddenFiles = 4096,
+            //RetrieveLink = 8192,
         }
 
         /// <summary>
