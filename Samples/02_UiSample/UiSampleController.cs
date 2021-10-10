@@ -230,9 +230,12 @@ namespace Kirurobo
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
-                    flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.ChooseFiles | FilePanel.Flag.ChooseDirectories,
+                    flags = FilePanel.Flag.AllowMultipleSelection,
                     title = "Open!",
-                    filter = "Image files (*.png;*.jpg,*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*",
+                    filters = new FilePanel.Filter[]{
+                        new FilePanel.Filter("Image files", "png", "jpg", "jpeg"),
+                        //new FilePanel.Filter("All files", "*"),
+                    },
                     initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                     initialFile = "test.png",
                 };
@@ -244,8 +247,14 @@ namespace Kirurobo
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
-                    flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
+                    //flags = FilePanel.Flag.ChooseFiles | FilePanel.Flag.CanCreateDirectories,
                     title = "Save!",
+                    filters = new FilePanel.Filter[]{
+                        new FilePanel.Filter("Shell script", "sh"),
+                        new FilePanel.Filter("Log", "log"),
+                        new FilePanel.Filter("Plain text", "txt"),
+                        //new FilePanel.Filter("All files", "*"),
+                    },
                     initialFile = "Test.txt",
                     initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 };
