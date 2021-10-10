@@ -39,11 +39,38 @@ public class LibUniWinC : NSObject {
         public var normalWindowRect: NSRect = NSRect(x: 0, y: 0, width: 0, height: 0)
     }
     
-    /// WindowStyleChangedイベントで返す種類値（仮）
+    /// Event types for WindowStyleChanged
     private enum EventType : Int32 {
         case None = 0
         case Style = 1
         case Size = 2
+    }
+        
+    /// Flag constants for file dialog
+    private enum PanelFlag : Int32 {
+        case None = 0
+        case FileMustExist = 1
+        case FolderMustExist = 2
+        case AllowMultipleSelection = 4
+        //case CanCreateDirectories = 16
+        case OverwritePrompt = 256
+        case CreatePrompt = 512
+        case ShowHidden = 4096
+        case RetrieveLink = 8192
+        
+        public func containedIn(value: Int32) -> Bool {
+            return (self.rawValue & value > 0)
+        }
+   }
+
+    public struct PanelSettings {
+        public var structSize: Int32 = 0;
+        public var flags: Int32 = 0;
+        public var titleText: UnsafePointer<UniChar>?;
+        public var filterText: UnsafePointer<UniChar>?;
+        public var initialFile: UnsafePointer<UniChar>?;
+        public var initialDirectory: UnsafePointer<UniChar>?;
+        public var defaultExt: UnsafePointer<UniChar>?;
     }
     
     /// ウィンドウの初期状態を保持するクラス
@@ -121,6 +148,8 @@ public class LibUniWinC : NSObject {
     public typealias stringCallback = (@convention(c) (UnsafeRawPointer) -> Void)
     public typealias intCallback = (@convention(c) (Int32) -> Void)
     public static var dropFilesCallback: stringCallback? = nil
+    public static var openFilesCallback: stringCallback? = nil
+    public static var saveFilesCallback: stringCallback? = nil
     public static var monitorChangedCallback: intCallback? = nil
     public static var windowStyleChangedCallback: intCallback? = nil
     private static var observerObject: Any? = nil
@@ -135,7 +164,6 @@ public class LibUniWinC : NSObject {
     private static var monitorRectangles: [CGRect] = []
     private static var monitorIndices: [Int] = []
 
-    
     // MARK: - Properties
 
     /// 準備完了かどうかを返す
@@ -321,7 +349,7 @@ public class LibUniWinC : NSObject {
                 overlayView?.removeFromSuperview()
                 overlayView = nil
             }
-                        
+            
             targetWindow = nil
         }
     }
@@ -404,7 +432,7 @@ public class LibUniWinC : NSObject {
     }
     
     /// Copy UTF-16 string to uint16 buffer and add null for the end of the string
-    private static func _copyUTF16ToBuffer(text: String.UTF16View, buffer: UnsafeMutablePointer<uint16>) -> Bool {
+    private static func _copyUTF16ToBuffer(text: String.UTF16View, buffer: UnsafeMutablePointer<UTF16Char>) -> Bool {
         let count = text.count
         if (count <= 0) {
             return false
@@ -415,7 +443,7 @@ public class LibUniWinC : NSObject {
             buffer[i] = c
             i += 1
         }
-        buffer[count] = uint16.zero     // End of the string
+        buffer[count] = UTF16Char.zero     // End of the string
         return true
     }
 
@@ -427,20 +455,23 @@ public class LibUniWinC : NSObject {
     ///   - isTransparent: trueなら透過、falseなら戻す
     private static func _setWindowTransparent(window: NSWindow, isTransparent: Bool) -> Void {
         if (isTransparent) {
-            window.styleMask = []
-            if (state.isBorderless) {
-                window.styleMask.insert(.borderless)
-            }
+//            window.styleMask = orgWindowInfo.styleMask
+//            //window.styleMask = []
+//            if (state.isBorderless) {
+//                window.titlebarAppearsTransparent = true
+//                window.titleVisibility = .hidden
+//                window.styleMask.insert(.borderless)
+//            }
             window.backgroundColor = NSColor.clear
             window.isOpaque = false
             window.hasShadow = false
-            
+
             //window.contentView?.wantsLayer = true
         } else {
-            window.styleMask = orgWindowInfo.styleMask
-            if (state.isBorderless) {
-                window.styleMask.insert(.borderless)
-            }
+//            window.styleMask = orgWindowInfo.styleMask
+//            if (state.isBorderless) {
+//                window.styleMask.insert(.borderless)
+//            }
             window.backgroundColor = orgWindowInfo.backgroundColor
             window.isOpaque = orgWindowInfo.isOpaque
             window.hasShadow = orgWindowInfo.hasShadow
@@ -471,10 +502,12 @@ public class LibUniWinC : NSObject {
     ///   - isBorderless: 枠なしにするか
     private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
         if (isBorderless) {
-            window.styleMask.insert(.borderless)
+            window.styleMask = [.borderless]
+            //window.styleMask.insert(.borderless)
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
         } else {
+            window.styleMask = orgWindowInfo.styleMask
             if (!orgWindowInfo.styleMask.contains(.borderless)) {
                 // 初期状態で.borderlessだったならばそれは残す
                 window.styleMask.remove(.borderless)
@@ -503,6 +536,11 @@ public class LibUniWinC : NSObject {
             _setWindowTransparent(window: window, isTransparent: isTransparent)
             _setContentViewTransparent(window: window, isTransparent: isTransparent)
         }
+        
+        if (state.isTransparent != isTransparent) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isTransparent = isTransparent
     }
 
@@ -520,6 +558,10 @@ public class LibUniWinC : NSObject {
             
             _setWindowBorderless(window: window, isBorderless: isBorderless)
             
+            // 透過切り替え直後にキー操作が効かなくなるためキーウインドウにしたい。だがうまくはいかないよう。透過だとキーにできないのは仕方がなさそう…
+//            window.makeMain()
+//            window.makeKey()
+
             if (state.isZoomed) {
                 if (!window.isZoomed) {
                     window.zoom(nil)
@@ -531,14 +573,20 @@ public class LibUniWinC : NSObject {
                     window.setFrame(rect, display: true, animate: false)
                 }
             } else {
-                if (!isBorderless && state.isBorderless) {
-                    // Restore the window size when the window become bordered
-                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
-                        window.setFrame(state.normalWindowRect, display: true, animate: false)
-                    }
-                }
+                // 枠なしを切り替えるたびにウィンドウサイズが小さくなったので、これはコメントアウト
+//                if (!isBorderless && state.isBorderless) {
+//                    // Restore the window size when the window become bordered
+//                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
+//                        window.setFrame(state.normalWindowRect, display: true, animate: false)
+//                    }
+//                }
             }
         }
+        
+        if (state.isBorderless != isBorderless) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isBorderless = isBorderless
     }
 
@@ -554,6 +602,11 @@ public class LibUniWinC : NSObject {
                 window.level = orgWindowInfo.level
             }
         }
+        
+        if (state.isTopmost != isTopmost) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isTopmost = isTopmost
         state.isBottommost = false
     }
@@ -571,6 +624,11 @@ public class LibUniWinC : NSObject {
                 window.level = orgWindowInfo.level
             }
         }
+        
+        if (state.isBottommost != isBottommost) {
+            _doWindowStyleChangedCallback(num: EventType.Style)
+        }
+        
         state.isBottommost = isBottommost
         state.isTopmost = false
     }
@@ -811,7 +869,7 @@ public class LibUniWinC : NSObject {
         dropFilesCallback = nil
         return true
     }
-    
+
     
     // MARK: - Mouser curosor
     
@@ -839,5 +897,209 @@ public class LibUniWinC : NSObject {
         
         moveEvent?.post(tap: .cgSessionEventTap)
         return true
+    }
+    
+    
+    // MARK: - File dialogs
+    
+    /// Open dialog
+    /// - Parameters:
+    ///     - lpSettings: Pointer of PanelSettings
+    ///     - lpBuffer: Pointer of UTF-16 string for output
+    ///     - bufferSize: Size of UTF-16 string buffer
+    @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
+        let panel = NSOpenPanel()
+
+        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+        let ps = pPanelSettings.pointee
+        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
+
+        panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
+        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
+        panel.allowedFileTypes = fileTypes
+
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        if (initialDir != "") {
+            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+        } else if (initialFile.deletingLastPathComponent != "") {
+            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+        }
+        panel.nameFieldStringValue = initialFile.lastPathComponent
+        
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsOtherFileTypes = false
+        panel.canCreateDirectories = true
+        //panel.showsTagField = false
+        panel.allowsOtherFileTypes = false
+        panel.level = NSWindow.Level.popUpMenu
+        panel.orderFrontRegardless()
+
+        let result = panel.runModal();
+        
+        var text: String = ""
+        if (result == .OK) {
+            if (panel.urls.count > 0) {
+                // Make new-line separated string
+                for url in panel.urls {
+                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+                }
+            }
+        }
+        
+        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    }
+    
+    /// Open file select dialog to save
+    /// - Parameters:
+    ///     - lpSettings: Pointer of PanelSettings
+    ///     - lpBuffer: Pointer of UTF-16 string for output
+    ///     - bufferSize: Size of UTF-16 string buffer
+    @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
+        let panel = NSSavePanel()
+        
+        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+        let ps = pPanelSettings.pointee;
+        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
+
+        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        if (initialDir != "") {
+            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+        } else if (initialFile.deletingLastPathComponent != "") {
+            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+        }
+        panel.nameFieldStringValue = initialFile.lastPathComponent
+        panel.allowedFileTypes = fileTypes
+        panel.allowsOtherFileTypes = true
+
+        panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
+        //panel.canSelectHiddenExtension = false
+        //panel.showsTagField = false
+        panel.level = NSWindow.Level.popUpMenu
+        panel.orderFrontRegardless()
+        
+        let result = panel.runModal();
+        
+        var text: String = ""
+        if (result == .OK && (panel.url != nil)) {
+            let url: String = panel.url!.path
+            text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+        }
+
+        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+    }
+
+    /// Parse an UTF-16 null terminated string pointer to String
+    private static func getStringFromUtf16Array(textPointer: UnsafePointer<UniChar>?) -> String {
+        if (textPointer == nil) {
+            return ""
+        }
+        var len = 0
+        while textPointer![len] != UniChar.zero {
+            len += 1
+        }
+        return String(utf16CodeUnits: textPointer!, count: len)
+    }
+    
+    /// Convert filter text to array for  allowedFileTypes
+    ///  - Parameters:
+    ///     - text: text = "TitleA(TAB)textA1(TAB)extA2(TAB)...extAn(LF)TitleB(TAB)extB1(TAB)extB2...extBn(LF)"
+    ///  - Returns: [extA1, extA2, ..., extAn, extB1, extB2, ..., extBn]
+    private static func getFileTypesArray(text: String) -> [String] {
+        let items = text.components(separatedBy: "\n")
+        var array: [String] = []
+        for item in items {
+            // Drop the first element. Because titles are not supported on macOS yet.
+            array += item.components(separatedBy: "\t").dropFirst()
+        }
+        array.removeAll(where: { $0 == "" })
+        
+        if (array.contains("*")) {
+            return []   // If "*" is included, it will eventually be equivalent to no extension specification.
+        } else {
+            return array
+        }
+    }
+
+    /// Call a StringCallback with UTF-16 paramete
+    /// - Parameters:
+    ///   - callback: Registered callback function
+    ///   - text: Parrameter as String
+    /// - Returns: True if success
+    public static func callStringCallback(callback: stringCallback?, text: String) -> Bool {
+        if (callback == nil)
+        {
+            return false
+        }
+        
+        let count = text.utf16.count
+        if (count <= 0) {
+            return false
+        }
+        
+        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: count + 1)
+        var i = 0
+        for c in text.utf16 {
+            buffer[i] = c
+            i += 1
+        }
+        buffer[count] = UniChar.zero     // End of the string
+        
+        // Do callback
+        callback?(buffer)
+
+        buffer.deallocate()
+        return true
+    }
+
+    /// Return an UTF-16 string by using a pointer
+    /// - Parameters:
+    ///     - text: Parrameter as String
+    ///     - lpBuffer: UTF-16 string buffer that allocated  by caller
+    ///     - bufferSize: Size of the string buffer
+    /// - Returns: True if success
+    private static func outputToStringBuffer(text: String, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
+        let size = Int(bufferSize)
+        //let buffer = lpBuffer.bindMemory(to: UniChar.self, capacity: size)
+        guard let buffer = lpBuffer else {
+            return false
+        }
+        
+        // Fill in zero
+        for i in 0..<size {
+            buffer[i] = UniChar.zero
+        }
+        
+        let utf16text = text.utf16
+        let count = utf16text.count
+        if (count <= 0) {
+            return false
+        }
+        
+        var i = 0
+        for c in utf16text {
+            buffer[i] = c
+            i += 1
+        }
+        return true
+    }
+    
+    /// Return some information for debugging
+    @objc public static func getDebugInfo() -> Int32 {
+        var result: Int32 = 0
+        
+        if (targetWindow != nil) {
+            if (targetWindow!.canBecomeMain) { result += 1 }
+            if (targetWindow!.canBecomeKey) { result += 2 }
+            if (targetWindow!.isKeyWindow) { result += 4 }
+        }
+        return result
     }
 }

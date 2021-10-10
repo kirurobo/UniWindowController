@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using UnityEngine;
+using Kirurobo;
 
 namespace TestLibUniWinC
 {
     public partial class FormMain : Form
     {
-        UniWinC uniwinc;
+        UniWinCore uniwinc;
 
-        static bool monitorChanged = false;
-        static bool filesDropped = false;
-        static string droppedFiles = "";
 
         /// <summary>
         /// 値を変更中で、GUI操作を反映させたくないときtrueとする
@@ -31,22 +23,9 @@ namespace TestLibUniWinC
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            uniwinc = new UniWinC();
+            uniwinc = new UniWinCore();
+            uniwinc.AttachMyWindow();
 
-            UniWinC.RegisterWindowStyleChangedCallback(type => {
-                Console.WriteLine($"Style changed: {type}");
-            });
-
-            // ファイルドロップ時、その内容を出力
-            UniWinC.RegisterDropFilesCallback(msg => {
-                droppedFiles = msg;
-                filesDropped = true;
-            });
-
-            // 解像度変更時、モニター一覧を更新
-            UniWinC.RegisterMonitorChangedCallback(count => {
-                monitorChanged = true;
-            });
             UpdateMonitorCombobox();    // 初回の一覧取得
 
             //  モニタ一覧を表示
@@ -61,7 +40,7 @@ namespace TestLibUniWinC
         /// </summary>
         private void UpdateMonitorCombobox()
         {
-            int count = UniWinC.GetMonitorCount();
+            int count = uniwinc.GetMonitorCount();
             int index = comboBoxFitMonitor.SelectedIndex;
 
             comboBoxFitMonitor.Items.Clear();
@@ -72,8 +51,13 @@ namespace TestLibUniWinC
             }
 
             if (index >= count) index = count - 1;
-            if (index < 0) index = 0;
-            comboBoxFitMonitor.SelectedIndex = index;
+            if (index < 0)
+            {
+                index = 0;
+            } else
+            {
+                comboBoxFitMonitor.SelectedIndex = index;
+            }
         }
 
         /// <summary>
@@ -81,20 +65,20 @@ namespace TestLibUniWinC
         /// </summary>
         private void PrintMonitorInfo()
         {
-            int monitors = UniWinC.GetMonitorCount();
+            int monitors = uniwinc.GetMonitorCount();
 
-            int currentMonitorIndex = UniWinC.GetCurrentMonitor();
+            int currentMonitorIndex = uniwinc.GetCurrentMonitor();
 
             string message = "Current monitor: " + currentMonitorIndex + "\r\n";
 
             for (int i = 0; i < monitors; i++)
             {
-                float x, y, w, h;
-                bool result = UniWinC.GetMonitorRectangle(i, out x, out y, out w, out h);
+                Vector2 pos, size;
+                bool result = uniwinc.GetMonitorRectangle(i, out pos, out size);
 
                 message += String.Format(
                     "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4}\r\n",
-                    i, x, y, w, h
+                    i, pos.x, pos.y, size.x, size.y
                     );
             }
             Console.WriteLine(message);
@@ -105,20 +89,31 @@ namespace TestLibUniWinC
         {
             var pos = uniwinc.GetWindowPosition();
             var size = uniwinc.GetWindowSize();
-            var hwnd = UniWinC.GetWindowHandle();
-            var hdesktop = UniWinC.GetDesktopWindowHandle();
-            var pid = UniWinC.GetMyProcessId();
+            //var hwnd = UniWinC.GetWindowHandle();
+            //var hdesktop = UniWinC.GetDesktopWindowHandle();
+            //var pid = UniWinC.GetMyProcessId();
             var myPid = System.Diagnostics.Process.GetCurrentProcess().Id;
             var clientSize = this.ClientSize;
 
             string message = String.Format(
-                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X} / {7:X}\r\nPID {8} / {9}\r\nDesktop {10:X}",
+                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X}\r\nPID {9}\r\n",
                 pos.x, pos.y, size.x, size.y, clientSize.Width, clientSize.Height,
-                hwnd.ToInt32(), this.Handle.ToInt32(), pid, myPid, hdesktop.ToInt32());
+                "", this.Handle.ToInt32(),
+                "", myPid
+                );
 
 
             Console.WriteLine(message);
             textBoxMessage.Text = message;
+        }
+
+        private void DumpStringArray(string[] array)
+        {
+            string text = String.Join(Environment.NewLine, array);
+
+            Console.WriteLine("Count: " + array.Length);
+            Console.WriteLine(text);
+            textBoxMessage.Text = text;
         }
 
         private void buttonCheck_Click(object sender, EventArgs e)
@@ -126,18 +121,46 @@ namespace TestLibUniWinC
             PrintWindowInfo();
         }
 
+        private void buttonOpenFile_Click(object sender, EventArgs e)
+        {
+            Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
+            ds.title = "Open files";
+            //ds.filter = "Image files (*.png,*.jpg,*.jpeg,*.tiff)|*.png;*.jpg;*.jpeg;*.tiff|All files (*.*)|*.*";
+            ds.filters = new FilePanel.Filter[] {
+                new FilePanel.Filter("Image files (*.png; *.jpg; *.tiff)", "png", "jpg", "jpeg", "tiff"),
+                new FilePanel.Filter("All files (*.*)", "*"),
+            };
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            //ds.initialFile = "D:\\tmp\\TEST";
+            ds.initialFile = "TEST";
+            ds.flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.FolderMustExist;
+            //ds.flags = FilePanel.Flag.PathMustExist;
+            Kirurobo.FilePanel.OpenFilePanel(ds, (files)=> { DumpStringArray(files); });
+        }
+
+        private void buttonSaveFile_Click(object sender, EventArgs e)
+        {
+            Kirurobo.FilePanel.Settings ds = new Kirurobo.FilePanel.Settings();
+            ds.title = "Save file (Actually not be written)";
+            //ds.filters = new FilePanel.Filter[] {
+            //    new FilePanel.Filter("Plain text (*.txt)", "txt"),
+            //    new FilePanel.Filter("Word documents (*.doc; *.docx; *.docm)", "doc", "docx", "docm"),
+            //    new FilePanel.Filter("All files (*.*)", "*"),
+            //    //new FilePanel.Filter("All files", "*"),
+            //};
+            ds.initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            ds.initialFile = "Test";
+            ds.flags = FilePanel.Flag.AllowMultipleSelection | FilePanel.Flag.CreatePrompt | FilePanel.Flag.OverwritePrompt | FilePanel.Flag.FolderMustExist;
+            //ds.flags = FilePanel.Flag.PathMustExist;
+            Kirurobo.FilePanel.SaveFilePanel(ds, (files) => { DumpStringArray(files); });
+        }
+
         /// <summary>
         /// 選択されたモニタにウィンドウを移動
         /// </summary>
         private void FitToMonitor(int monitor)
         {
-            float x, y, w, h;
-            if (UniWinC.GetMonitorRectangle(monitor, out x, out y, out w, out h))
-            {
-                UniWinC.SetPosition(x, y);
-                //UniWinC.SetSize(w / 2, h / 2);
-                UniWinC.SetSize(w, h);
-            }
+            uniwinc.FitToMonitor(monitor);
         }
 
 
@@ -175,7 +198,7 @@ namespace TestLibUniWinC
             if (isAplying) return;
 
             isAplying = true;
-            UniWinC.SetAllowDrop(checkBoxAllowDrop.Checked);
+            uniwinc.SetAllowDrop(checkBoxAllowDrop.Checked);
             isAplying = false;
         }
 
@@ -195,21 +218,39 @@ namespace TestLibUniWinC
             PrintWindowInfo();
         }
 
-        private void timerMainLoop_Tick(object sender, EventArgs e)
+        private void PerformEvent()
         {
-            if (monitorChanged)
+            string[] files;
+
+            // ウインドウスタイルの変化
+            if (uniwinc.ObserveWindowStyleChanged(out var type))
             {
-                // 解像度が変化した後の処理
-                UpdateMonitorCombobox();
-                monitorChanged = false;
+                Console.WriteLine($"Style changed: {type}");
             }
 
-            if (filesDropped)
+            // ファイルドロップ時、その内容を出力
+            if (uniwinc.ObserveDroppedFiles(out files))
             {
                 // ファイルがドロップされた後の処理
-                Console.WriteLine(droppedFiles);
-                filesDropped = false;
+                string text = String.Join(Environment.NewLine, files);
+                Console.WriteLine("Drop");
+                Console.WriteLine(text);
+                textBoxMessage.Text = text;
             }
+
+            // 解像度変更時、モニター一覧を更新
+            if (uniwinc.ObserveMonitorChanged()) {
+                // 解像度が変化した後の処理
+                UpdateMonitorCombobox();
+            }
+        }
+
+        // UnityのUpdateの代わりに定期的に実行するメソッド
+        private void timerMainLoop_Tick(object sender, EventArgs e)
+        {
+            uniwinc.Update();
+            
+            PerformEvent();
         }
     }
 }

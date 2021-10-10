@@ -38,7 +38,7 @@ namespace Kirurobo
         /// <summary>
         /// The same as UniWinCore.TransparentType
         /// </summary>
-        public enum TransparentType
+        public enum TransparentType : int
         {
             None = 0,
             Alpha = 1,
@@ -48,13 +48,23 @@ namespace Kirurobo
         /// <summary>
         /// 透明化の方式
         /// </summary>
-        public enum HitTestType
+        public enum HitTestType : int
         {
             None = 0,
             Opacity = 1,
             Raycast = 2,
         }
-        
+
+        /// <summary>
+        /// 透明化の方式
+        /// </summary>
+        public enum WindowStateEventType : int
+        {
+            None = 0,
+            StyleChanged = 1,
+            Resized = 2
+        }
+
         /// <summary>
         /// Low level class
         /// </summary>
@@ -68,7 +78,7 @@ namespace Kirurobo
             get { return _isClickThrough; }
             set { SetClickThrough(value); }
         }
-        private bool _isClickThrough = true;
+        private bool _isClickThrough = false;
 
         /// <summary>
         /// Is this window transparent
@@ -274,13 +284,14 @@ namespace Kirurobo
         /// Occurs when the window style changed
         /// </summary>
         public event OnStateChangedDelegate OnStateChanged;
-        public delegate void OnStateChangedDelegate();
+        public delegate void OnStateChangedDelegate(WindowStateEventType type);
+
+        public delegate void FilesDelegate(string[] files);
 
         /// <summary>
         /// Occurs after files or folders were dropped
         /// </summary>
-        public event OnDropFilesDelegate OnDropFiles;
-        public delegate void OnDropFilesDelegate(string[] files);
+        public event FilesDelegate OnDropFiles;
 
         /// <summary>
         /// Occurs when the monitor settings or resolution changed
@@ -415,9 +426,9 @@ namespace Kirurobo
         {
             if (uniWinCore == null) return;
 
-            if (uniWinCore.ObserveDroppedFiles(out var files))
+            if (uniWinCore.ObserveDroppedFiles(out var droppedFiles))
             {
-                OnDropFiles?.Invoke(files);
+                OnDropFiles?.Invoke(droppedFiles);
             }
 
             if (uniWinCore.ObserveMonitorChanged())
@@ -425,7 +436,7 @@ namespace Kirurobo
                 OnMonitorChanged?.Invoke();
             }
 
-            if (uniWinCore.ObserveWindowStyleChanged())
+            if (uniWinCore.ObserveWindowStyleChanged(out var type))
             {
                 // // モニタへのフィット指定がある状態で最大化解除された場合
                 // if (shouldFitMonitor && !uniWinCore.GetZoomed())
@@ -436,7 +447,7 @@ namespace Kirurobo
                 // }
                 if (_shouldFitMonitor) StartCoroutine("ForceZoomed"); // 時間差で最大化を強制
                 
-                OnStateChanged?.Invoke();
+                OnStateChanged?.Invoke((WindowStateEventType)type);
             }
         }
 
@@ -812,6 +823,7 @@ namespace Kirurobo
             _allowDropFiles = enabled;
         }
 
+
         /// <summary>
         /// 接続されているモニタ数を取得
         /// </summary>
@@ -908,6 +920,20 @@ namespace Kirurobo
             {
                 //uniWin.SetFocus();
             }
+        }
+
+
+        /// <summary>
+        /// デバッグ専用。その都度参考となる情報を受けるための関数
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete]
+        public int GetDebugInfo()
+        {
+            if (uniWinCore != null) {
+                return UniWinCore.GetDebugInfo();
+            }
+            return 0;
         }
     }
 }

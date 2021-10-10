@@ -5,8 +5,9 @@
 
 
 static HWND hTargetWnd_ = NULL;
-static WINDOWINFO originalWindowInfo;
-static WINDOWPLACEMENT originalWindowPlacement;
+static HWND hPanelOwnerWnd_ = NULL;
+static WINDOWINFO originalWindowInfo_;
+static WINDOWPLACEMENT originalWindowPlacement_;
 static HWND hParentWnd_ = NULL;
 static BOOL bExpedtDesktopWnd = FALSE;
 static HWND hDesktopWnd_ = NULL;
@@ -33,7 +34,7 @@ static WNDPROC lpOriginalWndProc_ = NULL;
 //static HHOOK hHook_ = NULL;
 static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
-static DropFilesCallback hDropFilesHandler_ = nullptr;
+static FilesCallback hDropFilesHandler_ = nullptr;
 
 
 // ========================================================================
@@ -43,10 +44,10 @@ void attachWindow(const HWND hWnd);
 void detachWindow();
 void refreshWindow();
 void updateScreenSize();
-//void BeginHook();
-//void EndHook();
-void CreateCustomWindowProcedure();
-void DestroyCustomWindowProcedure();
+//void beginHook();
+//void endHook();
+void createCustomWindowProcedure();
+void destroyCustomWindowProcedure();
 
 
 /// <summary>
@@ -56,14 +57,14 @@ void detachWindow()
 {
 	if (hTargetWnd_) {
 		// Restore the original window procedure
-		DestroyCustomWindowProcedure();
+		destroyCustomWindowProcedure();
 
 		//// Unhook if exist
-		//EndHook();
+		//endHook();
 
 		if (IsWindow(hTargetWnd_)) {
 			// 透明化は、起動時は無効であるものとして、戻すときは無効化
-			SetTransparent(false);
+			SetTransparent(FALSE);
 
 			//// 壁紙化が試みられていればウィンドウの親を戻す
 			//if (hDesktopWnd_ != NULL) {
@@ -74,11 +75,11 @@ void detachWindow()
 			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
 
 			// 最初のスタイルに戻す
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
-			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo.dwExStyle);
+			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
+			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo_.dwExStyle);
 
 			// ウィンドウ位置を戻す
-			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement);
+			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement_);
 
 			// 表示を更新
 			refreshWindow();
@@ -106,8 +107,8 @@ void attachWindow(const HWND hWnd) {
 
 	if (hWnd) {
 		// Save the original state
-		GetWindowInfo(hWnd, &originalWindowInfo);
-		GetWindowPlacement(hWnd, &originalWindowPlacement);
+		GetWindowInfo(hWnd, &originalWindowInfo_);
+		GetWindowPlacement(hWnd, &originalWindowPlacement_);
 		//hParentWnd_ = GetParent(hWnd);
 
 		// Apply current settings
@@ -120,17 +121,17 @@ void attachWindow(const HWND hWnd) {
 		SetAllowDrop(bAllowDropFile_);
 
 		// Replace the window procedure
-		CreateCustomWindowProcedure();
+		createCustomWindowProcedure();
 	}
 }
 
-/// <summary>
-/// オーナーウィンドウハンドルを探す際のコールバック
+
+/// オーナーウィンドウハンドルを探してアタッチする際のコールバック
 /// </summary>
 /// <param name="hWnd"></param>
 /// <param name="lParam"></param>
 /// <returns></returns>
-BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
+BOOL CALLBACK attachOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 {
 	DWORD currentPid = (DWORD)lParam;
 	DWORD pid;
@@ -158,6 +159,38 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 		//	hTargetWnd_ = hWnd;
 		//	return FALSE;
 		//}
+	}
+
+	return TRUE;
+}
+
+/// <summary>
+/// オーナーウィンドウハンドルを探す際のコールバック
+/// </summary>
+/// <param name="hWnd"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
+BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
+{
+	DWORD currentPid = (DWORD)lParam;
+	DWORD pid;
+	GetWindowThreadProcessId(hWnd, &pid);
+
+	// プロセスIDが一致すれば自分のウィンドウとする
+	if (pid == currentPid) {
+
+		// オーナーウィンドウを探す
+		// Unityエディタだと本体が選ばれて独立Gameビューが選ばれない…
+		HWND hOwner = GetWindow(hWnd, GW_OWNER);
+		if (hOwner) {
+			// あればオーナーを選択
+			hPanelOwnerWnd_ = hOwner;
+		}
+		else {
+			// オーナーが無ければこのウィンドウを選択
+			hPanelOwnerWnd_ = hWnd;
+		}
+		return FALSE;
 	}
 
 	return TRUE;
@@ -303,7 +336,7 @@ void disableTransparentBySetLayered()
 	COLORREF cref = { 0 };
 	SetLayeredWindowAttributes(hTargetWnd_, cref, 0xFF, LWA_ALPHA);
 
-	LONG exstyle = originalWindowInfo.dwExStyle;
+	LONG exstyle = originalWindowInfo_.dwExStyle;
 	//exstyle &= ~WinApi.WS_EX_LAYERED;
 	SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
 }
@@ -401,7 +434,7 @@ void UNIWINC_API Update() {
 }
 
 /// <summary>
-/// 利用可能な状態ならtrueを返す
+/// 利用可能な状態ならTRUEを返す
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsActive() {
@@ -473,7 +506,7 @@ BOOL UNIWINC_API IsMinimized() {
 /// <returns></returns>
 BOOL UNIWINC_API DetachWindow() {
 	detachWindow();
-	return true;
+	return TRUE;
 }
 
 /// <summary>
@@ -490,7 +523,19 @@ BOOL UNIWINC_API AttachMyWindow() {
 /// <returns></returns>
 BOOL UNIWINC_API AttachMyOwnerWindow() {
 	DWORD currentPid = GetCurrentProcessId();
-	return EnumWindows(findOwnerWindowProc, (LPARAM)currentPid);
+	return EnumWindows(attachOwnerWindowProc, (LPARAM)currentPid);
+}
+
+/// <summary>
+/// Find owner window handle
+/// </summary>
+/// <returns></returns>
+HWND FindOwnerWindowHandle() {
+	DWORD currentPid = GetCurrentProcessId();
+	if (EnumWindows(attachOwnerWindowProc, (LPARAM)currentPid)) {
+		return hPanelOwnerWnd_;
+	}
+	return NULL;
 }
 
 /// <summary>
@@ -627,10 +672,10 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		}
 		else {
 			// ウィンドウスタイルを戻す
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo.dwStyle);
+			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
 
-			int dx = (originalWindowInfo.rcWindow.right - originalWindowInfo.rcWindow.left) - (originalWindowInfo.rcClient.right - originalWindowInfo.rcClient.left);
-			int dy = (originalWindowInfo.rcWindow.bottom - originalWindowInfo.rcWindow.top) - (originalWindowInfo.rcClient.bottom - originalWindowInfo.rcClient.top);
+			int dx = (originalWindowInfo_.rcWindow.right - originalWindowInfo_.rcWindow.left) - (originalWindowInfo_.rcClient.right - originalWindowInfo_.rcClient.left);
+			int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
 			int bw = dx / 2;	// 枠の片側幅 [px]
 
 			newW = rcCli.right - rcCli.left + dx;
@@ -675,7 +720,7 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 /// <returns></returns>
 void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 	// 最背面化されていたら、解除
-	bIsBottommost_ = false;
+	bIsBottommost_ = FALSE;
 
 	if (hTargetWnd_) {
 		SetWindowPos(
@@ -688,7 +733,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 		// Run callback if the topmost state changed
 		if (bIsTopmost_ != bTopmost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -703,7 +748,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 /// <returns></returns>
 void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 	// 最前面化されていたら、解除
-	bIsTopmost_ = false;
+	bIsTopmost_ = FALSE;
 
 	if (hTargetWnd_) {
 		SetWindowPos(
@@ -716,7 +761,7 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 		// Run callback if the bottommost state changed
 		if (bIsBottommost_ != bBottommost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -739,7 +784,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 
 			if (hDesktopWnd_ != NULL) {
 				SetParent(hTargetWnd_, hDesktopWnd_);
-				//SetBottommost(true);
+				//SetBottommost(TRUE);
 				//SetWindowPos(
 				//	hTargetWnd_,
 				//	HWND_BOTTOM,
@@ -752,13 +797,13 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 		else
 		{
 			SetParent(hTargetWnd_, hParentWnd_);
-			//SetBottommost(false);
+			//SetBottommost(FALSE);
 		}
 
 		// Run callback if the bottommost state changed
 		if (bIsBackground_!= bEnabled) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Style);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 			}
 		}
 	}
@@ -800,7 +845,7 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 		{
 			LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_TRANSPARENT;
-			if (!bIsTransparent_ && !(originalWindowInfo.dwExStyle & WS_EX_LAYERED)) {
+			if (!bIsTransparent_ && !(originalWindowInfo_.dwExStyle & WS_EX_LAYERED)) {
 				exstyle &= ~WS_EX_LAYERED;
 			}
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
@@ -889,7 +934,7 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 /// <param name="width">幅 [px]</param>
 /// <param name="height">高さ [px]</param>
 /// <returns>成功すれば true</returns>
-BOOL  UNIWINC_API GetSize(float* width, float* height) {
+BOOL UNIWINC_API GetSize(float* width, float* height) {
 	*width = 0;
 	*height = 0;
 
@@ -1086,7 +1131,9 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 /// </summary>
 /// <param name="hDrop"></param>
 /// <returns></returns>
-BOOL ReceiveDropFiles(HDROP hDrop) {
+BOOL receiveDropFiles(HDROP hDrop) {
+	// TODO: Windowsでは特殊文字がファイル名に入る例はまず無さそうだが、macOSと同様にダブルクォーテーション囲みにした方がよい
+	//		CSVと同様にダブルクォーテーションが文字としてあれば二重にする
 	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
 
 	if (num > 0) {
@@ -1134,7 +1181,7 @@ BOOL ReceiveDropFiles(HDROP hDrop) {
 /// <param name="wParam"></param>
 /// <param name="lParam"></param>
 /// <returns></returns>
-LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK customWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDROP hDrop;
 	INT32 count;
@@ -1143,7 +1190,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	{
 	case WM_DROPFILES:
 		hDrop = (HDROP)wParam;
-		ReceiveDropFiles(hDrop);
+		receiveDropFiles(hDrop);
 		DragFinish(hDrop);
 		break;
 
@@ -1167,7 +1214,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	case WM_STYLECHANGED:	// スタイルの変化を検出
 		// Run callback
 		if (hWindowStyleChangedHandler_ != nullptr) {
-			hWindowStyleChangedHandler_((INT32)EventType::Style);
+			hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 		}
 		break;
 
@@ -1179,7 +1226,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		case SIZE_MINIMIZED:
 			// Run callback
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)EventType::Size);
+				hWindowStyleChangedHandler_((INT32)WindowStateEventType::Resized);
 			}
 			break;
 		}
@@ -1202,7 +1249,7 @@ LRESULT CALLBACK CustomWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 /// </summary>
 /// <param name="wndProc"></param>
 /// <returns></returns>
-WNDPROC SetWindowProcedure(WNDPROC wndProc) {
+WNDPROC setWindowProcedure(WNDPROC wndProc) {
 	//return (WNDPROC)SetWindowLongPtr(hTargetWnd_, GWLP_WNDPROC, (LONG_PTR)wndProc);
 
 #ifdef _WIN64
@@ -1216,12 +1263,12 @@ WNDPROC SetWindowProcedure(WNDPROC wndProc) {
 /// <summary>
 /// Remove the custom window procedure
 /// </summary>
-void DestroyCustomWindowProcedure() {
+void destroyCustomWindowProcedure() {
 	if (lpMyWndProc_ == NULL) return;
 
 	if (lpOriginalWndProc_ != NULL) {
 		if (hTargetWnd_ != NULL && IsWindow(hTargetWnd_)) {
-			SetWindowProcedure(lpOriginalWndProc_);
+			setWindowProcedure(lpOriginalWndProc_);
 		}
 		lpOriginalWndProc_ = NULL;
 	}
@@ -1231,14 +1278,14 @@ void DestroyCustomWindowProcedure() {
 /// <summary>
 /// Create and attach the custom window procedure
 /// </summary>
-void CreateCustomWindowProcedure() {
+void createCustomWindowProcedure() {
 	if (lpMyWndProc_ != NULL) {
-		DestroyCustomWindowProcedure();
+		destroyCustomWindowProcedure();
 	}
 
 	if (hTargetWnd_ != NULL) {
-		lpMyWndProc_ = CustomWindowProcedure;
-		lpOriginalWndProc_ = SetWindowProcedure(lpMyWndProc_);
+		lpMyWndProc_ = customWindowProcedure;
+		lpOriginalWndProc_ = setWindowProcedure(lpMyWndProc_);
 	}
 }
 
@@ -1253,7 +1300,7 @@ void CreateCustomWindowProcedure() {
 ///// <param name="wParam"></param>
 ///// <param name="lParam"></param>
 ///// <returns></returns>
-//LRESULT CALLBACK MessageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+//LRESULT CALLBACK messageHookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 //	if (nCode < 0) {
 //		return CallNextHookEx(NULL, nCode, wParam, lParam);
 //	}
@@ -1285,7 +1332,7 @@ void CreateCustomWindowProcedure() {
 ///// <summary>
 ///// Set the hook
 ///// </summary>
-//void BeginHook() {
+//void beginHook() {
 //	if (hTargetWnd_ == NULL) return;
 //
 //	// Return if the hook is already set
@@ -1294,13 +1341,13 @@ void CreateCustomWindowProcedure() {
 //	//HMODULE hMod = GetModuleHandle(NULL);
 //	DWORD dwThreadId = GetCurrentThreadId();
 //
-//	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, MessageHookCallback, NULL, dwThreadId);
+//	hHook_ = SetWindowsHookEx(WH_GETMESSAGE, messageHookCallback, NULL, dwThreadId);
 //}
 //
 ///// <summary>
 ///// Unset the hook
 ///// </summary>
-//void EndHook() {
+//void endHook() {
 //	if (hTargetWnd_ == NULL) return;
 //
 //	// Return if the hook is not set
@@ -1323,10 +1370,10 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 	DragAcceptFiles(hTargetWnd_, bAllowDropFile_);
 
 	//if (bEnabled && hHook == NULL) {
-	//	BeginHook();
+	//	beginHook();
 	//}
 	////else if (!bEnabled && hHook != NULL) {
-	////	EndHook();
+	////	endHook();
 	////}
 
 	return TRUE;
@@ -1337,7 +1384,7 @@ BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled)
 /// </summary>
 /// <param name="callback"></param>
 /// <returns></returns>
-BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback) {
+BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback) {
 	if (callback == nullptr) return FALSE;
 
 	hDropFilesHandler_ = callback;
@@ -1355,6 +1402,367 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 
 #pragma endregion For file dropping and window procedure
 
+
+// ========================================================================
+#pragma region File dialogs
+
+/// <summary>
+/// Convert multi-selection files string to new-line separated string
+/// </summary>
+/// <param name="lpBuffer"></param>
+/// <param name="nBufferSize"></param>
+BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
+	// 複製を保存するのに必要な長さを調べる
+	int bufferLength = nBufferLength;
+	int length = bufferLength;	// OPENFILENAME中で実際に利用した長さ
+	int pathCount = 0;			// NULL区切りでみた行数。複数選択時は1より大きくなる
+	int firstLineLength = bufferLength;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
+
+	// 要素の数、全体の文字数を数える
+	for (int i = 0; i < bufferLength; i++) {
+		if (lpBuffer[i] == L'\0') {
+			if (firstLineLength == bufferLength) firstLineLength = i;
+			pathCount++;
+			length = i;		// とりあえずここまでの文字数は利用している
+
+			if ((i < (bufferLength - 1)) && (lpBuffer[i + 1] == L'\0')) {
+				// NULLが連続していれば終端とみなす（連続する後ろがもう無い場合も終端）
+				break;
+			}
+			else
+			{
+				// 次の文字がNULLでなければスキップできる
+				i++;
+			}
+		}
+	}
+
+	// NULLが最後に来なかった場合は行数追加できていないので、1増やしておく
+	if (length == bufferLength) pathCount++;
+
+	// 複数選択でない場合は改行区切りやフォルダ名追加の必要はなく、そのままの値で終了
+	if (pathCount <= 1) {
+		return TRUE;
+	}
+
+
+	// パスのリストが返却バッファに入りきらない場合は失敗として空で返す
+	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferLength) {
+		// 結果返却バッファをクリア
+		ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
+		return FALSE;
+	}
+
+	// 完全なパスを改行区切り文字列で生成
+
+	LPWSTR buffer = new (std::nothrow)WCHAR[length];
+	if (buffer == NULL) {
+		ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
+		return FALSE;
+	}
+	ZeroMemory(buffer, length * sizeof(WCHAR));
+
+	// 一時バッファに内容を退避
+	memcpy(buffer, lpBuffer, length * sizeof(WCHAR));
+
+	// 結果返却バッファをクリア
+	ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
+
+
+	int offset = 0;
+	int index = firstLineLength;
+	for (int i = firstLineLength; i < length; i++) {
+		if (buffer[i] == NULL) {
+			// 改行で区切り
+			if (offset > 0) {
+				lpBuffer[offset] = L'\n';
+				offset++;
+			}
+
+			//  フォルダ名部分を複製
+			memcpy(lpBuffer + offset, buffer, firstLineLength * sizeof(WCHAR));
+			offset += firstLineLength;
+			lpBuffer[offset] = L'\\';	// パスの区切り文字も追加
+			offset++;
+		}
+		else
+		{
+			// NULL文字でなければファイル名の一部として追加
+			lpBuffer[offset] = buffer[i];
+			offset++;
+		}
+	}
+
+	//// デバッグ用
+	//swprintf_s(lpBuffer, bufferSize, L"Files: bufferSize %d, length %d, pathCount %d, firstLineLength %d, Dir %s", bufferSize, length, pathCount, firstLineLength, buffer);
+
+	delete[] buffer;
+	return TRUE;
+}
+
+/// <summary>
+/// Create a null ended extension string from the first extension in the input string
+/// e.g. "TitleA\ttExtA1\tExtA2\t...ExtAn\nTitleB\tExtB1\tExtB2...ExtBn\n"
+/// </summary>
+/// <param name="lpsFormTypeFilterText"></param>
+/// <returns>Null ended string</returns>
+LPWSTR createDefaultExtString(const LPWSTR lpsFormTypeFilterText) {
+	const int MAX_EXT_LENGTH = 32;
+
+	int resultIndex = 0;
+	LPWSTR lpsResult = nullptr;
+	if (lpsFormTypeFilterText != nullptr) {
+		lpsResult = new (std::nothrow)WCHAR[MAX_EXT_LENGTH];
+
+		if (lpsResult != nullptr) {
+			ZeroMemory(lpsResult, MAX_EXT_LENGTH * sizeof(WCHAR));
+
+			int inputIndex = 0;
+			int section = 0;	// 0:title, 1:extensions
+			bool includesWildCard = false;
+
+			while (resultIndex < (MAX_EXT_LENGTH - 1)) {
+				WCHAR c = lpsFormTypeFilterText[inputIndex++];
+
+				// End of the input string
+				if (c == L'\0') {
+					break;
+				}
+				// Tab separated
+				else if (c == L'\t') {
+					// The first element is title
+					if (section <= 0) {
+						section = 1;
+					}
+					else {
+						break;
+					}
+				}
+				// New line
+				else if (c == L'\n') {
+					break;
+				}
+				// Other character
+				else {
+					if (section == 1) {
+						// Wild card
+						if (c == L'*') {
+							includesWildCard = true;
+							break;
+						}
+
+						// A character of extension
+						lpsResult[resultIndex++] = c;
+					}
+				}
+			}
+
+			lpsResult[resultIndex++] = L'\0';
+
+			if (includesWildCard) {
+				delete[] lpsResult;
+				lpsResult = nullptr;
+			}
+		}
+	}
+	return lpsResult;
+}
+
+/// <summary>
+/// Create a null separated filter text from tab separated text
+/// e.g. "TitleA\ttExtA1\tExtA2\t...ExtAn\nTitleB\tExtB1\tExtB2...ExtBn\n"
+/// </summary>
+/// <param name="lpsFormTypeFilterText"></param>
+/// <returns>e.g. "TitleA\0*.tExtA1;*.ExtA2;...;*.ExtAn\0TitleB\0*.ExtB1;*.ExtB2;...;*.ExtBn\0\0"</returns>
+LPWSTR createFilterString(const LPWSTR lpsFormTypeFilterText) {
+	const int MAX_FILTER_LENGTH = 1024;
+
+	int resultIndex = 0;
+	LPWSTR lpsResult = nullptr;
+	if (lpsFormTypeFilterText != nullptr) {
+		lpsResult = new (std::nothrow)WCHAR[MAX_FILTER_LENGTH];
+
+		if (lpsResult != nullptr) {
+			//ZeroMemory(lpsFilter, MAX_FILTER_LENGTH * sizeof(WCHAR));
+
+			int firstExtStartIndex = 0;
+			int firstExtEndIndex = 0;
+
+			int inputIndex = 0;
+			int section = 0;	// 0:title, 1:extensions
+			bool isFirstChar = true;
+
+			while (resultIndex < (MAX_FILTER_LENGTH - 2)) {
+				WCHAR c = lpsFormTypeFilterText[inputIndex++];
+
+				// End of the input string
+				if (c == L'\0') {
+					break;
+				}
+				// Tab separated
+				else if (c == L'\t') {
+					// The first element is title
+					if (section <= 0) {
+						lpsResult[resultIndex++] = L'\0';
+						section = 1;
+					}
+					else {
+						// In extensions' section
+						lpsResult[resultIndex++] = ';';
+					}
+					isFirstChar = true;
+				}
+				// New line
+				else if (c == L'\n') {
+					// If there is no extension, add separator to skip to next pair
+					if (section <= 0) {
+						lpsResult[resultIndex++] = L'\0';
+					}
+					// The end of title and extensions pair
+					lpsResult[resultIndex++] = L'\0';
+					section = 0;
+					isFirstChar = true;
+				}
+				// Other character
+				else {
+					// Add "*." before each extension.
+					if (isFirstChar && section == 1) {
+						if (resultIndex >= (MAX_FILTER_LENGTH - 4)) break;
+						lpsResult[resultIndex++] = '*';
+						lpsResult[resultIndex++] = '.';
+					}
+					lpsResult[resultIndex++] = c;
+					isFirstChar = false;
+				}
+			}
+
+			// Terminated by two NULL characters 
+			lpsResult[resultIndex++] = L'\0';
+			lpsResult[resultIndex++] = L'\0';
+		}
+	}
+	return lpsResult;
+}
+
+DWORD GetPanelFlags(const INT32 flags) {
+	DWORD result = OFN_EXPLORER | OFN_NOCHANGEDIR;	// Default
+
+	if ((flags & (INT32)PanelFlag::AllowMultiSelect) > 0) result |= OFN_ALLOWMULTISELECT;
+	if ((flags & (INT32)PanelFlag::FileMustExist) > 0) result |= OFN_FILEMUSTEXIST;
+	if ((flags & (INT32)PanelFlag::FolderMustExist) > 0) result |= OFN_PATHMUSTEXIST;
+	if ((flags & (INT32)PanelFlag::ShowHidden) > 0) result |= OFN_FORCESHOWHIDDEN;
+	if ((flags & (INT32)PanelFlag::OverwritePrompt) > 0) result |= OFN_OVERWRITEPROMPT;
+	if ((flags & (INT32)PanelFlag::CreatePrompt) > 0) result |= OFN_CREATEPROMPT;
+
+	return result;
+}
+
+BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
+	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
+	HWND hwnd = hTargetWnd_;
+	if (hwnd == NULL) {
+		hwnd = hPanelOwnerWnd_;
+		if (hwnd == NULL) {
+			hwnd = hPanelOwnerWnd_ = FindOwnerWindowHandle();
+		}
+	}
+
+	LPWSTR lpszDefaultExt = createDefaultExtString(pSettings->lpszFilter);
+	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
+
+	OPENFILENAMEW ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrTitle = pSettings->lpszTitle;
+	ofn.lpstrFilter = lpsFilter;
+	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
+	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
+	ofn.lpstrDefExt = lpszDefaultExt;
+	ofn.Flags = GetPanelFlags(pSettings->nFlags);
+
+	BOOL result = FALSE;
+
+	if ((pResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(pResultBuffer, nBufferSize * sizeof(WCHAR));
+		ofn.lpstrFile = pResultBuffer;
+		ofn.nMaxFile = nBufferSize;
+
+		// Default path
+		if (pSettings->lpszInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, pSettings->lpszInitialFile);
+		}
+
+		result = GetOpenFileNameW(&ofn);
+	}
+
+	if (lpsFilter != nullptr) delete[] lpsFilter;
+	if (lpszDefaultExt!= nullptr) delete[] lpszDefaultExt;
+
+	if (result) {
+		return parsePaths(pResultBuffer, nBufferSize);
+	}
+	return FALSE;
+}
+
+BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
+	// モーダルにするため、ウィンドウハンドル未取得なら探して設定
+	HWND hwnd = hTargetWnd_;
+	if (hwnd == NULL) {
+		hwnd = hPanelOwnerWnd_;
+		if (hwnd == NULL) {
+			hwnd = hPanelOwnerWnd_ = FindOwnerWindowHandle();
+		}
+	}
+
+	LPWSTR lpszDefaultExt = createDefaultExtString(pSettings->lpszFilter);
+	LPWSTR lpsFilter = createFilterString(pSettings->lpszFilter);
+
+	OPENFILENAMEW ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrTitle = pSettings->lpszTitle;
+	ofn.lpstrFilter = lpsFilter;
+	ofn.lpstrInitialDir = pSettings->lpszInitialDir;
+	//ofn.lpstrDefExt = pSettings->lpszDefaultExt;		// Not implemented
+	ofn.lpstrDefExt = lpszDefaultExt;
+	ofn.Flags = GetPanelFlags(pSettings->nFlags);
+
+	BOOL result = FALSE;
+
+	if ((pResultBuffer != nullptr) && (nBufferSize > 0)) {
+		ZeroMemory(pResultBuffer, nBufferSize * sizeof(WCHAR));
+		ofn.lpstrFile = pResultBuffer;
+		ofn.nMaxFile = nBufferSize;
+
+		// Default path
+		if (pSettings->lpszInitialFile != nullptr) {
+			wcscpy_s(ofn.lpstrFile, ofn.nMaxFile, pSettings->lpszInitialFile);
+		}
+
+		result = GetSaveFileNameW(&ofn);
+	}
+
+	if (lpsFilter != nullptr) delete[] lpsFilter;
+	if (lpszDefaultExt != nullptr) delete[] lpszDefaultExt;
+
+	if (result) {
+		return parsePaths(pResultBuffer, nBufferSize);
+	}
+	return FALSE;
+}
+
+#pragma endregion File dialogs
+
+
+/// <summary>
+/// デバッグ時に情報を渡すための関数
+/// </summary>
+/// <returns></returns>
+INT32 UNIWINC_API GetDebugInfo() {
+	return 0;
+}
 
 // ========================================================================
 #pragma region Windows only public functions

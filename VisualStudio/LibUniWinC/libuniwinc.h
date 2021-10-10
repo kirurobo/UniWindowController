@@ -20,23 +20,48 @@
 enum class TransparentType : int {
 	None = 0,
 	Alpha = 1,
-	ColorKey = 2
+	ColorKey = 2,
 };
 
-// Event type (Experimental)
-enum class EventType : int {
+// State changed event type (Experimental)
+enum class WindowStateEventType : int {
 	None = 0,
-	Style = 1,
-	Size = 2
+	StyleChanged = 1,
+	Resized = 2,
 };
+
+enum class PanelFlag : int {
+	None = 0,
+	FileMustExist = 1,
+	FolderMustExist = 2,
+	AllowMultiSelect = 4,
+	OverwritePrompt = 256,
+	CreatePrompt = 512,
+	ShowHidden = 4096,
+	ReferLink = 8192,
+};
+
+// Struct to transmit file panel settings
+#pragma pack(push, 1)
+typedef struct tagPANELSETTINGS {
+	INT32 nStructSize;
+	INT32 nFlags;
+	LPWSTR lpszTitle;
+	LPWSTR lpszFilter;
+	LPWSTR lpszInitialFile;
+	LPWSTR lpszInitialDir;
+	LPWSTR lpszDefaultExt;
+
+} PANELSETTINGS, *PPANELSETTINGS;
+#pragma pack(pop)
 
 // Function called when window style (e.g. maximized, transparetize, etc.)
 //   param: The argument is indicate the kind of event
 using WindowStyleChangedCallback = void(*)(INT32);
 
-// Function called when files have dropped
+// Function called when files have selected
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
-using DropFilesCallback = void(*)(WCHAR*);
+using FilesCallback = void(*)(WCHAR*);
 
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
@@ -77,7 +102,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API RegisterWindowStyleChangedCallback(WindowStyleCh
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterWindowStyleChangedCallback();
 UNIWINC_EXPORT BOOL UNIWINC_API RegisterMonitorChangedCallback(MonitorChangedCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterMonitorChangedCallback();
-UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(DropFilesCallback callback);
+UNIWINC_EXPORT BOOL UNIWINC_API RegisterDropFilesCallback(FilesCallback callback);
 UNIWINC_EXPORT BOOL UNIWINC_API UnregisterDropFilesCallback();
 
 
@@ -91,6 +116,14 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
 
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);
+
+// File panels
+UNIWINC_EXPORT BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
+UNIWINC_EXPORT BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize);
+
+// Debug function
+UNIWINC_EXPORT INT32 UNIWINC_API GetDebugInfo();
+
 
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);

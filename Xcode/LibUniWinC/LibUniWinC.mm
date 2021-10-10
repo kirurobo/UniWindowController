@@ -132,6 +132,8 @@ UNIWINC_EXPORT BOOL UnregisterWindowStyleChangedCallback() {
     return [LibUniWinC unregisterWindowStyleChangedCallback];
 }
 
+// コールバックにファイルはダブルクオーテーションで囲まれ改行区切りとなった文字列で渡ります。
+//  e.g. "/Dir/File1.txt"\n"/Dir/File2.txt"\n"/Dir/File""3"".txt"\n
 UNIWINC_EXPORT BOOL RegisterDropFilesCallback(StringCallback callback) {
     return [LibUniWinC registerDropFilesCallbackWithCallback: callback];
 }
@@ -163,4 +165,18 @@ UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
 // Call periodically to maintain window state.
 UNIWINC_EXPORT void Update() {
     [LibUniWinC update];
+}
+
+UNIWINC_EXPORT BOOL OpenFilePanel(const void* lpPanelSettings, UniChar* lpwsBuffer, UInt32 bufferSize) {
+    return [LibUniWinC openFilePanelWithLpSettings: lpPanelSettings lpBuffer:lpwsBuffer bufferSize: bufferSize];
+}
+
+UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, UniChar* lpwsBuffer, UInt32 bufferSize) {
+    return [LibUniWinC openSavePanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
+}
+
+
+// for debugging
+UNIWINC_EXPORT SInt32 GetDebugInfo() {
+    return [LibUniWinC getDebugInfo];
 }

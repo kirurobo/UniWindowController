@@ -103,10 +103,12 @@ namespace Kirurobo
 #endif
                 
                 // Add events
-                uniwinc.OnStateChanged += () =>
+                uniwinc.OnStateChanged += (type) =>
                 {
-                    Debug.Log("Style changed");
                     UpdateUI();
+                    //Debug.Log("Window state changed: " + type);
+                    ShowEventMessage("State changed: " + type);
+                    //ShowEventMessage("State changed: " + type + "4:isKey 2:canBecomeKey, 1:canBecomeMain  : " + uniwinc.GetDebugInfo().ToString());
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
@@ -194,16 +196,69 @@ namespace Kirurobo
                 }
             }
 
-            // サンプルとしての処理
+            // キーでも設定変更
             if (uniwinc)
             {
-                // [Space]キーを押すと強制的にクリックスルーを解除
-                // 操作不能となったときの対応
-                // ただし自動判定が有効ならすぐ変化の可能性もある
-                if (Input.GetKeyUp(KeyCode.Space))
+                // Toggle transparent
+                if (Input.GetKeyUp(KeyCode.T))
                 {
-                    uniwinc.isClickThrough = false;
+                    uniwinc.isTransparent = !uniwinc.isTransparent;
                 }
+
+                // Toggle always on the front
+                if (Input.GetKeyUp(KeyCode.F))
+                {
+                    uniwinc.isTopmost = !uniwinc.isTopmost;
+                }
+
+                // Toggle always on the bottom
+                if (Input.GetKeyUp(KeyCode.B))
+                {
+                    uniwinc.isBottommost = !uniwinc.isBottommost;
+                }
+
+                // Toggle zoom
+                if (Input.GetKeyUp(KeyCode.Z))
+                {
+                    uniwinc.isZoomed = !uniwinc.isZoomed;
+                }
+            }
+
+
+            // Test for OpenFilePanel
+            if (Input.GetKeyUp(KeyCode.O))
+            {
+                FilePanel.Settings ds = new FilePanel.Settings
+                {
+                    flags = FilePanel.Flag.AllowMultipleSelection,
+                    title = "Open!",
+                    filters = new FilePanel.Filter[]{
+                        new FilePanel.Filter("Image files", "png", "jpg", "jpeg"),
+                        //new FilePanel.Filter("All files", "*"),
+                    },
+                    initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                    initialFile = "test.png",
+                };
+                FilePanel.OpenFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
+            }
+
+            // Test for SaveFilePanel
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                FilePanel.Settings ds = new FilePanel.Settings
+                {
+                    flags = FilePanel.Flag.AllowMultipleSelection,
+                    title = "Save!",
+                    filters = new FilePanel.Filter[]{
+                        new FilePanel.Filter("Shell script", "sh"),
+                        new FilePanel.Filter("Log", "log"),
+                        new FilePanel.Filter("Plain text", "txt"),
+                        //new FilePanel.Filter("All files", "*"),
+                    },
+                    initialFile = "Test.txt",
+                    initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                };
+                FilePanel.SaveFilePanel(ds, (files) => ShowEventMessage(string.Join(Environment.NewLine, files)));
             }
 
             // Quit or stop playing when pressed [ESC]
@@ -316,7 +371,7 @@ namespace Kirurobo
             {
                 menuPanel.gameObject.SetActive(false);
             }
-        } 
+        }
 
         /// <summary>
         /// 実際の状態をUI表示に反映

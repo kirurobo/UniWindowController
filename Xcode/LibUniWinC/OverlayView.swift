@@ -87,32 +87,20 @@ class OverlayView: NSView {
         
         guard let urls = sender.draggingPasteboard.propertyList(
                 forType: NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")
-            ) as? NSArray
+            ) as? [String]
         else {
             return false
         }
         
         // Make new-line separated string
-        let files: String = urls.componentsJoined(by: "¥n")
-        
-        let count = files.utf16.count
-        if (count <= 0) {
-            return false
+        //let text: String = urls.componentsJoined(by: "\n")
+        var text: String = ""
+        for url in urls {
+            text += "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
         }
-        
-        let buffer = UnsafeMutablePointer<uint16>.allocate(capacity: count + 1)
-        var i = 0
-        for c in files.utf16 {
-            buffer[i] = c
-            i += 1
-        }
-        buffer[count] = uint16.zero     // End of the string
         
         // Do callback
-        LibUniWinC.dropFilesCallback?(buffer)
-        
-        buffer.deallocate()
-        return true
+        return LibUniWinC.callStringCallback(callback: LibUniWinC.dropFilesCallback, text: text)
     }
     
     override func draw(_ dirtyRect: NSRect) {
