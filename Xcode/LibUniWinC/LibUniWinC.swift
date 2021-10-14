@@ -916,6 +916,10 @@ public class LibUniWinC : NSObject {
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.floating
+        }
+        //panel.parent = targetWindow     // Nil if not attatched
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.allowedFileTypes = fileTypes
@@ -949,7 +953,10 @@ public class LibUniWinC : NSObject {
                 }
             }
         }
-        
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.popUpMenu
+        }
+
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     
@@ -967,6 +974,10 @@ public class LibUniWinC : NSObject {
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.floating
+        }
+        //panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -991,6 +1002,9 @@ public class LibUniWinC : NSObject {
         if (result == .OK && (panel.url != nil)) {
             let url: String = panel.url!.path
             text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+        }
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.popUpMenu
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
