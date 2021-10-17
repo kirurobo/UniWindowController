@@ -8,6 +8,16 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.8.2] - 2021-10-15
+### Added
+- FilePanel.OpenFilePanel()
+- FilePanel.SaveFilePanel
+
+### Fixed
+- M1 may also be supported in macOS. (Not tested)
+- Minor improvements to an issue of lost keystrokes when the window is transparent.
+
+
 ## [v0.8.1] - 2021-09-13
 ### Changed
 - ***Renamed "Unity" folder to "UniWinC".***

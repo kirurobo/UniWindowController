@@ -28,8 +28,13 @@
     },
     {
       "displayName": "Fit to screen sample",
-      "description": "",
-      "path": "Samples/04_Fullscreen"
+      "description": "Enforce fit to monitor",
+      "path": "Samples/03_Fullscreen"
+    },
+    {
+        "displayName": "File dialog sample",
+        "description": "Static functions OpenFilePanel() and SaveFilePanel()",
+        "path": "Samples/04_FileDialog"
     }
   ]
 }
