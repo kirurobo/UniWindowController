@@ -44,6 +44,7 @@ public class LibUniWinC : NSObject {
         case None = 0
         case Style = 1
         case Size = 2
+        case Order = 4
     }
         
     /// Flag constants for file dialog
@@ -89,6 +90,7 @@ public class LibUniWinC : NSObject {
         public var backgroundColor: NSColor = NSColor.clear
         public var isOpaque: Bool = true
         public var hasShadow: Bool = true
+        public var isKeyWindow: Bool = true
         public var contentViewWantsLayer: Bool = true
         public var contentViewLayerIsOpaque: Bool = true
         public var contentViewLayerBackgroundColor: CGColor? = CGColor.clear
@@ -104,6 +106,7 @@ public class LibUniWinC : NSObject {
             self.backgroundColor = window.backgroundColor
             self.isOpaque = window.isOpaque
             self.hasShadow = window.hasShadow
+            self.isKeyWindow = window.isKeyWindow
             
             if let view = window.contentView {
                 self.contentViewWantsLayer = view.wantsLayer
@@ -325,6 +328,8 @@ public class LibUniWinC : NSObject {
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didDeminiaturizeNotification, object: window)
         //center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
         center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didEndLiveResizeNotification, object: window)
+        //center.addObserver(self, selector: #selector(_keepKeyWindowObserver(notification:)), name: NSWindow.didExposeNotification, object: window)
+        center.addObserver(self, selector: #selector(_keepKeyWindowObserver(notification:)), name: NSWindow.didResignKeyNotification, object: window)
         center.addObserver(self, selector: #selector(_keepBottommostObserver(notification:)), name: NSWindow.didBecomeKeyNotification, object: window)
     }
  
@@ -337,6 +342,8 @@ public class LibUniWinC : NSObject {
             center.removeObserver(self, name: NSWindow.didDeminiaturizeNotification, object: targetWindow)
             //center.removeObserver(self, name: NSWindow.didResizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didEndLiveResizeNotification, object: targetWindow)
+            //center.removeObserver(self, name: NSWindow.didExposeNotification, object: targetWindow)
+            center.removeObserver(self, name: NSWindow.didResignKeyNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: targetWindow)
 
             //center.removeObserver(self)
@@ -375,11 +382,20 @@ public class LibUniWinC : NSObject {
         }
     }
     
+    @objc static func _keepKeyWindowObserver(notification: Notification) {
+        if (targetWindow != nil && !state.isBottommost) {
+            if (orgWindowInfo.isKeyWindow && !targetWindow!.isKeyWindow) {
+                _makeKeyWindow()
+                //_doWindowStyleChangedCallback(num: EventType.Order)
+            }
+        }
+    }
+
     @objc static func _keepBottommostObserver(notification: Notification) {
-        if ((targetWindow != nil) && (state.isBottommost)) {
+        if ((targetWindow != nil) && state.isBottommost) {
             targetWindow!.level = orgWindowInfo.level
             targetWindow!.order(NSWindow.OrderingMode.below, relativeTo:0)
-            _doWindowStyleChangedCallback(num: EventType.Style)
+            _doWindowStyleChangedCallback(num: EventType.Order)
         }
     }
     
@@ -397,6 +413,23 @@ public class LibUniWinC : NSObject {
                     _setContentViewTransparent(window: targetWindow!, isTransparent: true)
                 }
             }
+        }
+    }
+    
+    private static func _makeKeyWindow() {
+        guard let window = targetWindow else {
+            return
+        }
+        
+        if (state.isBorderless) {
+            // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+            state.isBorderless = false;     // Suppress the callback
+            setBorderless(isBorderless: false)
+            window.makeKey()
+            state.isBorderless = true;      // Suppress the callback
+            setBorderless(isBorderless: true)
+        } else {
+            window.makeKey()
         }
     }
     
@@ -509,11 +542,12 @@ public class LibUniWinC : NSObject {
         } else {
             window.styleMask = orgWindowInfo.styleMask
             if (!orgWindowInfo.styleMask.contains(.borderless)) {
-                // 初期状態で.borderlessだったならばそれは残す
+                // 初期状態で.borderlessだったならばそれは残し、そうでなければ枠なしを解除
                 window.styleMask.remove(.borderless)
             }
             window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
             window.titleVisibility = orgWindowInfo.titleVisibility
+            
         }
     }
 
@@ -549,14 +583,25 @@ public class LibUniWinC : NSObject {
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
             if (!state.isZoomed) {
-                //if ((!isBorderless && state.isBorderless) || (isBorderless && !state.isBorderless && !_isZoomedActually())) {
                 if (isBorderless != state.isBorderless) {
                     // Store the window size when the window become borderless
                     state.normalWindowRect = window.frame
                 }
             }
             
-            _setWindowBorderless(window: window, isBorderless: isBorderless)
+            if (orgWindowInfo.isKeyWindow) {
+                if (isBorderless) {
+                    // 枠なしにする前に、キーウィンドウにしておく
+                    window.makeKey()
+                    _setWindowBorderless(window: window, isBorderless: isBorderless)
+                } else {
+                    // 枠ありにした後で、キーウィンドウにする
+                    _setWindowBorderless(window: window, isBorderless: isBorderless)
+                    window.makeKey()
+                }
+            } else {
+                _setWindowBorderless(window: window, isBorderless: isBorderless)
+            }
             
             // 透過切り替え直後にキー操作が効かなくなるためキーウインドウにしたい。だがうまくはいかないよう。透過だとキーにできないのは仕方がなさそう…
 //            window.makeMain()
@@ -916,6 +961,10 @@ public class LibUniWinC : NSObject {
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.floating
+        }
+        panel.parent = targetWindow     // Nil if not attatched
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.allowedFileTypes = fileTypes
@@ -949,7 +998,21 @@ public class LibUniWinC : NSObject {
                 }
             }
         }
-        
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                targetWindow?.level = NSWindow.Level.popUpMenu
+            }
+            if (state.isBorderless) {
+                _makeKeyWindow()
+//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+//                state.isBorderless = false;     // Suppress the callback
+//                setBorderless(isBorderless: false)
+//                state.isBorderless = true;      // Suppress the callback
+//                setBorderless(isBorderless: true)
+            }
+            targetWindow?.makeKeyAndOrderFront(nil)
+        }
+
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     
@@ -966,7 +1029,11 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
-
+        
+        if (targetWindow != nil && state.isTopmost) {
+            targetWindow?.level = NSWindow.Level.floating
+        }
+        panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -991,6 +1058,20 @@ public class LibUniWinC : NSObject {
         if (result == .OK && (panel.url != nil)) {
             let url: String = panel.url!.path
             text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+        }
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                targetWindow?.level = NSWindow.Level.popUpMenu
+            }
+            if (state.isBorderless) {
+                _makeKeyWindow()
+//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+//                state.isBorderless = false;     // Suppress the callback
+//                setBorderless(isBorderless: false)
+//                state.isBorderless = true;      // Suppress the callback
+//                setBorderless(isBorderless: true)
+            }
+            targetWindow?.makeKeyAndOrderFront(nil)
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
