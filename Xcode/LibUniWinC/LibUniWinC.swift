@@ -89,6 +89,7 @@ public class LibUniWinC : NSObject {
         public var backgroundColor: NSColor = NSColor.clear
         public var isOpaque: Bool = true
         public var hasShadow: Bool = true
+        public var isKeyWindow: Bool = true
         public var contentViewWantsLayer: Bool = true
         public var contentViewLayerIsOpaque: Bool = true
         public var contentViewLayerBackgroundColor: CGColor? = CGColor.clear
@@ -104,6 +105,7 @@ public class LibUniWinC : NSObject {
             self.backgroundColor = window.backgroundColor
             self.isOpaque = window.isOpaque
             self.hasShadow = window.hasShadow
+            self.isKeyWindow = window.isKeyWindow
             
             if let view = window.contentView {
                 self.contentViewWantsLayer = view.wantsLayer
@@ -509,11 +511,12 @@ public class LibUniWinC : NSObject {
         } else {
             window.styleMask = orgWindowInfo.styleMask
             if (!orgWindowInfo.styleMask.contains(.borderless)) {
-                // 初期状態で.borderlessだったならばそれは残す
+                // 初期状態で.borderlessだったならばそれは残し、そうでなければ枠なしを解除
                 window.styleMask.remove(.borderless)
             }
             window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
             window.titleVisibility = orgWindowInfo.titleVisibility
+            
         }
     }
 
@@ -556,7 +559,19 @@ public class LibUniWinC : NSObject {
                 }
             }
             
-            _setWindowBorderless(window: window, isBorderless: isBorderless)
+            if (orgWindowInfo.isKeyWindow) {
+                if (isBorderless) {
+                    // 枠なしにする前に、キーウィンドウにしておく
+                    window.makeKey()
+                    _setWindowBorderless(window: window, isBorderless: isBorderless)
+                } else {
+                    // 枠ありにした後で、キーウィンドウにする
+                    _setWindowBorderless(window: window, isBorderless: isBorderless)
+                    window.makeKey()
+                }
+            } else {
+                _setWindowBorderless(window: window, isBorderless: isBorderless)
+            }
             
             // 透過切り替え直後にキー操作が効かなくなるためキーウインドウにしたい。だがうまくはいかないよう。透過だとキーにできないのは仕方がなさそう…
 //            window.makeMain()
@@ -919,7 +934,7 @@ public class LibUniWinC : NSObject {
         if (targetWindow != nil && state.isTopmost) {
             targetWindow?.level = NSWindow.Level.floating
         }
-        //panel.parent = targetWindow     // Nil if not attatched
+        panel.parent = targetWindow     // Nil if not attatched
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.allowedFileTypes = fileTypes
@@ -953,8 +968,16 @@ public class LibUniWinC : NSObject {
                 }
             }
         }
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.popUpMenu
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                targetWindow?.level = NSWindow.Level.popUpMenu
+            }
+            if (state.isBorderless) {
+                _setWindowBorderless(window: targetWindow!, isBorderless: false)
+                //targetWindow?.makeKeyAndOrderFront(nil)
+                targetWindow?.makeKey()
+                _setWindowBorderless(window: targetWindow!, isBorderless: true)
+            }
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
@@ -973,11 +996,11 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
-
+        
         if (targetWindow != nil && state.isTopmost) {
             targetWindow?.level = NSWindow.Level.floating
         }
-        //panel.parent = targetWindow     // Nil if not attatched
+        panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1003,8 +1026,14 @@ public class LibUniWinC : NSObject {
             let url: String = panel.url!.path
             text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
         }
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.popUpMenu
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                targetWindow?.level = NSWindow.Level.popUpMenu
+            }
+            if (state.isBorderless) {
+                setBorderless(isBorderless: false)
+                setBorderless(isBorderless: true)
+            }
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
