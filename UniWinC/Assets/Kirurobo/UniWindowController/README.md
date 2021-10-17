@@ -45,7 +45,7 @@ https://github.com/kirurobo/UniWindowController/releases に .unitypackage フ�
 - Unity 2018 以降
   - 開発は Unity 2018.4.30f1 で行っています
 - Windows 10 or macOS
-  - macOS の開発は 11.5.2 で行っています
+  - macOS の開発は 11.6 で行っています
 
 
 ## ヒットテストについて
@@ -102,6 +102,14 @@ DragMoveCanvas というプレハブ内では、透明な全画面を覆うPanel
 このとき Layer を「Ignore Raycast」にすることで、自動ヒットテストが Raycast の場合でも対象外となります。  
 これにより画面のどこでもドラッグできるようになります。  
 ただし他のUI上の操作はドラッグでの移動より優先されます。（DragMoveCanvas で Sort Order を小さくしているため。）
+
+### LowLevel/FilePanel.cs
+ファイル選択ダイアログを開く static メソッドがあります。  
+UniWindowController のインスタンスがなくても使えますが、その場合は呼んだ時点のウィンドウを親として開きます。
+- FilePanel.OpenFilePanel()
+  - ファイルを開く場合の選択ダイアログ。複数選択も可能。
+- FilePanel.SaveFilePanel()
+  - ファイルを保存する際の選択ダイアログ。
 
 
 ## ソースのフォルダ構成
