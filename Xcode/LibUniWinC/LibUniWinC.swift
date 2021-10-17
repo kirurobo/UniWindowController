@@ -44,6 +44,7 @@ public class LibUniWinC : NSObject {
         case None = 0
         case Style = 1
         case Size = 2
+        case Order = 4
     }
         
     /// Flag constants for file dialog
@@ -327,6 +328,8 @@ public class LibUniWinC : NSObject {
         center.addObserver(self, selector: #selector(_windowStateChangedObserver(notification:)), name: NSWindow.didDeminiaturizeNotification, object: window)
         //center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didResizeNotification, object: window)
         center.addObserver(self, selector: #selector(_resizedObserver(notification:)), name: NSWindow.didEndLiveResizeNotification, object: window)
+        //center.addObserver(self, selector: #selector(_keepKeyWindowObserver(notification:)), name: NSWindow.didExposeNotification, object: window)
+        center.addObserver(self, selector: #selector(_keepKeyWindowObserver(notification:)), name: NSWindow.didResignKeyNotification, object: window)
         center.addObserver(self, selector: #selector(_keepBottommostObserver(notification:)), name: NSWindow.didBecomeKeyNotification, object: window)
     }
  
@@ -339,6 +342,8 @@ public class LibUniWinC : NSObject {
             center.removeObserver(self, name: NSWindow.didDeminiaturizeNotification, object: targetWindow)
             //center.removeObserver(self, name: NSWindow.didResizeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didEndLiveResizeNotification, object: targetWindow)
+            //center.removeObserver(self, name: NSWindow.didExposeNotification, object: targetWindow)
+            center.removeObserver(self, name: NSWindow.didResignKeyNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: targetWindow)
 
             //center.removeObserver(self)
@@ -377,11 +382,20 @@ public class LibUniWinC : NSObject {
         }
     }
     
+    @objc static func _keepKeyWindowObserver(notification: Notification) {
+        if (targetWindow != nil && !state.isBottommost) {
+            if (orgWindowInfo.isKeyWindow && !targetWindow!.isKeyWindow) {
+                _makeKeyWindow()
+                //_doWindowStyleChangedCallback(num: EventType.Order)
+            }
+        }
+    }
+
     @objc static func _keepBottommostObserver(notification: Notification) {
-        if ((targetWindow != nil) && (state.isBottommost)) {
+        if ((targetWindow != nil) && state.isBottommost) {
             targetWindow!.level = orgWindowInfo.level
             targetWindow!.order(NSWindow.OrderingMode.below, relativeTo:0)
-            _doWindowStyleChangedCallback(num: EventType.Style)
+            _doWindowStyleChangedCallback(num: EventType.Order)
         }
     }
     
@@ -399,6 +413,23 @@ public class LibUniWinC : NSObject {
                     _setContentViewTransparent(window: targetWindow!, isTransparent: true)
                 }
             }
+        }
+    }
+    
+    private static func _makeKeyWindow() {
+        guard let window = targetWindow else {
+            return
+        }
+        
+        if (state.isBorderless) {
+            // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+            state.isBorderless = false;     // Suppress the callback
+            setBorderless(isBorderless: false)
+            window.makeKey()
+            state.isBorderless = true;      // Suppress the callback
+            setBorderless(isBorderless: true)
+        } else {
+            window.makeKey()
         }
     }
     
@@ -552,7 +583,6 @@ public class LibUniWinC : NSObject {
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
         if let window: NSWindow = targetWindow {
             if (!state.isZoomed) {
-                //if ((!isBorderless && state.isBorderless) || (isBorderless && !state.isBorderless && !_isZoomedActually())) {
                 if (isBorderless != state.isBorderless) {
                     // Store the window size when the window become borderless
                     state.normalWindowRect = window.frame
@@ -973,11 +1003,14 @@ public class LibUniWinC : NSObject {
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
-                _setWindowBorderless(window: targetWindow!, isBorderless: false)
-                //targetWindow?.makeKeyAndOrderFront(nil)
-                targetWindow?.makeKey()
-                _setWindowBorderless(window: targetWindow!, isBorderless: true)
+                _makeKeyWindow()
+//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+//                state.isBorderless = false;     // Suppress the callback
+//                setBorderless(isBorderless: false)
+//                state.isBorderless = true;      // Suppress the callback
+//                setBorderless(isBorderless: true)
             }
+            targetWindow?.makeKeyAndOrderFront(nil)
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
@@ -1031,9 +1064,14 @@ public class LibUniWinC : NSObject {
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
-                setBorderless(isBorderless: false)
-                setBorderless(isBorderless: true)
+                _makeKeyWindow()
+//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+//                state.isBorderless = false;     // Suppress the callback
+//                setBorderless(isBorderless: false)
+//                state.isBorderless = true;      // Suppress the callback
+//                setBorderless(isBorderless: true)
             }
+            targetWindow?.makeKeyAndOrderFront(nil)
         }
 
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)

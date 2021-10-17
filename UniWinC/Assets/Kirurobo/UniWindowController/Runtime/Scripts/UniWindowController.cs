@@ -62,7 +62,8 @@ namespace Kirurobo
         {
             None = 0,
             StyleChanged = 1,
-            Resized = 2
+            Resized = 2,
+            OrderChanged = 4,
         }
 
         /// <summary>
