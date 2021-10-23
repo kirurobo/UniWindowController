@@ -18,6 +18,8 @@ using UnityEngine.Events;
 
 namespace Kirurobo
 {
+    /// @cond DOXYGEN_SHOW_INTERNAL_CLASSES
+
     /// <summary>
     /// Set editable the bool property
     /// </summary>
@@ -30,8 +32,11 @@ namespace Kirurobo
     [System.AttributeUsage(System.AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public class ReadOnlyAttribute : PropertyAttribute { }
 
+    /// @endcond
+
+
     /// <summary>
-    /// ウィンドウ操作をとりまとめるクラス
+    /// Unified window controller for Windows / Mac
     /// </summary>
     public class UniWindowController : MonoBehaviour
     {
@@ -46,7 +51,7 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// 透明化の方式
+        /// Scecifies method to hit-test (i.e., switching click-through)
         /// </summary>
         public enum HitTestType : int
         {
@@ -56,7 +61,7 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// 透明化の方式
+        /// Identifies the type of <see cref="OnStateChanged">OnStateChanged</see> event when it occurs
         /// </summary>
         public enum WindowStateEventType : int
         {
