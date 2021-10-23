@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Kirurobo
 {
+    /// <summary>
+    /// Provides static methods to open native file dialog
+    /// </summary>
     public class FilePanel
     {
         protected class LibUniWinC
@@ -85,7 +88,7 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// ダイアログの設定フラグ
+        /// Dialog setting flags
         /// </summary>
         [Flags]
         public enum Flag
