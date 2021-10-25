@@ -31,6 +31,7 @@ public class LibUniWinC : NSObject {
         public var isBottommost: Bool = false
         public var isBorderless: Bool = false
         public var isTransparent: Bool = false
+        public var alphaValue: Float32 = 1
         
         // サイズ変更がなされると不正確となる。透過時にこれを使う
         public var isZoomed: Bool = false
@@ -91,6 +92,7 @@ public class LibUniWinC : NSObject {
         public var isOpaque: Bool = true
         public var hasShadow: Bool = true
         public var isKeyWindow: Bool = true
+        public var alphaValue: CGFloat = 1
         public var contentViewWantsLayer: Bool = true
         public var contentViewLayerIsOpaque: Bool = true
         public var contentViewLayerBackgroundColor: CGColor? = CGColor.clear
@@ -107,6 +109,7 @@ public class LibUniWinC : NSObject {
             self.isOpaque = window.isOpaque
             self.hasShadow = window.hasShadow
             self.isKeyWindow = window.isKeyWindow
+            self.alphaValue = window.alphaValue
             
             if let view = window.contentView {
                 self.contentViewWantsLayer = view.wantsLayer
@@ -127,6 +130,7 @@ public class LibUniWinC : NSObject {
             window.backgroundColor = self.backgroundColor
             window.isOpaque = self.isOpaque
             window.hasShadow = self.hasShadow
+            window.alphaValue = self.alphaValue
             
             window.contentView?.wantsLayer = self.contentViewWantsLayer
             window.contentView?.layer?.isOpaque = self.contentViewLayerIsOpaque
@@ -461,6 +465,7 @@ public class LibUniWinC : NSObject {
             setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
             setMaximized(isZoomed: state.isZoomed)
+            setAlphaValue(alpha: state.alphaValue)
         }
     }
     
@@ -561,6 +566,15 @@ public class LibUniWinC : NSObject {
     /// 現在はWindowsでのみ実装
     /// - Parameter color: 透過する色
     @objc public static func setKeyColor(color: Int32) -> Void {
+    }
+    
+    /// Sets window alpha value
+    ///  - Parameter alpha: 0.0 - 1.0
+    @objc public static func setAlphaValue(alpha: Float32) -> Void {
+        if let window: NSWindow = targetWindow {
+            window.alphaValue = CGFloat(alpha)
+        }
+        state.alphaValue = alpha
     }
 
     /// ウィンドウ透過を有効化／無効化
