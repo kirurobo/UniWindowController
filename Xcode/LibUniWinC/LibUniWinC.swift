@@ -301,7 +301,7 @@ public class LibUniWinC : NSObject {
 
     /// Set the target window
     /// Restore the former winodw if exist
-    private static func _attachWindow(window: NSWindow) -> Void {
+    public static func _attachWindow(window: NSWindow) -> Void {
         // Do nothing if the same window is the target
         if (targetWindow == window) {
             return
