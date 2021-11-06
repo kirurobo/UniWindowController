@@ -69,9 +69,9 @@ func getAllWindows() -> String {
 }
 
 struct ContentView: View {
-    @State var messageText = "Window"
-    @State var outputText = ""
-    @State var window: NSWindow?
+    @State private var messageText = "Window"
+    @State private var outputText = ""
+    @State private var window: NSWindow?
     
     var body: some View {
         Text("Window info").padding()

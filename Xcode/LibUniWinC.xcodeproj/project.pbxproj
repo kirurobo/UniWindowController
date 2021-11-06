@@ -19,6 +19,7 @@
 		73B2C7BD273559C80053A44D /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7BC273559C80053A44D /* LibUniWinC.swift */; };
 		73B2C7C027355B030053A44D /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731C6C6D25724025002E9709 /* OverlayView.swift */; };
 		73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7BC273559C80053A44D /* LibUniWinC.swift */; };
+		73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7C42736ACE00053A44D /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		73B2C7AE273559A70053A44D /* DebugUniWinCUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCUITests.swift; sourceTree = "<group>"; };
 		73B2C7B0273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		73B2C7BC273559C80053A44D /* LibUniWinC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibUniWinC.swift; sourceTree = "<group>"; };
+		73B2C7C42736ACE00053A44D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73DFCB7722B8ED3300DA41F2 /* LibUniWinC.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibUniWinC.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		73DFCB7A22B8ED3300DA41F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -98,6 +100,7 @@
 				73B2C796273559A60053A44D /* Assets.xcassets */,
 				73B2C79B273559A60053A44D /* DebugUniWinC.entitlements */,
 				73B2C798273559A60053A44D /* Preview Content */,
+				73B2C7C42736ACE00053A44D /* AppDelegate.swift */,
 			);
 			path = DebugUniWinC;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				73B2C795273559A60053A44D /* ContentView.swift in Sources */,
 				73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */,
 				73B2C793273559A60053A44D /* DebugUniWinCApp.swift in Sources */,
+				73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */,
 				73B2C7C027355B030053A44D /* OverlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
