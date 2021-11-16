@@ -982,6 +982,7 @@ public class LibUniWinC : NSObject {
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         panel.allowedFileTypes = fileTypes
+        panel.center()
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1065,6 +1066,7 @@ public class LibUniWinC : NSObject {
         //panel.showsTagField = false
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()
+        panel.center()
         
         let result = panel.runModal();
         
