@@ -68,11 +68,23 @@ func getAllWindows() -> String {
     return text
 }
 
+func getOpenFileNames() -> String {
+    let bufferSize = 1024
+    let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
+//    let settings = LibUniWinC.PanelSettings()
+//    let lpSettings = UnsafeRawPointer<Void>(&settings)
+//    
+//    LibUniWinC.openSavePanel(lpSettings: lpSettings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+    buffer.deallocate()
+    return ""
+}
+
 struct ContentView: View {
     @State private var messageText = "Window"
     @State private var outputText = ""
     @State private var window: NSWindow?
-    
+
+
     var body: some View {
         Text("Window info").padding()
         
