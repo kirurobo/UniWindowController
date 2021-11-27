@@ -30,6 +30,7 @@ namespace Kirurobo
         private float eventMessageTimeout = 5f;        // Show event message while this period [s]
 
         public Toggle transparentToggle;
+        public Slider alphaSlider;
         public Toggle topmostToggle;
         public Toggle bottommostToggle;
         [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
@@ -75,6 +76,7 @@ namespace Kirurobo
             {
                 // UIを操作された際にはウィンドウに反映されるようにする
                 transparentToggle?.onValueChanged.AddListener(val => uniwinc.isTransparent = val);
+                alphaSlider?.onValueChanged.AddListener(val => uniwinc.alphaValue = val);
                 topmostToggle?.onValueChanged.AddListener(val => uniwinc.isTopmost = val);
                 bottommostToggle?.onValueChanged.AddListener(val => uniwinc.isBottommost = val);
                 zoomedToggle?.onValueChanged.AddListener(val => uniwinc.isZoomed = val);
@@ -383,6 +385,11 @@ namespace Kirurobo
                 if (transparentToggle)
                 {
                     transparentToggle.isOn = uniwinc.isTransparent;
+                }
+
+                if (alphaSlider)
+                {
+                    alphaSlider.value = uniwinc.alphaValue;
                 }
 
                 if (topmostToggle)
