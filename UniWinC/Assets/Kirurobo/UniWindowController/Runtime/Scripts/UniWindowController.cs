@@ -71,6 +71,9 @@ namespace Kirurobo
             OrderChanged = 4,
         }
 
+        private static UniWindowController _instance;
+        public static UniWindowController Instance => _instance ?? (_instance = GameObject.FindObjectOfType<UniWindowController>() ?? new UniWindowController());
+
         /// <summary>
         /// Low level class
         /// </summary>
@@ -197,7 +200,6 @@ namespace Kirurobo
         /// </summary>
         private float raycastMaxDepth = 100.0f;
 
-        
         /// <summary>
         /// trueにしておくと、ウィンドウ透過時にカメラ背景を単色の黒透明に自動で変更します
         /// </summary>
@@ -214,6 +216,12 @@ namespace Kirurobo
         /// </summary>
         [Tooltip("Force windowed on startup")]
         public bool forceWindowed = false;
+
+        /// <summary>
+        /// カメラのインスタンス
+        /// </summary>
+        [Tooltip("Main camera is used if None")]
+        public Camera currentCamera;
 
         /// <summary>
         /// 透過方式の指定
@@ -264,8 +272,8 @@ namespace Kirurobo
         /// </summary>
         public Vector2 cursorPosition
         {
-            get { return (uniWinCore != null ? uniWinCore.GetCursorPosition() : Vector2.zero); }
-            set { uniWinCore?.SetCursorPosition(value); }
+            get { return UniWinCore.GetCursorPosition(); }
+            set { UniWinCore.SetCursorPosition(value); }
         }
 
         /// <summary>
@@ -276,11 +284,6 @@ namespace Kirurobo
         // カメラの背景をアルファゼロの黒に置き換えるため、本来の背景を保存しておく変数
         private CameraClearFlags originalCameraClearFlags;
         private Color originalCameraBackground;
-
-        /// <summary>
-        /// カメラのインスタンス
-        /// </summary>
-        private Camera currentCamera;
 
         /// <summary>
         /// カーソル下1px分の色が入るテクスチャ
@@ -320,6 +323,16 @@ namespace Kirurobo
         // Use this for initialization
         void Awake()
         {
+            // シングルトンとする。既にインスタンスがあれば自分を破棄
+            if (this != Instance)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+
+            // シーン変更後も破棄しないものとする
+            DontDestroyOnLoad(gameObject);
+
             // フルスクリーン強制解除。エディタでは何もしない
 #if !UNITY_EDITOR
             if (forceWindowed && Screen.fullScreen)
@@ -368,7 +381,7 @@ namespace Kirurobo
         {
             if (!_shouldFitMonitor) return;
 
-            int monitors = uniWinCore.GetMonitorCount();
+            int monitors = UniWinCore.GetMonitorCount();
             int targetMonitorIndex = _monitorToFit;
 
             if (targetMonitorIndex < 0)
@@ -404,6 +417,12 @@ namespace Kirurobo
             if (uniWinCore != null)
             {
                 uniWinCore.Dispose();
+            }
+
+            // Instance も破棄
+            if (this == Instance)
+            {
+                _instance = null;
             }
         }
 
@@ -859,13 +878,27 @@ namespace Kirurobo
 
 
         /// <summary>
-        /// 接続されているモニタ数を取得
+        /// Get the number of connected monitors
         /// </summary>
         /// <returns></returns>
-        public int GetMonitorCount()
+        public static int GetMonitorCount()
         {
-            if (uniWinCore == null) return 0;
-            return uniWinCore.GetMonitorCount();
+            //if (uniWinCore == null) return 0;
+            return UniWinCore.GetMonitorCount();
+        }
+
+        /// <summary>
+        /// Get monitor position and size
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static Rect GetMonitorRect(int index)
+        {
+            if (UniWinCore.GetMonitorRectangle(index, out Vector2 position, out Vector2 size))
+            {
+                return new Rect(position, size);
+            }
+            return Rect.zero;
         }
 
         /// <summary>
