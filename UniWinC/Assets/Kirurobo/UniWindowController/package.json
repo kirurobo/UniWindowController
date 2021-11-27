@@ -1,6 +1,6 @@
 {
     "name": "com.kirurobo.uniwinc",
-    "version": "0.8.2",
+    "version": "0.8.3",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
     "unity": "2018.4",
@@ -16,6 +16,11 @@
     "url": "https://github.com/kirurobo/uniwindowcontroller"
   },
   "samples": [
+    {
+      "displayName": "Common files",
+      "description": "Some common assets for samples.",
+      "path": "Samples/Common"
+    },
     {
       "displayName": "Simple sample",
       "description": "Just use the UniWindowController prefab.",
