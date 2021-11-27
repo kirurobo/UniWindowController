@@ -957,6 +957,24 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// Get mouse cursor position
+        /// </summary>
+        /// <returns>Cursor position</returns>
+        public static Vector2 GetCursorPosition()
+        {
+            return UniWinCore.GetCursorPosition();
+        }
+        
+        /// <summary>
+        /// Set mouse cursor position
+        /// </summary>
+        /// <param name="position"></param>
+        public static void SetCursorPosition(Vector2 position)
+        {
+            UniWinCore.SetCursorPosition(position);
+        }
+
+        /// <summary>
         /// 終了時にはウィンドウ状態を戻す処理が必要
         /// </summary>
         void OnApplicationQuit()
