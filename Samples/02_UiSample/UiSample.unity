@@ -279,10 +279,35 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3495602533982766105, guid: 38b9db02f63429f49bd117e7f988d985,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3495602533982766105, guid: 38b9db02f63429f49bd117e7f988d985,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3681922073531368127, guid: 38b9db02f63429f49bd117e7f988d985,
         type: 3}
       propertyPath: m_Name
       value: BorderlinePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4912867810029457074, guid: 38b9db02f63429f49bd117e7f988d985,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4912867810029457074, guid: 38b9db02f63429f49bd117e7f988d985,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4912867810029457074, guid: 38b9db02f63429f49bd117e7f988d985,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8301087647732643040, guid: 38b9db02f63429f49bd117e7f988d985,
         type: 3}
@@ -1204,11 +1229,6 @@ PrefabInstance:
         type: 3}
       propertyPath: _isTransparent
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
-        type: 3}
-      propertyPath: _isTopmost
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2416199871598626843, guid: e893aefd93740714b999573b02916984, type: 3}

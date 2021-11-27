@@ -10,6 +10,7 @@
 #if UNITY_EDITOR
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
@@ -268,41 +269,86 @@ namespace Kirurobo
     }
 
     /// <summary>
-    /// Set to readonly during playing
+    /// Set a bool property editable
     /// Reference: http://ponkotsu-hiyorin.hateblo.jp/entry/2015/10/20/003042
     /// Reference: https://forum.unity.com/threads/c-class-property-with-reflection-in-propertydrawer-not-saving-to-prefab.473942/
     /// </summary>
-    [CustomPropertyDrawer(typeof(BoolPropertyAttribute))]
+    [CustomPropertyDrawer(typeof(EditablePropertyAttribute))]
     public class UniWindowControllerDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             //base.OnGUI(position, property, label);
 
+            Object obj = property.serializedObject.targetObject;
+                
+            // Range(min, max) が設定されていれば取得
+            FieldInfo fieldInfo = obj.GetType().GetField(
+                property.name,
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static
+            );
+            var rangeAttrs = fieldInfo?.GetCustomAttributes(typeof(RangeAttribute), true) as RangeAttribute[];
+            RangeAttribute range = (rangeAttrs?.Length > 0 ? rangeAttrs.First() : null);
+                
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                if ((property.type == "bool") && (property.name[0] == '_'))
+                // 変数の先頭が '_' であることが動作の条件
+                if (property.name[0] == '_')
                 {
-                    Object obj = property.serializedObject.targetObject;
-                    string propertyName = property.name.Substring(1);
+                    string propertyName = property.name.Substring(1);       // '_' なしをプロパティ名として取得
                     PropertyInfo info = obj.GetType().GetProperty(propertyName);
                     MethodInfo getMethod = default(MethodInfo);
                     MethodInfo setMethod = default(MethodInfo);
                     if (info.CanRead) { getMethod = info.GetGetMethod(); }
                     if (info.CanWrite) { setMethod = info.GetSetMethod(); }
-
-                    bool oldValue = property.boolValue;
-                    if (getMethod != null)
-                    {
-                        oldValue = (bool)getMethod.Invoke(obj, null);
+                    
+                    if (property.type == "bool")
+                    { var oldValue = property.boolValue;
+                        if (getMethod != null)
+                        {
+                            oldValue = (bool)getMethod.Invoke(obj, null);
+                        }
+                        GUI.enabled = (setMethod != null);
+                        EditorGUI.PropertyField(position, property, label, true);
+                        GUI.enabled = true;
+                        var newValue = property.boolValue;
+                        if ((setMethod != null) && (oldValue != newValue))
+                        {
+                            setMethod.Invoke(obj, new[] { (object)newValue });
+                        }
                     }
-                    GUI.enabled = (setMethod != null);
-                    EditorGUI.PropertyField(position, property, label, true);
-                    GUI.enabled = true;
-                    bool newValue = property.boolValue;
-                    if ((setMethod != null) && (oldValue != newValue))
+                    else if (property.type == "float")
                     {
-                        setMethod.Invoke(obj, new[] { (object)newValue });
+                        
+                        var oldValue = property.floatValue;
+                        if (getMethod != null)
+                        {
+                            oldValue = (float) getMethod.Invoke(obj, null);
+                        }
+
+                        GUI.enabled = (setMethod != null);
+                        if (range != null)
+                        {
+                            EditorGUI.Slider(position, property, range.min, range.max, label);
+                        }
+                        else
+                        {
+                            EditorGUI.PropertyField(position, property, label, true);
+                        }
+                        GUI.enabled = true;
+                        
+                        var newValue = property.floatValue;
+                        if ((setMethod != null) && (oldValue != newValue))
+                        {
+                            setMethod.Invoke(obj, new[] {(object) newValue});
+                        }
+                    }
+                    else
+                    {
+                        // bool, float 以外は今のところ非対応で Readonly とする
+                        GUI.enabled = false;
+                        EditorGUI.PropertyField(position, property, label, true);
+                        GUI.enabled = true;
                     }
                 }
                 else
@@ -315,8 +361,15 @@ namespace Kirurobo
             }
             else
             {
-                // Default value
-                EditorGUI.PropertyField(position, property, label, true);
+                // Range 指定があればスライダー
+                if (range != null)
+                {
+                    EditorGUI.Slider(position, property, range.min, range.max, label);
+                }
+                else
+                {
+                    EditorGUI.PropertyField(position, property, label, true);
+                }
             }
 
         }

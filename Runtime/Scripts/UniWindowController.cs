@@ -21,16 +21,16 @@ namespace Kirurobo
     /// @cond DOXYGEN_SHOW_INTERNAL_CLASSES
 
     /// <summary>
-    /// Set editable the bool property
+    /// Set editable a bool property
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
-    public class BoolPropertyAttribute : PropertyAttribute { }
+    public class EditablePropertyAttribute : UnityEngine.PropertyAttribute { }
 
     /// <summary>
-    /// Set the attribute as readonly
+    /// Set an attribute as readonly
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
-    public class ReadOnlyAttribute : PropertyAttribute { }
+    public class ReadOnlyAttribute : UnityEngine.PropertyAttribute { }
 
     /// @endcond
 
@@ -94,8 +94,19 @@ namespace Kirurobo
             get { return _isTransparent; }
             set { SetTransparent(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Check to set transparent on startup")]
+        [SerializeField, EditableProperty, Tooltip("Check to set transparent on startup")]
         private bool _isTransparent = false;
+
+        /// <summary>
+        /// Window alpha (0.0 to 1.0)
+        /// </summary>
+        public float alphaValue
+        {
+            get { return _alphaValue; }
+            set { SetAlphaValue(value); }
+        }
+        [SerializeField, EditableProperty, Tooltip("Window alpha"), Range(0f, 1f)]
+        private float _alphaValue = 1.0f;
 
         /// <summary>
         /// Is this window topmost
@@ -105,7 +116,7 @@ namespace Kirurobo
             get { return ((uniWinCore == null) ? _isTopmost : _isTopmost = uniWinCore.IsTopmost); }
             set { SetTopmost(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Check to set topmost on startup")]
+        [SerializeField, EditableProperty, Tooltip("Check to set topmost on startup")]
         private bool _isTopmost = false;
 
         /// <summary>
@@ -116,7 +127,7 @@ namespace Kirurobo
             get { return ((uniWinCore == null) ? _isBottommost : _isBottommost = uniWinCore.IsBottommost); }
             set { SetBottommost(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Check to set bottommost on startup")]
+        [SerializeField, EditableProperty, Tooltip("Check to set bottommost on startup")]
         private bool _isBottommost = false;
 
         /// <summary>
@@ -127,7 +138,7 @@ namespace Kirurobo
             get { return ((uniWinCore == null) ? _isZoomed : _isZoomed = uniWinCore.GetZoomed()); }
             set { SetZoomed(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Check to set zoomed on startup")]
+        [SerializeField, EditableProperty, Tooltip("Check to set zoomed on startup")]
         private bool _isZoomed = false;
 
         /// <summary>
@@ -138,7 +149,7 @@ namespace Kirurobo
             get { return _shouldFitMonitor; }
             set { FitToMonitor(value, _monitorToFit); }
         }
-        [SerializeField, BoolProperty, Tooltip("Check to fit the window to the monitor")]
+        [SerializeField, EditableProperty, Tooltip("Check to fit the window to the monitor")]
         private bool _shouldFitMonitor = false;
 
         /// <summary>
@@ -159,7 +170,7 @@ namespace Kirurobo
             get { return _allowDropFiles; }
             set { SetAllowDrop(value); }
         }
-        [SerializeField, BoolProperty, Tooltip("Enable file or folder dropping")]
+        [SerializeField, EditableProperty, Tooltip("Enable file or folder dropping")]
         private bool _allowDropFiles = false;
 
         /// <summary>
@@ -542,11 +553,9 @@ namespace Kirurobo
         /// <summary>
         /// マウス下の画素があるかどうかを確認
         /// </summary>
-        /// <param name="cam"></param>
         private void HitTestByOpaquePixel()
         {
-            Vector2 mousePos;
-            mousePos = Input.mousePosition;
+            Vector2 mousePos = Input.mousePosition;
 
             // マウス座標を調べる
             if (GetOnOpaquePixel(mousePos))
@@ -635,8 +644,7 @@ namespace Kirurobo
 
             // 3Dオブジェクトの上か否かを判定
             Ray ray = currentCamera.ScreenPointToRay(position);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, raycastMaxDepth))
+            if (Physics.Raycast(ray, out _, raycastMaxDepth))
             {
                 onObject = true;
             }
@@ -666,6 +674,7 @@ namespace Kirurobo
                 {
                     uniWinCore.SetTransparentType((UniWinCore.TransparentType)transparentType);
                     uniWinCore.SetKeyColor(keyColor);
+                    uniWinCore.SetAlphaValue(_alphaValue);
                     SetTransparent(_isTransparent);
                     if (_isBottommost)
                     {
@@ -714,14 +723,14 @@ namespace Kirurobo
         /// <summary>
         /// ウィンドウ透過状態になった際、自動的に背景を透明単色に変更する
         /// </summary>
-        /// <param name="isTransparent"></param>
-        void SetCameraBackground(bool isTransparent)
+        /// <param name="transparent"></param>
+        void SetCameraBackground(bool transparent)
         {
             // カメラが特定できていないか、自動切替をしない場合は、何もしない
             if (!currentCamera || !autoSwitchCameraBackground) return;
 
             // 透過するならカメラの背景を透明色に変更
-            if (isTransparent)
+            if (transparent)
             {
                 currentCamera.clearFlags = CameraClearFlags.SolidColor;
                 if (transparentType == TransparentType.ColorKey)
@@ -780,6 +789,16 @@ namespace Kirurobo
                     transparentType = type;
                 }
             }
+        }
+
+        /// <summary>
+        /// Set window alpha
+        /// </summary>
+        /// <param name="alpha">0.0 to 1.0</param>
+        private void SetAlphaValue(float alpha)
+        {
+            _alphaValue = alpha;
+            uniWinCore?.SetAlphaValue(_alphaValue);
         }
 
         /// <summary>
