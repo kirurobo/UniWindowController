@@ -86,6 +86,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API DetachWindow();
 
 UNIWINC_EXPORT void UNIWINC_API SetTransparent(const BOOL isTransparent);
 UNIWINC_EXPORT void UNIWINC_API SetBorderless(const BOOL isBorderless);
+UNIWINC_EXPORT void UNIWINC_API SetAlphaValue(const float alpha);
 UNIWINC_EXPORT void UNIWINC_API SetTopmost(const BOOL isTopmost);
 UNIWINC_EXPORT void UNIWINC_API SetBottommost(const BOOL isBottommost);
 UNIWINC_EXPORT void UNIWINC_API SetBackground(const BOOL isBackground);

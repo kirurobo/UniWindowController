@@ -8,20 +8,80 @@
 
 /* Begin PBXBuildFile section */
 		731C6C6E25724025002E9709 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731C6C6D25724025002E9709 /* OverlayView.swift */; };
-		73575EF522BE0AB300E9F019 /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73575EF422BE0AB300E9F019 /* LibUniWinC.swift */; };
 		73575EF922BE18B200E9F019 /* LibUniWinC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 73575EF822BE18B200E9F019 /* LibUniWinC.mm */; };
+		73B2C793273559A60053A44D /* DebugUniWinCApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C792273559A60053A44D /* DebugUniWinCApp.swift */; };
+		73B2C795273559A60053A44D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C794273559A60053A44D /* ContentView.swift */; };
+		73B2C797273559A60053A44D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73B2C796273559A60053A44D /* Assets.xcassets */; };
+		73B2C79A273559A60053A44D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73B2C799273559A60053A44D /* Preview Assets.xcassets */; };
+		73B2C7A5273559A70053A44D /* DebugUniWinCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7A4273559A70053A44D /* DebugUniWinCTests.swift */; };
+		73B2C7AF273559A70053A44D /* DebugUniWinCUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7AE273559A70053A44D /* DebugUniWinCUITests.swift */; };
+		73B2C7B1273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7B0273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift */; };
+		73B2C7BD273559C80053A44D /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7BC273559C80053A44D /* LibUniWinC.swift */; };
+		73B2C7C027355B030053A44D /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731C6C6D25724025002E9709 /* OverlayView.swift */; };
+		73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7BC273559C80053A44D /* LibUniWinC.swift */; };
+		73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7C42736ACE00053A44D /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		73B2C7A1273559A70053A44D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 73DFCB6F22B8ED3300DA41F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 73B2C78F273559A60053A44D;
+			remoteInfo = DebugUniWinC;
+		};
+		73B2C7AB273559A70053A44D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 73DFCB6F22B8ED3300DA41F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 73B2C78F273559A60053A44D;
+			remoteInfo = DebugUniWinC;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		7306572424F1F87900FAB8BC /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		731C6C6D25724025002E9709 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
-		73575EF422BE0AB300E9F019 /* LibUniWinC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibUniWinC.swift; sourceTree = "<group>"; };
 		73575EF822BE18B200E9F019 /* LibUniWinC.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibUniWinC.mm; sourceTree = "<group>"; };
+		73B2C790273559A60053A44D /* DebugUniWinC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DebugUniWinC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		73B2C792273559A60053A44D /* DebugUniWinCApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCApp.swift; sourceTree = "<group>"; };
+		73B2C794273559A60053A44D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		73B2C796273559A60053A44D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		73B2C799273559A60053A44D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		73B2C79B273559A60053A44D /* DebugUniWinC.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DebugUniWinC.entitlements; sourceTree = "<group>"; };
+		73B2C7A0273559A70053A44D /* DebugUniWinCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DebugUniWinCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		73B2C7A4273559A70053A44D /* DebugUniWinCTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCTests.swift; sourceTree = "<group>"; };
+		73B2C7AA273559A70053A44D /* DebugUniWinCUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DebugUniWinCUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		73B2C7AE273559A70053A44D /* DebugUniWinCUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCUITests.swift; sourceTree = "<group>"; };
+		73B2C7B0273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugUniWinCUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		73B2C7BC273559C80053A44D /* LibUniWinC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibUniWinC.swift; sourceTree = "<group>"; };
+		73B2C7C42736ACE00053A44D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73DFCB7722B8ED3300DA41F2 /* LibUniWinC.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibUniWinC.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		73DFCB7A22B8ED3300DA41F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		73B2C78D273559A60053A44D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C79D273559A70053A44D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C7A7273559A70053A44D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		73DFCB7422B8ED3300DA41F2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -32,10 +92,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		73B2C791273559A60053A44D /* DebugUniWinC */ = {
+			isa = PBXGroup;
+			children = (
+				73B2C792273559A60053A44D /* DebugUniWinCApp.swift */,
+				73B2C794273559A60053A44D /* ContentView.swift */,
+				73B2C796273559A60053A44D /* Assets.xcassets */,
+				73B2C79B273559A60053A44D /* DebugUniWinC.entitlements */,
+				73B2C798273559A60053A44D /* Preview Content */,
+				73B2C7C42736ACE00053A44D /* AppDelegate.swift */,
+			);
+			path = DebugUniWinC;
+			sourceTree = "<group>";
+		};
+		73B2C798273559A60053A44D /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				73B2C799273559A60053A44D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		73B2C7A3273559A70053A44D /* DebugUniWinCTests */ = {
+			isa = PBXGroup;
+			children = (
+				73B2C7A4273559A70053A44D /* DebugUniWinCTests.swift */,
+			);
+			path = DebugUniWinCTests;
+			sourceTree = "<group>";
+		};
+		73B2C7AD273559A70053A44D /* DebugUniWinCUITests */ = {
+			isa = PBXGroup;
+			children = (
+				73B2C7AE273559A70053A44D /* DebugUniWinCUITests.swift */,
+				73B2C7B0273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift */,
+			);
+			path = DebugUniWinCUITests;
+			sourceTree = "<group>";
+		};
 		73DFCB6E22B8ED3300DA41F2 = {
 			isa = PBXGroup;
 			children = (
 				73DFCB7922B8ED3300DA41F2 /* LibUniWinC */,
+				73B2C791273559A60053A44D /* DebugUniWinC */,
+				73B2C7A3273559A70053A44D /* DebugUniWinCTests */,
+				73B2C7AD273559A70053A44D /* DebugUniWinCUITests */,
 				73DFCB7822B8ED3300DA41F2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -44,6 +145,9 @@
 			isa = PBXGroup;
 			children = (
 				73DFCB7722B8ED3300DA41F2 /* LibUniWinC.bundle */,
+				73B2C790273559A60053A44D /* DebugUniWinC.app */,
+				73B2C7A0273559A70053A44D /* DebugUniWinCTests.xctest */,
+				73B2C7AA273559A70053A44D /* DebugUniWinCUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -51,8 +155,8 @@
 		73DFCB7922B8ED3300DA41F2 /* LibUniWinC */ = {
 			isa = PBXGroup;
 			children = (
+				73B2C7BC273559C80053A44D /* LibUniWinC.swift */,
 				73DFCB7A22B8ED3300DA41F2 /* Info.plist */,
-				73575EF422BE0AB300E9F019 /* LibUniWinC.swift */,
 				73575EF822BE18B200E9F019 /* LibUniWinC.mm */,
 				7306572424F1F87900FAB8BC /* README.md */,
 				731C6C6D25724025002E9709 /* OverlayView.swift */,
@@ -63,6 +167,59 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		73B2C78F273559A60053A44D /* DebugUniWinC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 73B2C7B8273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinC" */;
+			buildPhases = (
+				73B2C78C273559A60053A44D /* Sources */,
+				73B2C78D273559A60053A44D /* Frameworks */,
+				73B2C78E273559A60053A44D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DebugUniWinC;
+			productName = DebugUniWinC;
+			productReference = 73B2C790273559A60053A44D /* DebugUniWinC.app */;
+			productType = "com.apple.product-type.application";
+		};
+		73B2C79F273559A70053A44D /* DebugUniWinCTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 73B2C7B9273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinCTests" */;
+			buildPhases = (
+				73B2C79C273559A70053A44D /* Sources */,
+				73B2C79D273559A70053A44D /* Frameworks */,
+				73B2C79E273559A70053A44D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				73B2C7A2273559A70053A44D /* PBXTargetDependency */,
+			);
+			name = DebugUniWinCTests;
+			productName = DebugUniWinCTests;
+			productReference = 73B2C7A0273559A70053A44D /* DebugUniWinCTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		73B2C7A9273559A70053A44D /* DebugUniWinCUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 73B2C7BA273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinCUITests" */;
+			buildPhases = (
+				73B2C7A6273559A70053A44D /* Sources */,
+				73B2C7A7273559A70053A44D /* Frameworks */,
+				73B2C7A8273559A70053A44D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				73B2C7AC273559A70053A44D /* PBXTargetDependency */,
+			);
+			name = DebugUniWinCUITests;
+			productName = DebugUniWinCUITests;
+			productReference = 73B2C7AA273559A70053A44D /* DebugUniWinCUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		73DFCB7622B8ED3300DA41F2 /* LibUniWinC */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 73DFCB7D22B8ED3300DA41F2 /* Build configuration list for PBXNativeTarget "LibUniWinC" */;
@@ -87,9 +244,21 @@
 		73DFCB6F22B8ED3300DA41F2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = kirurobo;
 				TargetAttributes = {
+					73B2C78F273559A60053A44D = {
+						CreatedOnToolsVersion = 13.1;
+					};
+					73B2C79F273559A70053A44D = {
+						CreatedOnToolsVersion = 13.1;
+						TestTargetID = 73B2C78F273559A60053A44D;
+					};
+					73B2C7A9273559A70053A44D = {
+						CreatedOnToolsVersion = 13.1;
+						TestTargetID = 73B2C78F273559A60053A44D;
+					};
 					73DFCB7622B8ED3300DA41F2 = {
 						CreatedOnToolsVersion = 10.2.1;
 						LastSwiftMigration = 1020;
@@ -110,11 +279,37 @@
 			projectRoot = "";
 			targets = (
 				73DFCB7622B8ED3300DA41F2 /* LibUniWinC */,
+				73B2C78F273559A60053A44D /* DebugUniWinC */,
+				73B2C79F273559A70053A44D /* DebugUniWinCTests */,
+				73B2C7A9273559A70053A44D /* DebugUniWinCUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		73B2C78E273559A60053A44D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73B2C79A273559A60053A44D /* Preview Assets.xcassets in Resources */,
+				73B2C797273559A60053A44D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C79E273559A70053A44D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C7A8273559A70053A44D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		73DFCB7522B8ED3300DA41F2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -145,19 +340,230 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		73B2C78C273559A60053A44D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73B2C795273559A60053A44D /* ContentView.swift in Sources */,
+				73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */,
+				73B2C793273559A60053A44D /* DebugUniWinCApp.swift in Sources */,
+				73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */,
+				73B2C7C027355B030053A44D /* OverlayView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C79C273559A70053A44D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73B2C7A5273559A70053A44D /* DebugUniWinCTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73B2C7A6273559A70053A44D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73B2C7B1273559A70053A44D /* DebugUniWinCUITestsLaunchTests.swift in Sources */,
+				73B2C7AF273559A70053A44D /* DebugUniWinCUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		73DFCB7322B8ED3300DA41F2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				73B2C7BD273559C80053A44D /* LibUniWinC.swift in Sources */,
 				731C6C6E25724025002E9709 /* OverlayView.swift in Sources */,
 				73575EF922BE18B200E9F019 /* LibUniWinC.mm in Sources */,
-				73575EF522BE0AB300E9F019 /* LibUniWinC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		73B2C7A2273559A70053A44D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 73B2C78F273559A60053A44D /* DebugUniWinC */;
+			targetProxy = 73B2C7A1273559A70053A44D /* PBXContainerItemProxy */;
+		};
+		73B2C7AC273559A70053A44D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 73B2C78F273559A60053A44D /* DebugUniWinC */;
+			targetProxy = 73B2C7AB273559A70053A44D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		73B2C7B2273559A70053A44D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = DebugUniWinC/DebugUniWinC.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DebugUniWinC/Preview Content\"";
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 kirurobo. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinC;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		73B2C7B3273559A70053A44D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_ENTITLEMENTS = DebugUniWinC/DebugUniWinC.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DebugUniWinC/Preview Content\"";
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 kirurobo. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinC;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		73B2C7B4273559A70053A44D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DebugUniWinC.app/Contents/MacOS/DebugUniWinC";
+			};
+			name = Debug;
+		};
+		73B2C7B5273559A70053A44D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DebugUniWinC.app/Contents/MacOS/DebugUniWinC";
+			};
+			name = Release;
+		};
+		73B2C7B6273559A70053A44D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinCUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = DebugUniWinC;
+			};
+			name = Debug;
+		};
+		73B2C7B7273559A70053A44D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F4K53USRZ7;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.DebugUniWinCUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = DebugUniWinC;
+			};
+			name = Release;
+		};
 		73DFCB7B22B8ED3300DA41F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -290,7 +696,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 0.8.2;
+				MARKETING_VERSION = 0.8.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.libuniwinc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -318,7 +724,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 0.8.2;
+				MARKETING_VERSION = 0.8.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirurobo.libuniwinc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -331,6 +737,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		73B2C7B8273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73B2C7B2273559A70053A44D /* Debug */,
+				73B2C7B3273559A70053A44D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		73B2C7B9273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinCTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73B2C7B4273559A70053A44D /* Debug */,
+				73B2C7B5273559A70053A44D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		73B2C7BA273559A70053A44D /* Build configuration list for PBXNativeTarget "DebugUniWinCUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73B2C7B6273559A70053A44D /* Debug */,
+				73B2C7B7273559A70053A44D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		73DFCB7222B8ED3300DA41F2 /* Build configuration list for PBXProject "LibUniWinC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

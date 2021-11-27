@@ -17,12 +17,12 @@ using UnityEditor;
 namespace Kirurobo
 {
     /// <summary>
-    /// Windows / macOS のネイティブプラグインラッパー
+    /// Native plugin wrapper for LibUniWinC
     /// </summary>
     internal class UniWinCore : IDisposable
     {
         /// <summary>
-        /// 透明化の方式
+        /// Type of transparent method for Windows only
         /// </summary>
         public enum TransparentType : int
         {
@@ -102,6 +102,9 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern void SetBorderless([MarshalAs(UnmanagedType.U1)] bool bEnabled);
+
+            [DllImport("LibUniWinC")]
+            public static extern void SetAlphaValue(float alpha);
 
             [DllImport("LibUniWinC")]
             public static extern void SetClickThrough([MarshalAs(UnmanagedType.U1)] bool bEnabled);
@@ -192,11 +195,11 @@ namespace Kirurobo
         static WindowStateEventType windowStateEventType = WindowStateEventType.None;
 
 #if UNITY_EDITOR
-        // 参考 http://baba-s.hatenablog.com/entry/2017/09/17/135018
         /// <summary>
-        /// ゲームビューのEditorWindowを取得
+        /// Get the Unity editor window
         /// </summary>
         /// <returns></returns>
+        /// <seealso href="http://baba-s.hatenablog.com/entry/2017/09/17/135018"/>
         public static EditorWindow GetGameView()
         {
             var assembly = typeof(EditorWindow).Assembly;
@@ -207,44 +210,44 @@ namespace Kirurobo
 #endif
 
         /// <summary>
-        /// ウィンドウ操作ができる状態ならtrueを返す
+        /// Determines whether a window is attached and available
         /// </summary>
         /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
-        public bool IsActive = false;
+        public bool IsActive { get; private set; } = false;
 
         /// <summary>
-        /// 最前面表示になっているかどうか
+        /// Determines whether the attached window is always on the front
         /// </summary>
         public bool IsTopmost { get { return (IsActive && _isTopmost); } }
         private bool _isTopmost = false;
 
         /// <summary>
-        /// 常に最背面表示になっているかどうか
+        /// Determines whether the attached window is always on the bottom
         /// </summary>
         public bool IsBottommost { get { return (IsActive && _isBottommost); } }
         private bool _isBottommost = false;
 
         /// <summary>
-        /// ウィンドウ透過となっているか
+        /// Determines whether the attached window is transparent
         /// </summary>
         public bool IsTransparent { get { return (IsActive && _isTransparent); } }
         private bool _isTransparent = false;
 
         /// <summary>
-        /// クリックスルー（マウス操作を受け取らない状態）となっているか
+        /// Determines whether the attached window is click-through (i.e., does not receive any mouse action)
         /// </summary>
         public bool IsClickThrough { get { return (IsActive && _isClickThrough); } }
         private bool _isClickThrough = false;
 
         /// <summary>
-        /// ウィンドウ透過方式
+        /// Type of transparent method for Windows
         /// </summary>
         private TransparentType transparentType = TransparentType.Alpha;
 
         /// <summary>
-        /// Layered Windows で透過する色
+        /// The color to use for transparency when the transparentType is ColorKey
         /// </summary>
-        private Color32 ChromakeyColor = new Color32(1, 0, 1, 0);
+        private Color32 keyColor = new Color32(1, 0, 1, 0);
 
 
         #region Constructor or destructor
@@ -478,6 +481,18 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// Set the window alpha
+        /// </summary>
+        /// <param name="alpha">0.0 - 1.0</param>
+        public void SetAlphaValue(float alpha)
+        {
+            // Windowsのエディタでは、一度半透明にしてしまうと表示が更新されなくなるため無効化。MacならOK
+#if !UNITY_EDITOR_WIN
+            LibUniWinC.SetAlphaValue(alpha);
+#endif
+        }
+
+        /// <summary>
         /// Set the window z-order (Topmost or not).
         /// </summary>
         /// <param name="isTopmost">If set to <c>true</c> is top.</param>
@@ -570,17 +585,17 @@ namespace Kirurobo
             return size;
         }
 
-        #endregion
+#endregion
 
-        #region File opening
+#region File opening
         public void SetAllowDrop(bool enabled)
         {
             LibUniWinC.SetAllowDrop(enabled);
         }
 
-        #endregion
+#endregion
 
-        #region Event observers
+#region Event observers
 
         /// <summary>
         /// Check files dropping and unset the dropped flag
@@ -640,9 +655,9 @@ namespace Kirurobo
             return true;
         }
 
-        #endregion
+#endregion
 
-        #region About mouse cursor
+#region About mouse cursor
         /// <summary>
         /// Set the mouse pointer position.
         /// </summary>
@@ -668,9 +683,9 @@ namespace Kirurobo
         {
             return true;
         }
-        #endregion
+#endregion
 
-        #region for Windows only
+#region for Windows only
         /// <summary>
         /// 透過方法を指定（Windowsのみ対応）
         /// </summary>
@@ -688,11 +703,11 @@ namespace Kirurobo
         public void SetKeyColor(Color32 color)
         {
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
-            ChromakeyColor = color;
+            keyColor = color;
         }
-        #endregion
+#endregion
 
-        #region About monitors
+#region About monitors
         /// <summary>
         /// Get the monitor index where the window is located
         /// </summary>
@@ -783,7 +798,7 @@ namespace Kirurobo
         {
             return LibUniWinC.GetDebugInfo();
         }
-        #endregion
+#endregion
 
     }
 }
