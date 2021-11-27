@@ -162,7 +162,7 @@ UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
     [LibUniWinC setKeyColorWithColor: color];
 }
 
-UNIWINC_EXPORT void SetWindowAlpha(Float32 alpha) {
+UNIWINC_EXPORT void SetAlphaValue(Float32 alpha) {
     [LibUniWinC setAlphaValueWithAlpha: alpha];
 }
 
