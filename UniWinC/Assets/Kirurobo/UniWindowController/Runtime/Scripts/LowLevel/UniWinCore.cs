@@ -486,7 +486,10 @@ namespace Kirurobo
         /// <param name="alpha">0.0 - 1.0</param>
         public void SetAlphaValue(float alpha)
         {
+            // Windowsのエディタでは、一度半透明にしてしまうと表示が更新されなくなるため無効化。MacならOK
+#if !UNITY_EDITOR_WIN
             LibUniWinC.SetAlphaValue(alpha);
+#endif
         }
 
         /// <summary>
@@ -582,17 +585,17 @@ namespace Kirurobo
             return size;
         }
 
-        #endregion
+#endregion
 
-        #region File opening
+#region File opening
         public void SetAllowDrop(bool enabled)
         {
             LibUniWinC.SetAllowDrop(enabled);
         }
 
-        #endregion
+#endregion
 
-        #region Event observers
+#region Event observers
 
         /// <summary>
         /// Check files dropping and unset the dropped flag
@@ -652,9 +655,9 @@ namespace Kirurobo
             return true;
         }
 
-        #endregion
+#endregion
 
-        #region About mouse cursor
+#region About mouse cursor
         /// <summary>
         /// Set the mouse pointer position.
         /// </summary>
@@ -680,9 +683,9 @@ namespace Kirurobo
         {
             return true;
         }
-        #endregion
+#endregion
 
-        #region for Windows only
+#region for Windows only
         /// <summary>
         /// 透過方法を指定（Windowsのみ対応）
         /// </summary>
@@ -702,9 +705,9 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
-        #endregion
+#endregion
 
-        #region About monitors
+#region About monitors
         /// <summary>
         /// Get the monitor index where the window is located
         /// </summary>
@@ -795,7 +798,7 @@ namespace Kirurobo
         {
             return LibUniWinC.GetDebugInfo();
         }
-        #endregion
+#endregion
 
     }
 }

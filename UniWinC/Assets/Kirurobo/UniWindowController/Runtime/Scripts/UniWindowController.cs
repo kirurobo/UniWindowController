@@ -647,11 +647,20 @@ namespace Kirurobo
             if (Physics.Raycast(ray, out _, raycastMaxDepth))
             {
                 onObject = true;
+                return;
             }
-            else
+
+            // 2Dオブジェクトの上か判定
+            var rayHit2D = Physics2D.GetRayIntersection(ray);
+            Debug.DrawRay(ray.origin, ray.direction, Color.blue, 2f, false);
+            if (rayHit2D.collider != null)
             {
-                onObject = false;
+                onObject = true;
+                return;
             }
+
+            // いずれもヒットしなければオブジェクト上ではないと判断
+            onObject = false;
         }
 
         /// <summary>
