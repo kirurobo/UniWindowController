@@ -17,6 +17,7 @@ static SIZE szVirtualScreen_;
 static INT nPrimaryMonitorHeight_;
 static BOOL bIsTransparent_ = FALSE;
 static BOOL bIsBorderless_ = FALSE;
+static BYTE byAlpha_ = 0xFF;						// ウィンドウ全体の透明度 0x00:透明 ～ 0xFF:不透明
 static BOOL bIsTopmost_ = FALSE;
 static BOOL bIsBottommost_ = FALSE;
 static BOOL bIsBackground_ = FALSE;
@@ -42,8 +43,9 @@ static FilesCallback hDropFilesHandler_ = nullptr;
 
 void attachWindow(const HWND hWnd);
 void detachWindow();
-void refreshWindow();
+void refreshWindowRect();
 void updateScreenSize();
+void applyWindowAlphaValue();
 //void beginHook();
 //void endHook();
 void createCustomWindowProcedure();
@@ -82,7 +84,7 @@ void detachWindow()
 			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement_);
 
 			// 表示を更新
-			refreshWindow();
+			refreshWindowRect();
 		}
 	}
 	hTargetWnd_ = NULL;
@@ -112,6 +114,7 @@ void attachWindow(const HWND hWnd) {
 		//hParentWnd_ = GetParent(hWnd);
 
 		// Apply current settings
+		applyWindowAlphaValue();
 		SetTransparent(bIsTransparent_);
 		SetBorderless(bIsBorderless_);
 		SetTopmost(bIsTopmost_);
@@ -296,23 +299,49 @@ BOOL updateMonitorRectangles() {
 	return TRUE;
 }
 
+/// <summary>
+/// 全面をGlassにする
+/// </summary>
 void enableTransparentByDWM()
 {
 	if (!hTargetWnd_) return;
 
-	// 全面をGlassにする
 	MARGINS margins = { -1 };
 	DwmExtendFrameIntoClientArea(hTargetWnd_, &margins);
 }
 
+/// <summary>
+/// 枠のみGlassにする
+/// </summary>
 void disableTransparentByDWM()
 {
 	if (!hTargetWnd_) return;
 
-	// 枠のみGlassにする
-	//	※ 本来のウィンドウが何らかの範囲指定でGlassにしていた場合は、残念ながら表示が戻りません
+	// TODO: できれば決め打ちでは無くせるとよい
+	//   本来のウィンドウが何らかの範囲指定でGlassにしていた場合は、残念ながら表示が戻りません
 	MARGINS margins = { 0, 0, 0, 0 };
 	DwmExtendFrameIntoClientArea(hTargetWnd_, &margins);
+}
+
+/// <summary>
+/// DWM利用時またはウィンドウ非透過時の透明度設定
+/// </summary>
+void applyWindowAlphaValue() {
+	if (!hTargetWnd_) return;
+
+	// 半透明の場合、レイヤードウィンドウになっていなければ以降はレイヤードウィンドウにする
+	if (byAlpha_ < 0xFF) {
+		LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
+
+		// まだレイヤードウィンドウになっていなければ、設定
+		if (!(exstyle & WS_EX_LAYERED)) {
+			exstyle |= WS_EX_LAYERED;
+			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
+		}
+	}
+
+	COLORREF cref = { 0 };
+	SetLayeredWindowAttributes(hTargetWnd_, cref, byAlpha_, LWA_ALPHA);
 }
 
 /// <summary>
@@ -323,9 +352,14 @@ void enableTransparentBySetLayered()
 	if (!hTargetWnd_) return;
 
 	LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
-	exstyle |= WS_EX_LAYERED;
-	SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
-	SetLayeredWindowAttributes(hTargetWnd_, dwKeyColor_, 0xFF, LWA_COLORKEY);
+
+	// レイヤードウィンドウになっていなければ、設定
+	if (!(exstyle & WS_EX_LAYERED)) {
+		exstyle |= WS_EX_LAYERED;
+		SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
+	}
+
+	SetLayeredWindowAttributes(hTargetWnd_, dwKeyColor_, byAlpha_, LWA_COLORKEY | LWA_ALPHA);
 }
 
 /// <summary>
@@ -333,12 +367,10 @@ void enableTransparentBySetLayered()
 /// </summary>
 void disableTransparentBySetLayered()
 {
-	COLORREF cref = { 0 };
-	SetLayeredWindowAttributes(hTargetWnd_, cref, 0xFF, LWA_ALPHA);
+	if (!hTargetWnd_) return;
 
-	LONG exstyle = originalWindowInfo_.dwExStyle;
-	//exstyle &= ~WinApi.WS_EX_LAYERED;
-	SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
+	COLORREF cref = { 0 };
+	SetLayeredWindowAttributes(hTargetWnd_, cref, byAlpha_, LWA_ALPHA);
 }
 
 /// <summary>
@@ -352,7 +384,7 @@ void findDesktopWindow() {
 /// <summary>
 /// 枠を消した際に描画サイズが合わなくなることに対応するため、ウィンドウを強制リサイズして更新
 /// </summary>
-void refreshWindow() {
+void refreshWindowRect() {
 	if (!hTargetWnd_) return;
 
 	if (IsZoomed(hTargetWnd_)) {
@@ -693,7 +725,7 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 			// 最小化されていたら、次に表示されるときの再描画を期待して、何もしない
 		} else if (newW == w && newH == h) {
 			// ウィンドウ再描画
-			refreshWindow();
+			refreshWindowRect();
 		}
 		else
 		{
@@ -711,6 +743,39 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 
 	// 枠無しかを記憶
 	bIsBorderless_ = bBorderless;
+}
+
+/// <summary>
+/// ウィンドウ全体の透明度を設定
+/// </summary>
+/// <param name=""></param>
+/// <returns></returns>
+void UNIWINC_API SetAlphaValue(const float alpha) {
+	// 透明度指定値を記憶
+	byAlpha_ = (BYTE)(0xFF * alpha);
+
+	if (hTargetWnd_) {
+		if (bIsTransparent_) {
+			// 現在が透過時の処理
+
+			switch (nTransparentType_)
+			{
+			case TransparentType::Alpha:
+				applyWindowAlphaValue();
+				break;
+			case TransparentType::ColorKey:
+				enableTransparentBySetLayered();	// 透過開始と同じ関数で設定
+				break;
+			default:
+				applyWindowAlphaValue();
+				break;
+			}
+		}
+		else {
+			// 現在が非透過での処理
+			applyWindowAlphaValue();
+		}
+	}
 }
 
 /// <summary>
@@ -845,9 +910,11 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 		{
 			LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_TRANSPARENT;
-			if (!bIsTransparent_ && !(originalWindowInfo_.dwExStyle & WS_EX_LAYERED)) {
-				exstyle &= ~WS_EX_LAYERED;
-			}
+
+			// 半透明を維持するため、レイヤードウィンドウは戻さないようコメントアウト
+			//if (!bIsTransparent_ && !(originalWindowInfo_.dwExStyle & WS_EX_LAYERED)) {
+			//	exstyle &= ~WS_EX_LAYERED;
+			//}
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
 		}
 	}

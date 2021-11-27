@@ -104,6 +104,9 @@ namespace Kirurobo
             public static extern void SetBorderless([MarshalAs(UnmanagedType.U1)] bool bEnabled);
 
             [DllImport("LibUniWinC")]
+            public static extern void SetAlphaValue(float alpha);
+
+            [DllImport("LibUniWinC")]
             public static extern void SetClickThrough([MarshalAs(UnmanagedType.U1)] bool bEnabled);
 
             [DllImport("LibUniWinC")]
@@ -475,6 +478,15 @@ namespace Kirurobo
             LibUniWinC.SetBorderless(isTransparent);
 #endif
             this._isTransparent = isTransparent;
+        }
+
+        /// <summary>
+        /// Set the window alpha
+        /// </summary>
+        /// <param name="alpha">0.0 - 1.0</param>
+        public void SetAlphaValue(float alpha)
+        {
+            LibUniWinC.SetAlphaValue(alpha);
         }
 
         /// <summary>

@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>TestLibUniWinC</RootNamespace>
     <AssemblyName>TestLibUniWinC</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -128,9 +128,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>@fc /W "$(ProjectDir)LowLevel\UniWinCore.cs" "$(SolutionDir)..\UniWinC\Assets\Kirurobo\UniWindowController\Runtime\Scripts\LowLevel\UniWinCore.cs"
-if errorlevel 1 @echo $(ProjectDir)\LowLevel\UniWinCore.cs(1): warning 0: Warning: UniWinCore.cs is dfferent from the one in Assets folder. 
+if errorlevel 1 @echo $(ProjectDir)\LowLevel\UniWinCore.cs(1): warning 0: DIFF: UniWinCore.cs is different form in the Unity Assets folder. 
 @fc /W "$(ProjectDir)LowLevel\FilePanel.cs" "$(SolutionDir)..\UniWinC\Assets\Kirurobo\UniWindowController\Runtime\Scripts\LowLevel\FilePanel.cs"
-if errorlevel 1 @echo $(ProjectDir)\LowLevel\FilePanel.cs(1): warning 0: Warning: FilePanel.cs is dfferent from the one in Assets folder. 
+if errorlevel 1 @echo $(ProjectDir)\LowLevel\FilePanel.cs(1): warning 0: DIFF: FilePanel.cs is dfferent from in the Unity Assets folder. 
 set ERRORLEVEL=0
 </PreBuildEvent>
   </PropertyGroup>

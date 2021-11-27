@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Linq;
 using UnityEngine;
 using Kirurobo;
+using System.Drawing;
 
 namespace TestLibUniWinC
 {
     public partial class FormMain : Form
     {
         UniWinCore uniwinc;
+
+        Vector2 relativeWindowPosition = Vector2.zero;
+        
+        /// <summary>
+        /// ウィンドウをドラッグ中なら true
+        /// </summary>
+        bool isDragging = false;
 
 
         /// <summary>
@@ -19,9 +28,55 @@ namespace TestLibUniWinC
         public FormMain()
         {
             InitializeComponent();
+
+            InitializeControls();
         }
 
-        private void Form1_Shown(object sender, EventArgs e)
+        /// <summary>
+        /// 各コントロールについて追加の初期化処理
+        /// </summary>
+        private void InitializeControls()
+        {
+            comboBoxTransparentType.Items.Add(UniWinCore.TransparentType.Alpha);
+            comboBoxTransparentType.Items.Add(UniWinCore.TransparentType.ColorKey);
+            comboBoxTransparentType.Items.Add(UniWinCore.TransparentType.None);
+            comboBoxTransparentType.SelectedIndex = 0;
+            comboBoxTransparentType.SelectedIndexChanged += comboBoxTransparentType_SelectedIndexChanged;
+
+            // 文字や背景が黒だと透けてしまうのは防げていない…
+            textBoxMessage.BackColor = Color.FromArgb(0xFF, 0x33, 0x33, 0x33);
+            //OpaqueAllTextColor(this);
+
+            // グループボックスでもドラッグでウィンドウ移動ができるようにしておく
+            groupBoxWindowSettings.MouseDown += FormMain_MouseDown;
+            groupBoxWindowSettings.MouseMove += FormMain_MouseMove;
+            groupBoxWindowSettings.MouseUp += FormMain_MouseUp;
+
+            groupBoxFileHandling.MouseDown += FormMain_MouseDown;
+            groupBoxFileHandling.MouseMove += FormMain_MouseMove;
+            groupBoxFileHandling.MouseUp += FormMain_MouseUp;
+
+            groupBoxInformation.MouseDown += FormMain_MouseDown;
+            groupBoxInformation.MouseMove += FormMain_MouseMove;
+            groupBoxInformation.MouseUp += FormMain_MouseUp;
+        }
+
+        //private void OpaqueAllTextColor(Control currentControl)
+        //{
+        //    foreach (Control control in currentControl.Controls)
+        //    {
+        //        if (control.HasChildren)
+        //        {
+        //            OpaqueAllTextColor(control);
+        //        }
+        //        var color = control.ForeColor;
+        //        control.ForeColor = System.Drawing.Color.FromArgb(
+        //            0xFF, color.R, color.G, color.B
+        //            );
+        //    }
+        //}
+
+        private void FormMain_Shown(object sender, EventArgs e)
         {
             uniwinc = new UniWinCore();
             uniwinc.AttachMyWindow();
@@ -251,6 +306,54 @@ namespace TestLibUniWinC
             uniwinc.Update();
             
             PerformEvent();
+        }
+
+        /// <summary>
+        /// ウィンドウ透明度を変更
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void trackBarAlpha_Scroll(object sender, EventArgs e)
+        {
+            float alpha = (float)((TrackBar)sender).Value / 255.0f;
+            uniwinc.SetAlphaValue(alpha);
+        }
+
+        private void FormMain_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                isDragging = true;
+                relativeWindowPosition = uniwinc.GetWindowPosition() - uniwinc.GetCursorPosition();
+            }
+        }
+
+        private void FormMain_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragging)
+            {
+                var windowPos = uniwinc.GetCursorPosition() + relativeWindowPosition;
+                uniwinc.SetWindowPosition(windowPos );
+            }
+        }
+
+        private void FormMain_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                isDragging = false;
+            }
+        }
+
+        private void comboBoxTransparentType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var item = comboBoxTransparentType.SelectedItem;
+
+            if ((uniwinc != null) && (item is UniWinCore.TransparentType))
+            {
+                var type = (UniWinCore.TransparentType)item;
+                uniwinc.SetTransparentType(type);
+            }
         }
     }
 }
