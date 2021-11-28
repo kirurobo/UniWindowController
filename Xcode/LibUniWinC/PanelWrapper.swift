@@ -11,15 +11,18 @@ import AppKit
 
 class PanelWrapper {
     public let panel : NSSavePanel
-    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:400, height:40))
-    var popup = NSPopUpButton(frame: NSRect(x:120, y:5, width:200, height:25))
-    var label = NSTextField(frame: NSRect(x: 10, y:0, width: 100, height:25))
+    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:300, height:40))
+    var popup = NSPopUpButton(frame: NSRect(x:100, y:5, width:200, height:25))
+    var label = NSTextField(frame: NSRect(x: 10, y:5, width: 80, height:25))
     var shouldAddSubView : Bool = false
     var extArray : [[String]?] = []
     
     init(panel: NSSavePanel)
     {
         self.panel = panel
+        
+        customAccessoryView.autoresizingMask = [.width, .height]
+        popup.autoresizingMask = [.width, .height]
 
         label.stringValue = "File type : "
         //label.string = "File type : "

@@ -983,6 +983,7 @@ public class LibUniWinC : NSObject {
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
         panelUtil.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+        panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
