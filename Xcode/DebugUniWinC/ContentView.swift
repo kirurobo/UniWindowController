@@ -86,6 +86,26 @@ struct ContentView: View {
 
 
     var body: some View {
+        Text("File dialog test")
+        Button(action: {
+            var filter = Array("Png\tpng\nAll files\t*\nImages\tpng\tjpg\tjpeg\ttiff\n\0".utf16)
+            var title = Array("Select file\0".utf16)
+            var settings = LibUniWinC.PanelSettings(
+                structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
+                flags: 0,
+                titleText: &title,
+                filterText: &filter,
+                initialFile: nil,
+                initialDirectory: nil,
+                defaultExt: nil
+            )
+            let bufferSize = 2048
+            let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
+            buffer.initialize(repeating: UniChar.zero, count: bufferSize)
+            LibUniWinC.openFilePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+        }){ Text("Open") }
+                
+
         Text("Window info").padding()
         
         Button(action: {
