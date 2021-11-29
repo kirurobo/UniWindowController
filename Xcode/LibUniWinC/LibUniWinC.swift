@@ -986,7 +986,7 @@ public class LibUniWinC : NSObject {
         panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
-        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
@@ -1052,7 +1052,7 @@ public class LibUniWinC : NSObject {
         }
         panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
-        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+        //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)

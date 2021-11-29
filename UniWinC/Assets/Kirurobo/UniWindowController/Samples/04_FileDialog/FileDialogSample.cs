@@ -25,7 +25,9 @@ public class FileDialogSample : MonoBehaviour
             Kirurobo.FilePanel.Settings settings = new Kirurobo.FilePanel.Settings();
             settings.filters = new Kirurobo.FilePanel.Filter[]
             {
-                new Kirurobo.FilePanel.Filter("Image files", "png", "jpg", "jpeg", "tiff", "gif", "tga")
+                new Kirurobo.FilePanel.Filter("Image files", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new Kirurobo.FilePanel.Filter("Documents", "txt", "rtf", "doc", "docx"),
+                new Kirurobo.FilePanel.Filter("All files", "*")
             };
             settings.title = "Open a file!";
             settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures);
@@ -41,6 +43,8 @@ public class FileDialogSample : MonoBehaviour
             Kirurobo.FilePanel.Settings settings = new Kirurobo.FilePanel.Settings();
             settings.filters = new Kirurobo.FilePanel.Filter[]
             {
+                new Kirurobo.FilePanel.Filter("Image files", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new Kirurobo.FilePanel.Filter("Documents", "txt", "rtf", "doc", "docx"),
                 new Kirurobo.FilePanel.Filter("All files", "*")
             };
             settings.flags = Kirurobo.FilePanel.Flag.AllowMultipleSelection;
@@ -58,9 +62,11 @@ public class FileDialogSample : MonoBehaviour
             Kirurobo.FilePanel.Settings settings = new Kirurobo.FilePanel.Settings();
             settings.filters = new Kirurobo.FilePanel.Filter[]
             {
-                new Kirurobo.FilePanel.Filter("Text file", "txt", "log")
+                new Kirurobo.FilePanel.Filter("Text file", "txt", "log"),
+                new Kirurobo.FilePanel.Filter("Image files", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new Kirurobo.FilePanel.Filter("All files", "*")
             };
-            settings.title = "Select a text file";
+            settings.title = "No save is actually performed";
             settings.initialFile = "Test.txt";
 
             message = "Canceled";

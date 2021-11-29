@@ -21,7 +21,8 @@ class CustomPanelHelper {
     {
         self.panel = panel
         
-        customAccessoryView.autoresizingMask = [.width, .height]
+        //customAccessoryView.autoresizingMask = [.width, .height]
+        customAccessoryView.autoresizingMask = [.minXMargin, .maxXMargin]
         //popup.autoresizingMask = [.width, .height]
 
         label.stringValue = "File type : "
