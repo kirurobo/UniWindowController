@@ -20,8 +20,8 @@
 		73B2C7C027355B030053A44D /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731C6C6D25724025002E9709 /* OverlayView.swift */; };
 		73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7BC273559C80053A44D /* LibUniWinC.swift */; };
 		73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B2C7C42736ACE00053A44D /* AppDelegate.swift */; };
-		73FC88632753777D0024BABB /* PanelWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FC88622753777D0024BABB /* PanelWrapper.swift */; };
-		73FC886427537FEC0024BABB /* PanelWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FC88622753777D0024BABB /* PanelWrapper.swift */; };
+		73FC88632753777D0024BABB /* CustomPanelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FC88622753777D0024BABB /* CustomPanelHelper.swift */; };
+		73FC886427537FEC0024BABB /* CustomPanelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FC88622753777D0024BABB /* CustomPanelHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,7 +60,7 @@
 		73B2C7C42736ACE00053A44D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73DFCB7722B8ED3300DA41F2 /* LibUniWinC.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibUniWinC.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		73DFCB7A22B8ED3300DA41F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		73FC88622753777D0024BABB /* PanelWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelWrapper.swift; sourceTree = "<group>"; };
+		73FC88622753777D0024BABB /* CustomPanelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPanelHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,7 +163,7 @@
 				73575EF822BE18B200E9F019 /* LibUniWinC.mm */,
 				7306572424F1F87900FAB8BC /* README.md */,
 				731C6C6D25724025002E9709 /* OverlayView.swift */,
-				73FC88622753777D0024BABB /* PanelWrapper.swift */,
+				73FC88622753777D0024BABB /* CustomPanelHelper.swift */,
 			);
 			path = LibUniWinC;
 			sourceTree = "<group>";
@@ -352,7 +352,7 @@
 				73B2C7C127355B060053A44D /* LibUniWinC.swift in Sources */,
 				73B2C793273559A60053A44D /* DebugUniWinCApp.swift in Sources */,
 				73B2C7C52736ACE00053A44D /* AppDelegate.swift in Sources */,
-				73FC886427537FEC0024BABB /* PanelWrapper.swift in Sources */,
+				73FC886427537FEC0024BABB /* CustomPanelHelper.swift in Sources */,
 				73B2C7C027355B030053A44D /* OverlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -378,7 +378,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73FC88632753777D0024BABB /* PanelWrapper.swift in Sources */,
+				73FC88632753777D0024BABB /* CustomPanelHelper.swift in Sources */,
 				73B2C7BD273559C80053A44D /* LibUniWinC.swift in Sources */,
 				731C6C6E25724025002E9709 /* OverlayView.swift in Sources */,
 				73575EF922BE18B200E9F019 /* LibUniWinC.mm in Sources */,

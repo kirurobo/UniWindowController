@@ -1,5 +1,5 @@
 //
-//  OpenPanel.swift
+//  CustomPanelHelper.swift
 //  LibUniWinC
 //
 //  Created by owner on 2021/11/28.
@@ -9,11 +9,11 @@
 import Cocoa
 import AppKit
 
-class PanelWrapper {
+class CustomPanelHelper {
     public let panel : NSSavePanel
-    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:300, height:40))
-    var popup = NSPopUpButton(frame: NSRect(x:100, y:5, width:200, height:25))
-    var label = NSTextField(frame: NSRect(x: 10, y:5, width: 80, height:25))
+    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:400, height:40))
+    var popup = NSPopUpButton(frame: NSRect(x:80, y:5, width:300, height:25))
+    var label = NSTextField(frame: NSRect(x: 10, y:3, width: 70, height:25))
     var shouldAddSubView : Bool = false
     var extArray : [[String]?] = []
     
@@ -22,16 +22,15 @@ class PanelWrapper {
         self.panel = panel
         
         customAccessoryView.autoresizingMask = [.width, .height]
-        popup.autoresizingMask = [.width, .height]
+        //popup.autoresizingMask = [.width, .height]
 
         label.stringValue = "File type : "
         //label.string = "File type : "
-        label.alignment = NSTextAlignment.right
+        //label.alignment = NSTextAlignment.right
         label.isBordered = false
         label.isSelectable = false
         label.isEditable = false
         label.backgroundColor = NSColor.clear
-        label.textColor = NSColor.white
         
         popup.pullsDown = false
         popup.action = #selector(onFileTypeChanged(_:))
@@ -74,6 +73,7 @@ class PanelWrapper {
         }
     }
     
+    /// Apply a file type filter
     @objc func onFileTypeChanged(_ sender: Any?) {
         panel.allowedFileTypes = extArray[popup.indexOfSelectedItem]
     }

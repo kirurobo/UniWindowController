@@ -968,7 +968,7 @@ public class LibUniWinC : NSObject {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSOpenPanel()
-        let panelUtil = PanelWrapper(panel: panel)
+        let panelHelper = CustomPanelHelper(panel: panel)
 
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee
@@ -982,7 +982,7 @@ public class LibUniWinC : NSObject {
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
-        panelUtil.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1040,7 +1040,7 @@ public class LibUniWinC : NSObject {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSSavePanel()
-        let panelUtil = PanelWrapper(panel: panel)
+        let panelHelper = CustomPanelHelper(panel: panel)
         
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
@@ -1061,7 +1061,7 @@ public class LibUniWinC : NSObject {
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
         //panel.allowedFileTypes = fileTypes
-        panelUtil.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.allowsOtherFileTypes = true
 
         panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
