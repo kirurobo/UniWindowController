@@ -330,8 +330,9 @@ namespace Kirurobo
                 return;
             }
 
-            // シーン変更後も破棄しないものとする
-            DontDestroyOnLoad(gameObject);
+            //// ↓DontDestroyOnLoad は必要なら自分で制御するものとしてこれはコメントアウト
+            //// シーン変更後も破棄しないものとする
+            //DontDestroyOnLoad(gameObject);
 
             // フルスクリーン強制解除。エディタでは何もしない
 #if !UNITY_EDITOR
@@ -346,11 +347,11 @@ namespace Kirurobo
                 // メインカメラを探す
                 currentCamera = Camera.main;
 
-                // もしメインカメラが見つからなければ、Findで探す
-                if (!currentCamera)
-                {
-                    currentCamera = GameObject.FindObjectOfType<Camera>();
-                }
+                //// もしメインカメラが見つからなければ、Findで探す
+                //if (!currentCamera)
+                //{
+                //    currentCamera = GameObject.FindObjectOfType<Camera>();
+                //}
             }
 
             // カメラの元の背景を記憶
@@ -661,21 +662,29 @@ namespace Kirurobo
             //     return;
             // }
 
-            // 3Dオブジェクトの上か否かを判定
-            Ray ray = currentCamera.ScreenPointToRay(position);
-            if (Physics.Raycast(ray, out _, raycastMaxDepth))
+            if (currentCamera && currentCamera.isActiveAndEnabled)
             {
-                onObject = true;
-                return;
-            }
+                Ray ray = currentCamera.ScreenPointToRay(position);
 
-            // 2Dオブジェクトの上か判定
-            var rayHit2D = Physics2D.GetRayIntersection(ray);
-            Debug.DrawRay(ray.origin, ray.direction, Color.blue, 2f, false);
-            if (rayHit2D.collider != null)
+                // 3Dオブジェクトの上か否かを判定
+                if (Physics.Raycast(ray, out _, raycastMaxDepth))
+                {
+                    onObject = true;
+                    return;
+                }
+
+                // 2Dオブジェクトの上か判定
+                var rayHit2D = Physics2D.GetRayIntersection(ray);
+                Debug.DrawRay(ray.origin, ray.direction, Color.blue, 2f, false);
+                if (rayHit2D.collider != null)
+                {
+                    onObject = true;
+                    return;
+                }
+            } else
             {
-                onObject = true;
-                return;
+                // カメラが有効でなければメインカメラを取得
+                currentCamera = Camera.main;
             }
 
             // いずれもヒットしなければオブジェクト上ではないと判断
