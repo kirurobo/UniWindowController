@@ -14,7 +14,7 @@ namespace Kirurobo
         // Start is called before the first frame update
         void Start()
         {
-
+            UniWindowController.Instance.isTransparent = false;
         }
 
         // Update is called once per frame
@@ -26,7 +26,9 @@ namespace Kirurobo
         // Show buttons and a textarea
         private void OnGUI()
         {
-            if (GUI.Button(new Rect(10, 10, 160, 80), "Open a file"))
+            float x = 170f;
+
+            if (GUI.Button(new Rect(x, 10, 160, 80), "Open a file"))
             {
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
@@ -45,7 +47,7 @@ namespace Kirurobo
                 });
             }
 
-            if (GUI.Button(new Rect(10, 100, 160, 80), "Open multiple files"))
+            if (GUI.Button(new Rect(x, 100, 160, 80), "Open multiple files"))
             {
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
@@ -65,7 +67,7 @@ namespace Kirurobo
                 });
             }
 
-            if (GUI.Button(new Rect(10, 200, 160, 80), "Save file"))
+            if (GUI.Button(new Rect(x, 200, 160, 80), "Save file"))
             {
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
@@ -84,7 +86,7 @@ namespace Kirurobo
                 });
             }
 
-            GUI.TextArea(new Rect(200, 10, 400, 400), message);
+            GUI.TextArea(new Rect(x + 200, 10, 400, 400), message);
         }
     }
 }

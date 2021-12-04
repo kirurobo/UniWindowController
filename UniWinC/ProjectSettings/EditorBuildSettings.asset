@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Kirurobo/UniWindowController/Samples/00_Menu/SampelMenu.unity
+    path: Assets/Kirurobo/UniWindowController/Samples/00_Menu/SampleMenu.unity
     guid: bca881472b6085049ad37ab0ad8fe61e
   - enabled: 1
     path: Assets/Kirurobo/UniWindowController/Samples/01_SimpleSample/SimpleSample.unity

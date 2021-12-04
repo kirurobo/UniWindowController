@@ -496,6 +496,30 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// カメラを指定。以前のカメラがあれば背景を戻す
+        /// </summary>
+        /// <param name="newCamera"></param>
+        public void SetCamera(Camera newCamera)
+        {
+            // カメラが変更された場合、設定を戻す
+            if (newCamera != currentCamera)
+            {
+                SetCameraBackground(false);
+            }
+
+            currentCamera = newCamera;
+
+            // カメラの元の背景を記憶
+            if (currentCamera)
+            {
+                originalCameraClearFlags = currentCamera.clearFlags;
+                originalCameraBackground = currentCamera.backgroundColor;
+
+                SetCameraBackground(_isTransparent);
+            }
+        }
+
+        /// <summary>
         /// マウス・タッチ操作を下のウィンドウに透過させる
         /// </summary>
         /// <param name="isThrough"></param>
