@@ -1,6 +1,6 @@
 {
     "name": "com.kirurobo.uniwinc",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
     "unity": "2018.4",
@@ -17,29 +17,9 @@
   },
   "samples": [
     {
-      "displayName": "Common files",
-      "description": "Some common assets for samples.",
-      "path": "Samples/Common"
-    },
-    {
-      "displayName": "Simple sample",
-      "description": "Just use the UniWindowController prefab.",
-      "path": "Samples/01_SimpleSample"
-    },
-    {
-      "displayName": "UI sample",
-      "description": "Use uGUI to change parametes.",
-      "path": "Samples/02_UiSample"
-    },
-    {
-      "displayName": "Fit to screen sample",
-      "description": "Enforce fit to monitor",
-      "path": "Samples/03_Fullscreen"
-    },
-    {
-        "displayName": "File dialog sample",
-        "description": "Static functions OpenFilePanel() and SaveFilePanel()",
-        "path": "Samples/04_FileDialog"
+      "displayName": "UniWinC samples",
+      "description": "Sample scenes for UniWindowController",
+      "path": "Samples"
     }
   ]
 }
