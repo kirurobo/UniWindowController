@@ -58,7 +58,7 @@ namespace Kirurobo
         void Start()
         {
             // UniWindowController を探す
-            uniwinc = UniWindowController.Instance;
+            uniwinc = UniWindowController.current;
             
             // UniWindowDragMove を探す
             uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();

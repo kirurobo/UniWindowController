@@ -88,7 +88,7 @@ struct ContentView: View {
     var body: some View {
         Text("File dialog test")
         Button(action: {
-            var filter = Array("All files\t*\nImages　(png, jpg, tiff)\tpng\tjpg\tjpeg\ttiff\n\0".utf16)
+            var filter = Array("All files\t*\nImages (png, jpg, tiff)\tpng\tjpg\tjpeg\ttiff\n\0".utf16)
             var title = Array("Select file\0".utf16)
             var settings = LibUniWinC.PanelSettings(
                 structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
