@@ -49,7 +49,7 @@ public class LibUniWinC : NSObject {
     }
         
     /// Flag constants for file dialog
-    private enum PanelFlag : Int32 {
+    public enum PanelFlag : Int32 {
         case None = 0
         case FileMustExist = 1
         case FolderMustExist = 2
@@ -968,12 +968,12 @@ public class LibUniWinC : NSObject {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSOpenPanel()
+        let panelHelper = CustomPanelHelper(panel: panel)
 
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
 
         if (targetWindow != nil && state.isTopmost) {
             targetWindow?.level = NSWindow.Level.floating
@@ -981,10 +981,12 @@ public class LibUniWinC : NSObject {
         panel.parent = targetWindow     // Nil if not attatched
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
-        panel.allowedFileTypes = fileTypes
+        //panel.allowedFileTypes = fileTypes
+        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+        panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
-        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+        //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
@@ -1038,19 +1040,19 @@ public class LibUniWinC : NSObject {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSSavePanel()
+        let panelHelper = CustomPanelHelper(panel: panel)
         
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-        let fileTypes = getFileTypesArray(text: getStringFromUtf16Array(textPointer: ps.filterText))
         
         if (targetWindow != nil && state.isTopmost) {
             targetWindow?.level = NSWindow.Level.floating
         }
         panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
-        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+        //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
@@ -1058,7 +1060,8 @@ public class LibUniWinC : NSObject {
             panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
-        panel.allowedFileTypes = fileTypes
+        //panel.allowedFileTypes = fileTypes
+        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.allowsOtherFileTypes = true
 
         panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
@@ -1105,26 +1108,6 @@ public class LibUniWinC : NSObject {
         return String(utf16CodeUnits: textPointer!, count: len)
     }
     
-    /// Convert filter text to array for  allowedFileTypes
-    ///  - Parameters:
-    ///     - text: text = "TitleA(TAB)textA1(TAB)extA2(TAB)...extAn(LF)TitleB(TAB)extB1(TAB)extB2...extBn(LF)"
-    ///  - Returns: [extA1, extA2, ..., extAn, extB1, extB2, ..., extBn]
-    private static func getFileTypesArray(text: String) -> [String] {
-        let items = text.components(separatedBy: "\n")
-        var array: [String] = []
-        for item in items {
-            // Drop the first element. Because titles are not supported on macOS yet.
-            array += item.components(separatedBy: "\t").dropFirst()
-        }
-        array.removeAll(where: { $0 == "" })
-        
-        if (array.contains("*")) {
-            return []   // If "*" is included, it will eventually be equivalent to no extension specification.
-        } else {
-            return array
-        }
-    }
-
     /// Call a StringCallback with UTF-16 paramete
     /// - Parameters:
     ///   - callback: Registered callback function

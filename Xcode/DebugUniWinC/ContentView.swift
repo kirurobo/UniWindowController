@@ -86,6 +86,44 @@ struct ContentView: View {
 
 
     var body: some View {
+        Text("File dialog test")
+        Button(action: {
+            var filter = Array("All files\t*\nImages (png, jpg, tiff)\tpng\tjpg\tjpeg\ttiff\n\0".utf16)
+            var title = Array("Select file\0".utf16)
+            var settings = LibUniWinC.PanelSettings(
+                structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
+                flags: 0,
+                titleText: &title,
+                filterText: &filter,
+                initialFile: nil,
+                initialDirectory: nil,
+                defaultExt: nil
+            )
+            let bufferSize = 2048
+            let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
+            buffer.initialize(repeating: UniChar.zero, count: bufferSize)
+            LibUniWinC.openFilePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+        }){ Text("Open") }
+
+        Button(action: {
+            var filter = Array("Text file (txt)\ttxt\nImages　(png, jpg, tiff)\tpng\tjpg\tjpeg\ttiff\nAll files\t*\n\0".utf16)
+            var title = Array("No save is actually performed\0".utf16)
+            var settings = LibUniWinC.PanelSettings(
+                structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
+                flags: 0,
+                titleText: &title,
+                filterText: &filter,
+                initialFile: nil,
+                initialDirectory: nil,
+                defaultExt: nil
+            )
+            let bufferSize = 2048
+            let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
+            buffer.initialize(repeating: UniChar.zero, count: bufferSize)
+            LibUniWinC.openSavePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+        }){ Text("Save") }
+
+
         Text("Window info").padding()
         
         Button(action: {

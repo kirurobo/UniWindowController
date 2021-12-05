@@ -662,7 +662,7 @@ namespace Kirurobo
         /// Set the mouse pointer position.
         /// </summary>
         /// <param name="position">Position.</param>
-        public void SetCursorPosition(Vector2 position)
+        public static void SetCursorPosition(Vector2 position)
         {
             LibUniWinC.SetCursorPosition(position.x, position.y);
         }
@@ -671,7 +671,7 @@ namespace Kirurobo
         /// Get the mouse pointer position.
         /// </summary>
         /// <returns>The position.</returns>
-        public Vector2 GetCursorPosition()
+        public static Vector2 GetCursorPosition()
         {
             Vector2 pos = Vector2.zero;
             LibUniWinC.GetCursorPosition(out pos.x, out pos.y);
@@ -721,12 +721,19 @@ namespace Kirurobo
         /// Get the number of connected monitors
         /// </summary>
         /// <returns>Count</returns>
-        public int GetMonitorCount()
+        public static int GetMonitorCount()
         {
             return LibUniWinC.GetMonitorCount();
         }
 
-        public bool GetMonitorRectangle(int index, out Vector2 position, out Vector2 size)
+        /// <summary>
+        /// Get monitor position and size
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="position"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static bool GetMonitorRectangle(int index, out Vector2 position, out Vector2 size)
         {
             return LibUniWinC.GetMonitorRectangle(index, out position.x, out position.y, out size.x, out size.y);
         }

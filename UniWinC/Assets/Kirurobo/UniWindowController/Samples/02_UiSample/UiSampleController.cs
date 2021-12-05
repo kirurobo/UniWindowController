@@ -58,7 +58,7 @@ namespace Kirurobo
         void Start()
         {
             // UniWindowController を探す
-            uniwinc = GameObject.FindObjectOfType<UniWindowController>();
+            uniwinc = UniWindowController.current;
             
             // UniWindowDragMove を探す
             uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();
@@ -523,7 +523,7 @@ namespace Kirurobo
             }
             else
             {
-                int count = uniwinc.GetMonitorCount();
+                int count = UniWindowController.GetMonitorCount();
                 for (int i = 0; i < count; i++)
                 {
                     fitWindowDropdown.options.Add(new Dropdown.OptionData("Fit to Monitor " + i));
