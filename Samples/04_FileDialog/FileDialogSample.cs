@@ -14,7 +14,7 @@ namespace Kirurobo
         // Start is called before the first frame update
         void Start()
         {
-            UniWindowController.Instance.isTransparent = false;
+            
         }
 
         // Update is called once per frame
@@ -33,9 +33,9 @@ namespace Kirurobo
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
                 {
-                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
-                new FilePanel.Filter("All files", "*")
+                    new FilePanel.Filter("All files", "*"),
+                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                    new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
                 };
                 settings.title = "Open a file!";
                 settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures);
@@ -52,9 +52,9 @@ namespace Kirurobo
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
                 {
-                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
-                new FilePanel.Filter("All files", "*")
+                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                    new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
+                    new FilePanel.Filter("All files", "*"),
                 };
                 settings.flags = FilePanel.Flag.AllowMultipleSelection;
                 settings.title = "Open multiple files!";
@@ -72,9 +72,9 @@ namespace Kirurobo
                 FilePanel.Settings settings = new FilePanel.Settings();
                 settings.filters = new FilePanel.Filter[]
                 {
-                new FilePanel.Filter("Text file (*.txt;*.log)", "txt", "log"),
-                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                new FilePanel.Filter("All files", "*")
+                    new FilePanel.Filter("Text file (*.txt;*.log)", "txt", "log"),
+                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                    new FilePanel.Filter("All files", "*"),
                 };
                 settings.title = "No save is actually performed";
                 settings.initialFile = "Test.txt";

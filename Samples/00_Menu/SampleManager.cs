@@ -29,14 +29,14 @@ namespace Kirurobo
             }
 
             DontDestroyOnLoad(Instance);
-            DontDestroyOnLoad(UniWindowController.Instance);
+            DontDestroyOnLoad(UniWindowController.current);
 
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
         }
 
         private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
-            UniWindowController.Instance.SetCamera(Camera.main);
+            UniWindowController.current.SetCamera(Camera.main);
         }
 
         // Start is called before the first frame update
@@ -58,10 +58,14 @@ namespace Kirurobo
             {
                 if (GUI.Button(new Rect(0, y, 160, 36), _scenes[index]))
                 {
-                    // SimpleSample の場合はスクリプトでの制御がないため、ここで透明化
                     if (index == 1)
                     {
-                        UniWindowController.Instance.isTransparent = true;
+                        // SimpleSample の場合はスクリプトでの制御がないため、ここで透明化
+                        UniWindowController.current.isTransparent = true;
+                    } else if (index == 3)
+                    {
+                        // FullScreenSample の場合は強制的に最大化
+                        UniWindowController.current.shouldFitMonitor = true;
                     }
 
                     SceneManager.LoadScene(_scenes[index]);
