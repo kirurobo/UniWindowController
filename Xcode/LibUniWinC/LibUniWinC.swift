@@ -975,17 +975,26 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
 
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.floating
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                // Temporarily disable always on top in order to show the dialog
+                targetWindow?.level = NSWindow.Level.floating
+            }
+            // Set attached window as the parent
+            panel.parent = targetWindow
+        } else {
+            // Find my window if the window is not attached
+            let myWindow: NSWindow = NSApp.orderedWindows[0]
+            panel.parent = myWindow
         }
-        panel.parent = targetWindow     // Nil if not attatched
+        
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
-        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)        
         //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
@@ -1017,6 +1026,7 @@ public class LibUniWinC : NSObject {
         }
         if (targetWindow != nil) {
             if (state.isTopmost) {
+                // Re-enable always on top
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
@@ -1047,9 +1057,19 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.floating
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                // Temporarily disable always on top in order to show the dialog
+                targetWindow?.level = NSWindow.Level.floating
+            }
+            // Set attached window as the parent
+            panel.parent = targetWindow
+        } else {
+            // Find my window if the window is not attached
+            let myWindow: NSWindow = NSApp.orderedWindows[0]
+            panel.parent = myWindow
         }
+        
         panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1083,6 +1103,7 @@ public class LibUniWinC : NSObject {
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
+                // Re-enable always on top
                 _makeKeyWindow()
 //                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
 //                state.isBorderless = false;     // Suppress the callback
