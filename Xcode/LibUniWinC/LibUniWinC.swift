@@ -282,7 +282,7 @@ public class LibUniWinC : NSObject {
 
     /// Find my own window
     private static func _findMyWindow() -> NSWindow {
-        let myWindow: NSWindow = NSApp.orderedWindows[0]
+        let myWindow: NSWindow = NSApp.orderedWindows.first!
         return myWindow
     }
 
@@ -980,12 +980,13 @@ public class LibUniWinC : NSObject {
                 // Temporarily disable always on top in order to show the dialog
                 targetWindow?.level = NSWindow.Level.floating
             }
+            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
             // Set attached window as the parent
-            panel.parent = targetWindow
+            //panel.parent = targetWindow
         } else {
             // Find my window if the window is not attached
-            let myWindow: NSWindow = NSApp.orderedWindows[0]
-            panel.parent = myWindow
+            //let myWindow: NSWindow? = NSApp.orderedWindows.first
+            //panel.parent = myWindow
         }
         
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
@@ -994,8 +995,9 @@ public class LibUniWinC : NSObject {
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
 
-        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)        
+        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
@@ -1062,12 +1064,13 @@ public class LibUniWinC : NSObject {
                 // Temporarily disable always on top in order to show the dialog
                 targetWindow?.level = NSWindow.Level.floating
             }
+            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
             // Set attached window as the parent
-            panel.parent = targetWindow
+            //panel.parent = targetWindow
         } else {
             // Find my window if the window is not attached
-            let myWindow: NSWindow = NSApp.orderedWindows[0]
-            panel.parent = myWindow
+            //let myWindow: NSWindow = NSApp.orderedWindows[0]
+            //panel.parent = myWindow
         }
         
         panel.parent = targetWindow     // Nil if not attatched
