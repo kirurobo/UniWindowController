@@ -1073,7 +1073,6 @@ public class LibUniWinC : NSObject {
             //panel.parent = myWindow
         }
         
-        panel.parent = targetWindow     // Nil if not attatched
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
