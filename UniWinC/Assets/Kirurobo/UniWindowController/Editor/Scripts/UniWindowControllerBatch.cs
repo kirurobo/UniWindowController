@@ -1,13 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.Build.Content;
 using UnityEditor.Build.Reporting;
-using UnityEditor.Experimental;
-using UnityEditor.SceneManagement;
+// ReSharper disable UnusedMember.Local
 
 namespace Kirurobo
 {

@@ -9,7 +9,6 @@
 //   そこで丸ごと UNITY_EDITOR が無い場合は無視するものとした
 #if UNITY_EDITOR
 
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;

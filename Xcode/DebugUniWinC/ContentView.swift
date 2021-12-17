@@ -102,7 +102,7 @@ struct ContentView: View {
             let bufferSize = 2048
             let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
             buffer.initialize(repeating: UniChar.zero, count: bufferSize)
-            LibUniWinC.openFilePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+            _ = LibUniWinC.openFilePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
         }){ Text("Open") }
 
         Button(action: {
@@ -120,7 +120,7 @@ struct ContentView: View {
             let bufferSize = 2048
             let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: bufferSize)
             buffer.initialize(repeating: UniChar.zero, count: bufferSize)
-            LibUniWinC.openSavePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
+            _ = LibUniWinC.openSavePanel(lpSettings: &settings, lpBuffer: buffer, bufferSize: UInt32(bufferSize))
         }){ Text("Save") }
 
 
