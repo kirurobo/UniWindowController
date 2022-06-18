@@ -462,8 +462,8 @@ public class LibUniWinC : NSObject {
             } else {
                 setTopmost(isTopmost: state.isTopmost)
             }
-            setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
+            setBorderless(isBorderless: state.isBorderless)
             setMaximized(isZoomed: state.isZoomed)
             setAlphaValue(alpha: state.alphaValue)
         }
@@ -500,9 +500,9 @@ public class LibUniWinC : NSObject {
 //                window.titleVisibility = .hidden
 //                window.styleMask.insert(.borderless)
 //            }
+            //window.hasShadow = false      // _setWindowBorderless()に移動
             window.backgroundColor = NSColor.clear
             window.isOpaque = false
-            window.hasShadow = false
 
             //window.contentView?.wantsLayer = true
         } else {
@@ -512,7 +512,7 @@ public class LibUniWinC : NSObject {
 //            }
             window.backgroundColor = orgWindowInfo.backgroundColor
             window.isOpaque = orgWindowInfo.isOpaque
-            window.hasShadow = orgWindowInfo.hasShadow
+            //window.hasShadow = orgWindowInfo.hasShadow
         }
     }
     
@@ -540,6 +540,7 @@ public class LibUniWinC : NSObject {
     ///   - isBorderless: 枠なしにするか
     private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
         if (isBorderless) {
+            window.hasShadow = false
             window.styleMask = [.borderless]
             //window.styleMask.insert(.borderless)
             window.titlebarAppearsTransparent = true
@@ -552,7 +553,7 @@ public class LibUniWinC : NSObject {
             }
             window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
             window.titleVisibility = orgWindowInfo.titleVisibility
-            
+            window.hasShadow = orgWindowInfo.hasShadow
         }
     }
 

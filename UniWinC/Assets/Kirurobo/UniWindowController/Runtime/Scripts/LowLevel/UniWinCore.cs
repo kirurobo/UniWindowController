@@ -35,8 +35,6 @@ namespace Kirurobo
         /// <summary>
         /// State changed event type (Experimental)
         /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
         public enum WindowStateEventType : int
         {
             None = 0,
