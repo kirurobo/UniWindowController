@@ -282,7 +282,7 @@ public class LibUniWinC : NSObject {
 
     /// Find my own window
     private static func _findMyWindow() -> NSWindow {
-        let myWindow: NSWindow = NSApp.orderedWindows[0]
+        let myWindow: NSWindow = NSApp.orderedWindows.first!
         return myWindow
     }
 
@@ -462,8 +462,8 @@ public class LibUniWinC : NSObject {
             } else {
                 setTopmost(isTopmost: state.isTopmost)
             }
-            setBorderless(isBorderless: state.isBorderless)
             setTransparent(isTransparent: state.isTransparent)
+            setBorderless(isBorderless: state.isBorderless)
             setMaximized(isZoomed: state.isZoomed)
             setAlphaValue(alpha: state.alphaValue)
         }
@@ -500,9 +500,9 @@ public class LibUniWinC : NSObject {
 //                window.titleVisibility = .hidden
 //                window.styleMask.insert(.borderless)
 //            }
+            //window.hasShadow = false      // _setWindowBorderless()に移動
             window.backgroundColor = NSColor.clear
             window.isOpaque = false
-            window.hasShadow = false
 
             //window.contentView?.wantsLayer = true
         } else {
@@ -512,7 +512,7 @@ public class LibUniWinC : NSObject {
 //            }
             window.backgroundColor = orgWindowInfo.backgroundColor
             window.isOpaque = orgWindowInfo.isOpaque
-            window.hasShadow = orgWindowInfo.hasShadow
+            //window.hasShadow = orgWindowInfo.hasShadow
         }
     }
     
@@ -540,6 +540,7 @@ public class LibUniWinC : NSObject {
     ///   - isBorderless: 枠なしにするか
     private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
         if (isBorderless) {
+            window.hasShadow = false
             window.styleMask = [.borderless]
             //window.styleMask.insert(.borderless)
             window.titlebarAppearsTransparent = true
@@ -552,7 +553,7 @@ public class LibUniWinC : NSObject {
             }
             window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
             window.titleVisibility = orgWindowInfo.titleVisibility
-            
+            window.hasShadow = orgWindowInfo.hasShadow
         }
     }
 
@@ -975,10 +976,20 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
 
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.floating
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                // Temporarily disable always on top in order to show the dialog
+                targetWindow?.level = NSWindow.Level.floating
+            }
+            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
+            // Set attached window as the parent
+            //panel.parent = targetWindow
+        } else {
+            // Find my window if the window is not attached
+            //let myWindow: NSWindow? = NSApp.orderedWindows.first
+            //panel.parent = myWindow
         }
-        panel.parent = targetWindow     // Nil if not attatched
+        
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
@@ -987,6 +998,7 @@ public class LibUniWinC : NSObject {
 
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
@@ -1017,6 +1029,7 @@ public class LibUniWinC : NSObject {
         }
         if (targetWindow != nil) {
             if (state.isTopmost) {
+                // Re-enable always on top
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
@@ -1047,10 +1060,20 @@ public class LibUniWinC : NSObject {
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
         
-        if (targetWindow != nil && state.isTopmost) {
-            targetWindow?.level = NSWindow.Level.floating
+        if (targetWindow != nil) {
+            if (state.isTopmost) {
+                // Temporarily disable always on top in order to show the dialog
+                targetWindow?.level = NSWindow.Level.floating
+            }
+            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
+            // Set attached window as the parent
+            //panel.parent = targetWindow
+        } else {
+            // Find my window if the window is not attached
+            //let myWindow: NSWindow = NSApp.orderedWindows[0]
+            //panel.parent = myWindow
         }
-        panel.parent = targetWindow     // Nil if not attatched
+        
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1083,6 +1106,7 @@ public class LibUniWinC : NSObject {
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
+                // Re-enable always on top
                 _makeKeyWindow()
 //                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
 //                state.isBorderless = false;     // Suppress the callback

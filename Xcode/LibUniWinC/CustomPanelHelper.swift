@@ -11,8 +11,8 @@ import AppKit
 
 class CustomPanelHelper {
     public let panel : NSSavePanel
-    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:480, height:40))
-    var popup = NSPopUpButton(frame: NSRect(x:80, y:5, width:380, height:25))
+    let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:400, height:40))
+    var popup = NSPopUpButton(frame: NSRect(x:80, y:5, width:310, height:25))
     var label = NSTextField(frame: NSRect(x: 10, y:3, width: 70, height:25))
     var shouldAddSubView : Bool = false
     var extArray : [[String]?] = []
@@ -35,9 +35,23 @@ class CustomPanelHelper {
         
         popup.pullsDown = false
         popup.action = #selector(onFileTypeChanged(_:))
-        popup.target = self        
+        popup.target = self
+        
+        let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(_willPanelCloseObserver(notification:)), name: NSWindow.willCloseNotification, object: panel)
     }
     
+    @objc func _willPanelCloseObserver(notification: Notification) {
+        // パネルを閉じた後に accessoryView が画面に残ってしまっていたため、削除を試みる
+        customAccessoryView.removeFromSuperview()
+        label.removeFromSuperview()
+        popup.removeFromSuperview()
+        panel.accessoryView = nil
+        
+        let center = NotificationCenter.default
+        center.removeObserver(self, name: NSSavePanel.willCloseNotification, object: panel)
+    }
+
     public func addFileType(title: String, ext: [String]?) -> Void {
         popup.addItem(withTitle: title)
         extArray.append(ext)
