@@ -8,6 +8,10 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.8.6] - 2022-06-18
+### Fixed
+- Window shadow in macOS
+
 ## [v0.8.5] - 2021-12-12
 ### Fixed
 - File type selection in macOS
