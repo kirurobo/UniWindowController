@@ -95,7 +95,7 @@ namespace TestLibUniWinC
         /// </summary>
         private void UpdateMonitorCombobox()
         {
-            int count = uniwinc.GetMonitorCount();
+            int count = UniWinCore.GetMonitorCount();
             int index = comboBoxFitMonitor.SelectedIndex;
 
             comboBoxFitMonitor.Items.Clear();
@@ -120,7 +120,7 @@ namespace TestLibUniWinC
         /// </summary>
         private void PrintMonitorInfo()
         {
-            int monitors = uniwinc.GetMonitorCount();
+            int monitors = UniWinCore.GetMonitorCount();
 
             int currentMonitorIndex = uniwinc.GetCurrentMonitor();
 
@@ -129,7 +129,7 @@ namespace TestLibUniWinC
             for (int i = 0; i < monitors; i++)
             {
                 Vector2 pos, size;
-                bool result = uniwinc.GetMonitorRectangle(i, out pos, out size);
+                bool result = UniWinCore.GetMonitorRectangle(i, out pos, out size);
 
                 message += String.Format(
                     "Monitor {0}: X:{1}, Y:{2} - W:{3}, H:{4}\r\n",
@@ -148,11 +148,12 @@ namespace TestLibUniWinC
             //var hdesktop = UniWinC.GetDesktopWindowHandle();
             //var pid = UniWinC.GetMyProcessId();
             var myPid = System.Diagnostics.Process.GetCurrentProcess().Id;
-            var clientSize = this.ClientSize;
+            //var clientSize = this.ClientSize;
+            var clientSize = uniwinc.GetClientSize();
 
             string message = String.Format(
                 "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X}\r\nPID {9}\r\n",
-                pos.x, pos.y, size.x, size.y, clientSize.Width, clientSize.Height,
+                pos.x, pos.y, size.x, size.y, clientSize.x, clientSize.y,
                 "", this.Handle.ToInt32(),
                 "", myPid
                 );
@@ -324,7 +325,7 @@ namespace TestLibUniWinC
             if (e.Button == MouseButtons.Left)
             {
                 isDragging = true;
-                relativeWindowPosition = uniwinc.GetWindowPosition() - uniwinc.GetCursorPosition();
+                relativeWindowPosition = uniwinc.GetWindowPosition() - UniWinCore.GetCursorPosition();
             }
         }
 
@@ -332,7 +333,7 @@ namespace TestLibUniWinC
         {
             if (isDragging)
             {
-                var windowPos = uniwinc.GetCursorPosition() + relativeWindowPosition;
+                var windowPos = UniWinCore.GetCursorPosition() + relativeWindowPosition;
                 uniwinc.SetWindowPosition(windowPos );
             }
         }

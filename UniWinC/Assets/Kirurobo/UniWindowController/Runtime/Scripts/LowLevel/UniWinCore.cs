@@ -132,6 +132,10 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool GetClientSize(out float x, out float y);
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool RegisterDropFilesCallback([MarshalAs(UnmanagedType.FunctionPtr)] StringCallback callback);
 
             [DllImport("LibUniWinC")]
@@ -564,9 +568,9 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// Set the window Size.
+        /// Set the window size.
         /// </summary>
-        /// <param name="size">Size.</param>
+        /// <param name="size">x is width and y is height</param>
         public void SetWindowSize(Vector2 size)
         {
             LibUniWinC.SetSize(size.x, size.y);
@@ -575,7 +579,7 @@ namespace Kirurobo
         /// <summary>
         /// Get the window Size.
         /// </summary>
-        /// <returns>The Size.</returns>
+        /// <returns>x is width and y is height</returns>
         public Vector2 GetWindowSize()
         {
             Vector2 size = Vector2.zero;
@@ -583,9 +587,21 @@ namespace Kirurobo
             return size;
         }
 
-#endregion
+        /// <summary>
+        /// Get the client area ize.
+        /// </summary>
+        /// <returns>x is width and y is height</returns>
+        [Obsolete]
+        public Vector2 GetClientSize()
+        {
+            Vector2 size = Vector2.zero;
+            LibUniWinC.GetClientSize(out size.x, out size.y);
+            return size;
+        }
 
-#region File opening
+        #endregion
+
+        #region File opening
         public void SetAllowDrop(bool enabled)
         {
             LibUniWinC.SetAllowDrop(enabled);
