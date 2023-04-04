@@ -104,6 +104,10 @@ UNIWINC_EXPORT BOOL GetSize(Float32* width, Float32* height) {
     return [LibUniWinC getSizeWithWidth:width height:height];
 }
 
+UNIWINC_EXPORT BOOL GetClientSize(Float32* width, Float32* height) {
+    return [LibUniWinC getSizeWithWidth:width height:height];
+}
+
 UNIWINC_EXPORT SInt32 GetCurrentMonitor() {
     return [LibUniWinC getCurrentMonitor];
 }
