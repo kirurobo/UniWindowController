@@ -678,29 +678,41 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		GetWindowRect(hTargetWnd_, &rcWin);
 		GetClientRect(hTargetWnd_, &rcCli);
 
+		newX = rcWin.left;
+		newY = rcWin.top;
 		int w = rcWin.right - rcWin.left;
 		int h = rcWin.bottom - rcWin.top;
 
 		int bZoomed = IsZoomed(hTargetWnd_);
 		int bIconic = IsIconic(hTargetWnd_);
 
+		// クライアント領域とウィンドウサイズが同じならば枠無しと判定
+		BOOL bNoBorder = (w == (rcCli.right - rcCli.left)) && (h == (rcCli.bottom - rcCli.top));
+
 		// 最大化されていたら、一度最大化は解除
 		if (bZoomed) {
 			ShowWindow(hTargetWnd_, SW_NORMAL);
 		}
 
-		if (bBorderless) {
+		if (bNoBorder == bBorderless) {
+			newW = w;
+			newH = h;
+		}
+		else if (bBorderless) {
 			// 枠無しウィンドウにする
 			LONG currentWS = (WS_VISIBLE | WS_POPUP);
 			SetWindowLong(hTargetWnd_, GWL_STYLE, currentWS);
 
+			//AdjustWindowRect(&rcCli, currentWS, FALSE);
 			newW = rcCli.right - rcCli.left;
 			newH = rcCli.bottom - rcCli.top;
 
-			int bw = (w - newW) / 2;	// 枠の片側幅 [px]
-			newX = rcWin.left + bw;
-			newY = rcWin.top + ((h - newH) - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
+			newX = rcWin.left + ((w - newW ) / 2);
+			newY = rcWin.top + ((h - newH) / 2);
 
+			//int bw = (w - newW) / 2;	// 枠の片側幅 [px]
+			//newX = rcWin.left + bw;
+			//newY = rcWin.top + ((h - newH) - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
 		}
 		else {
 			// ウィンドウスタイルを戻す
@@ -710,11 +722,15 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 			int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
 			int bw = dx / 2;	// 枠の片側幅 [px]
 
-			newW = rcCli.right - rcCli.left + dx;
-			newH = rcCli.bottom- rcCli.top + dy;
+			AdjustWindowRect(&rcCli, originalWindowInfo_.dwStyle, FALSE);
+			newW = rcCli.right - rcCli.left;
+			newH = rcCli.bottom - rcCli.top;
 
-			newX = rcWin.left - bw;
-			newY = rcWin.top - (dy - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
+			newX = rcWin.left + ((w - newW) / 2);
+			newY = rcWin.top + ((h - newH) / 2);
+
+			//newX = rcWin.left - bw;
+			//newY = rcWin.top - (dy - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
 		}
 
 		// ウィンドウサイズが変化しないか、最大化や最小化状態なら標準のサイズ更新
@@ -1008,6 +1024,27 @@ BOOL UNIWINC_API GetSize(float* width, float* height) {
 	if (hTargetWnd_ == NULL) return FALSE;
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
+		*width = (float)(rect.right - rect.left);	// +1 は不要なよう
+		*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/// <summary>
+/// Get the client area size of the window
+/// </summary>
+/// <param name="width">幅 [px]</param>
+/// <param name="height">高さ [px]</param>
+/// <returns>成功すれば true</returns>
+BOOL UNIWINC_API GetClientSize(float* width, float* height) {
+	*width = 0;
+	*height = 0;
+
+	if (hTargetWnd_ == NULL) return FALSE;
+	RECT rect;
+	if (GetClientRect(hTargetWnd_, &rect)) {
 		*width = (float)(rect.right - rect.left);	// +1 は不要なよう
 		*height = (float)(rect.bottom - rect.top);	// +1 は不要なよう
 

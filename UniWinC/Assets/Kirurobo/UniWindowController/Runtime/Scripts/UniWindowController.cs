@@ -271,6 +271,15 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// クライアント領域のサイズを取得
+        /// </summary>
+        [Obsolete]
+        public Vector2 clientSize
+        {
+            get { return (_uniWinCore != null ? _uniWinCore.GetClientSize() : Vector2.zero); }
+        }
+
+        /// <summary>
         /// マウスカーソル座標を取得・設定
         /// </summary>
         public Vector2 cursorPosition

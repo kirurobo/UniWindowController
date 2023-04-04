@@ -27,7 +27,7 @@ namespace Kirurobo
         private float touchDuration = 0f;
         private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
         private float lastEventOccurredTime = -5f;     // Timestamp the last event occurred [s]
-        private float eventMessageTimeout = 5f;        // Show event message while this period [s]
+        private float eventMessageTimeout = 1f;        // Show event message while this period [s]
 
         public Toggle transparentToggle;
         public Slider alphaSlider;
@@ -312,6 +312,7 @@ namespace Kirurobo
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
+                    + "\nClient: " + uniwinc.clientSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
                     + "\nUnity Cur.:" + (Vector2)Input.mousePosition
                     );

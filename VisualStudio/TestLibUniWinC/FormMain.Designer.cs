@@ -83,10 +83,10 @@
             this.trackBarAlpha.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBarAlpha.LargeChange = 16;
-            this.trackBarAlpha.Location = new System.Drawing.Point(241, 21);
+            this.trackBarAlpha.Location = new System.Drawing.Point(425, 21);
             this.trackBarAlpha.Maximum = 255;
             this.trackBarAlpha.Name = "trackBarAlpha";
-            this.trackBarAlpha.Size = new System.Drawing.Size(232, 56);
+            this.trackBarAlpha.Size = new System.Drawing.Size(289, 56);
             this.trackBarAlpha.SmallChange = 8;
             this.trackBarAlpha.TabIndex = 4;
             this.trackBarAlpha.TickFrequency = 16;
@@ -108,7 +108,7 @@
             this.groupBoxWindowSettings.Controls.Add(this.checkBoxTransparent);
             this.groupBoxWindowSettings.Location = new System.Drawing.Point(12, 12);
             this.groupBoxWindowSettings.Name = "groupBoxWindowSettings";
-            this.groupBoxWindowSettings.Size = new System.Drawing.Size(490, 173);
+            this.groupBoxWindowSettings.Size = new System.Drawing.Size(731, 173);
             this.groupBoxWindowSettings.TabIndex = 5;
             this.groupBoxWindowSettings.TabStop = false;
             this.groupBoxWindowSettings.Text = "Window settings";
@@ -116,7 +116,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(176, 41);
+            this.label1.Location = new System.Drawing.Point(368, 35);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 15);
             this.label1.TabIndex = 7;
@@ -138,7 +138,7 @@
             // 
             this.comboBoxTransparentType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTransparentType.FormattingEnabled = true;
-            this.comboBoxTransparentType.Location = new System.Drawing.Point(186, 74);
+            this.comboBoxTransparentType.Location = new System.Drawing.Point(144, 35);
             this.comboBoxTransparentType.Name = "comboBoxTransparentType";
             this.comboBoxTransparentType.Size = new System.Drawing.Size(121, 23);
             this.comboBoxTransparentType.TabIndex = 3;
@@ -246,7 +246,6 @@
             this.checkBoxAllowDrop.TabIndex = 8;
             this.checkBoxAllowDrop.Text = "Allow drop files";
             this.checkBoxAllowDrop.UseVisualStyleBackColor = true;
-            this.checkBoxAllowDrop.UseWaitCursor = true;
             this.checkBoxAllowDrop.Click += new System.EventHandler(this.checkBoxAllowDrop_CheckedChanged);
             // 
             // buttonSaveFile
@@ -258,7 +257,6 @@
             this.buttonSaveFile.TabIndex = 6;
             this.buttonSaveFile.Text = "Save-panel";
             this.buttonSaveFile.UseVisualStyleBackColor = true;
-            this.buttonSaveFile.UseWaitCursor = true;
             this.buttonSaveFile.Click += new System.EventHandler(this.buttonSaveFile_Click);
             // 
             // buttonOpenFile
@@ -270,7 +268,6 @@
             this.buttonOpenFile.TabIndex = 7;
             this.buttonOpenFile.Text = "Open-panel";
             this.buttonOpenFile.UseVisualStyleBackColor = true;
-            this.buttonOpenFile.UseWaitCursor = true;
             this.buttonOpenFile.Click += new System.EventHandler(this.buttonOpenFile_Click);
             // 
             // FormMain

@@ -35,8 +35,6 @@ namespace Kirurobo
         /// <summary>
         /// State changed event type (Experimental)
         /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
         public enum WindowStateEventType : int
         {
             None = 0,
@@ -131,6 +129,10 @@ namespace Kirurobo
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetSize(out float x, out float y);
+
+            [DllImport("LibUniWinC"), Obsolete]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool GetClientSize(out float x, out float y);
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -486,7 +488,10 @@ namespace Kirurobo
         /// <param name="alpha">0.0 - 1.0</param>
         public void SetAlphaValue(float alpha)
         {
+            // Windowsのエディタでは、一度半透明にしてしまうと表示が更新されなくなるため無効化。MacならOK
+#if !UNITY_EDITOR_WIN
             LibUniWinC.SetAlphaValue(alpha);
+#endif
         }
 
         /// <summary>
@@ -563,9 +568,9 @@ namespace Kirurobo
         }
 
         /// <summary>
-        /// Set the window Size.
+        /// Set the window size.
         /// </summary>
-        /// <param name="size">Size.</param>
+        /// <param name="size">x is width and y is height</param>
         public void SetWindowSize(Vector2 size)
         {
             LibUniWinC.SetSize(size.x, size.y);
@@ -574,11 +579,23 @@ namespace Kirurobo
         /// <summary>
         /// Get the window Size.
         /// </summary>
-        /// <returns>The Size.</returns>
+        /// <returns>x is width and y is height</returns>
         public Vector2 GetWindowSize()
         {
             Vector2 size = Vector2.zero;
             LibUniWinC.GetSize(out size.x, out size.y);
+            return size;
+        }
+
+        /// <summary>
+        /// Get the client area ize.
+        /// </summary>
+        /// <returns>x is width and y is height</returns>
+        [Obsolete]
+        public Vector2 GetClientSize()
+        {
+            Vector2 size = Vector2.zero;
+            LibUniWinC.GetClientSize(out size.x, out size.y);
             return size;
         }
 
@@ -590,9 +607,9 @@ namespace Kirurobo
             LibUniWinC.SetAllowDrop(enabled);
         }
 
-        #endregion
+#endregion
 
-        #region Event observers
+#region Event observers
 
         /// <summary>
         /// Check files dropping and unset the dropped flag
@@ -652,14 +669,14 @@ namespace Kirurobo
             return true;
         }
 
-        #endregion
+#endregion
 
-        #region About mouse cursor
+#region About mouse cursor
         /// <summary>
         /// Set the mouse pointer position.
         /// </summary>
         /// <param name="position">Position.</param>
-        public void SetCursorPosition(Vector2 position)
+        public static void SetCursorPosition(Vector2 position)
         {
             LibUniWinC.SetCursorPosition(position.x, position.y);
         }
@@ -668,7 +685,7 @@ namespace Kirurobo
         /// Get the mouse pointer position.
         /// </summary>
         /// <returns>The position.</returns>
-        public Vector2 GetCursorPosition()
+        public static Vector2 GetCursorPosition()
         {
             Vector2 pos = Vector2.zero;
             LibUniWinC.GetCursorPosition(out pos.x, out pos.y);
@@ -680,9 +697,9 @@ namespace Kirurobo
         {
             return true;
         }
-        #endregion
+#endregion
 
-        #region for Windows only
+#region for Windows only
         /// <summary>
         /// 透過方法を指定（Windowsのみ対応）
         /// </summary>
@@ -702,9 +719,9 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
-        #endregion
+#endregion
 
-        #region About monitors
+#region About monitors
         /// <summary>
         /// Get the monitor index where the window is located
         /// </summary>
@@ -718,12 +735,19 @@ namespace Kirurobo
         /// Get the number of connected monitors
         /// </summary>
         /// <returns>Count</returns>
-        public int GetMonitorCount()
+        public static int GetMonitorCount()
         {
             return LibUniWinC.GetMonitorCount();
         }
 
-        public bool GetMonitorRectangle(int index, out Vector2 position, out Vector2 size)
+        /// <summary>
+        /// Get monitor position and size
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="position"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static bool GetMonitorRectangle(int index, out Vector2 position, out Vector2 size)
         {
             return LibUniWinC.GetMonitorRectangle(index, out position.x, out position.y, out size.x, out size.y);
         }
@@ -795,7 +819,7 @@ namespace Kirurobo
         {
             return LibUniWinC.GetDebugInfo();
         }
-        #endregion
+#endregion
 
     }
 }
