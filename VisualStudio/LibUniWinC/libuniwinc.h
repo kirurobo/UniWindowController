@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifdef LIBUNIWINC_EXPORTS
 #define UNIWINC_API __stdcall
@@ -28,6 +28,12 @@ enum class WindowStateEventType : int {
 	None = 0,
 	StyleChanged = 1,
 	Resized = 2,
+	EnabledTopMost = 1 + 8 + 4,
+	DisabledTopMost = 1 + 8,
+	EnabledBottomMost = 1 + 16 + 4,
+	DisabledBottomMost = 1 + 16,
+	EnabledBackground = 1 + 32 + 4,
+	DisabledBackground = 1 + 32,
 };
 
 enum class PanelFlag : int {
@@ -57,15 +63,15 @@ typedef struct tagPANELSETTINGS {
 
 // Function called when window style (e.g. maximized, transparetize, etc.)
 //   param: The argument is indicate the kind of event
-using WindowStyleChangedCallback = void(*)(INT32);
+using WindowStyleChangedCallback =  void(UNIWINC_API *)(INT32);
 
 // Function called when files have selected
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
-using FilesCallback = void(*)(WCHAR*);
+using FilesCallback = void(UNIWINC_API *)(WCHAR*);
 
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
-using MonitorChangedCallback = void(*)(INT32);
+using MonitorChangedCallback = void(UNIWINC_API *)(INT32);
 
 
 // Winodow state functions

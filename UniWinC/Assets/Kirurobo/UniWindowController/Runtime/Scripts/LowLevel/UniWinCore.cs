@@ -39,16 +39,22 @@ namespace Kirurobo
         {
             None = 0,
             StyleChanged = 1,
-            Resized = 2
+            Resized = 2,
+            EnabledTopMost = 1 + 8 + 4,
+            DisabledTopMost = 1 + 8,
+            EnabledBottomMost = 1 + 16 + 4,
+            DisabledBottomMost = 1 + 16,
+            EnabledBackground = 1 + 32 + 4,
+            DisabledBackground = 1 + 32,
         };
 
         #region Native functions
         protected class LibUniWinC
         {
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer(CallingConvention.Winapi)]
             public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
 
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer((CallingConvention.Winapi))]
             public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
 
 
@@ -87,6 +93,10 @@ namespace Kirurobo
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool AttachMyActiveWindow();
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AttachMyWindow([MarshalAs(UnmanagedType.LPWStr)] IntPtr hWnd);
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -187,6 +197,10 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern int GetDebugInfo();
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AttachWindow(IntPtr hWnd);
         }
         #endregion
 
@@ -445,6 +459,13 @@ namespace Kirurobo
             return IsActive;
         }
 
+        public bool AttachWindow(IntPtr hWnd)
+        {
+            LibUniWinC.AttachWindow(hWnd);
+            IsActive = LibUniWinC.IsActive();
+            return IsActive;
+        }
+
         /// <summary>
         /// 自分のプロセスで現在アクティブなウィンドウを選択
         /// エディタの場合、ウィンドウが閉じたりドッキングしたりするため、フォーカス時に呼ぶ
@@ -468,6 +489,14 @@ namespace Kirurobo
             LibUniWinC.Update();
         }
 
+        string GetDebubgWindowSizeInfo()
+        {
+            float x, y, cx, cy;
+            LibUniWinC.GetSize(out x, out y);
+            LibUniWinC.GetClientSize(out cx, out cy);
+            return $"W:{x},H:{y} CW:{cx},CH:{cy}";
+        }
+
         /// <summary>
         /// 透過を設定／解除
         /// </summary>
@@ -475,9 +504,15 @@ namespace Kirurobo
         public void EnableTransparent(bool isTransparent)
         {
             // エディタは透過できなかったり、枠が通常と異なるのでスキップ
+            Debug.Log($"EnableTransparent:{isTransparent}");
+            Debug.Log("Before: " + GetDebubgWindowSizeInfo());
 #if !UNITY_EDITOR
-            LibUniWinC.SetTransparent(isTransparent);
+            //LibUniWinC.SetTransparent(isTransparent);
             LibUniWinC.SetBorderless(isTransparent);
+            Debug.Log("After: " + GetDebubgWindowSizeInfo());
+#else
+            LibUniWinC.SetBorderless(isTransparent);
+            Debug.Log("After: " + GetDebubgWindowSizeInfo());
 #endif
             this._isTransparent = isTransparent;
         }
@@ -591,7 +626,6 @@ namespace Kirurobo
         /// Get the client area ize.
         /// </summary>
         /// <returns>x is width and y is height</returns>
-        [Obsolete]
         public Vector2 GetClientSize()
         {
             Vector2 size = Vector2.zero;
@@ -599,7 +633,7 @@ namespace Kirurobo
             return size;
         }
 
-        #endregion
+#endregion
 
         #region File opening
         public void SetAllowDrop(bool enabled)

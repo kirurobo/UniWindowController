@@ -69,6 +69,12 @@ namespace Kirurobo
             StyleChanged = 1,
             Resized = 2,
             OrderChanged = 4,
+            EnabledTopMost = 1 + 8 + 4,
+            DisabledTopMost = 1 + 8,
+            EnabledBottomMost = 1 + 16 + 4,
+            DisabledBottomMost = 1 + 16,
+            EnabledBackground = 1 + 32 + 4,
+            DisabledBackground = 1 + 32,
         }
 
         /// <summary>
@@ -98,7 +104,10 @@ namespace Kirurobo
         public bool isTransparent
         {
             get { return _isTransparent; }
-            set { SetTransparent(value); }
+            set {
+                Debug.Log($"UniWinC.IsTransparent = {value}");
+                SetTransparent(value);
+            }
         }
         [SerializeField, EditableProperty, Tooltip("Check to set transparent on startup")]
         private bool _isTransparent = false;
@@ -267,13 +276,14 @@ namespace Kirurobo
         public Vector2 windowSize
         {
             get { return (_uniWinCore != null ? _uniWinCore.GetWindowSize() : Vector2.zero); }
-            set { _uniWinCore?.SetWindowSize(value); }
+            set {
+                _uniWinCore?.SetWindowSize(value);
+            }
         }
 
         /// <summary>
         /// クライアント領域のサイズを取得
         /// </summary>
-        [Obsolete]
         public Vector2 clientSize
         {
             get { return (_uniWinCore != null ? _uniWinCore.GetClientSize() : Vector2.zero); }
@@ -851,12 +861,12 @@ namespace Kirurobo
 
             _isTransparent = transparent;
             SetCameraBackground(transparent);
-#if !UNITY_EDITOR
+//#if !UNITY_EDITOR
             if (_uniWinCore != null)
             {
                 _uniWinCore.EnableTransparent(transparent);
             }
-#endif
+//#endif
             UpdateClickThrough();
         }
 

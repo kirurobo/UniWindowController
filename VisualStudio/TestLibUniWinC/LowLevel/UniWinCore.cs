@@ -45,10 +45,10 @@ namespace Kirurobo
         #region Native functions
         protected class LibUniWinC
         {
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer(CallingConvention.Winapi)]
             public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
 
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer((CallingConvention.Winapi))]
             public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
 
 
@@ -491,8 +491,10 @@ namespace Kirurobo
         {
             // エディタは透過できなかったり、枠が通常と異なるのでスキップ
 #if !UNITY_EDITOR
-            LibUniWinC.SetTransparent(isTransparent);
             LibUniWinC.SetBorderless(isTransparent);
+            LibUniWinC.SetTransparent(isTransparent);
+            //int wstyle = LibUniWinC.GetDebugInfo();
+            //Console.WriteLine(wstyle.ToString("X8"));
 #endif
             this._isTransparent = isTransparent;
         }
