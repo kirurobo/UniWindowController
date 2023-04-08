@@ -589,6 +589,15 @@ BOOL UNIWINC_API AttachMyActiveWindow() {
 }
 
 /// <summary>
+/// Attach to the specified window
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API AttachWindow(const HWND hWnd) {
+	attachWindow(hWnd);
+	return TRUE;
+}
+
+/// <summary>
 /// Select the transparentize method
 /// </summary>
 /// <param name="type"></param>

@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using Kirurobo;
 using System.Drawing;
+using System.Diagnostics;
+using System.Text;
 
 namespace TestLibUniWinC
 {
@@ -12,6 +14,8 @@ namespace TestLibUniWinC
         UniWinCore uniwinc;
 
         Vector2 relativeWindowPosition = Vector2.zero;
+
+        WindowList windowList = new WindowList();
         
         /// <summary>
         /// ウィンドウをドラッグ中なら true
@@ -79,9 +83,12 @@ namespace TestLibUniWinC
         private void FormMain_Shown(object sender, EventArgs e)
         {
             uniwinc = new UniWinCore();
-            uniwinc.AttachMyWindow();
 
+            UpdateWindowListCombobox();         // ウィンドウ一覧を更新
             UpdateMonitorCombobox();    // 初回の一覧取得
+
+            // 対象ウィンドウにアタッチ
+            //uniwinc.AttachMyWindow();
 
             //  モニタ一覧を表示
             PrintMonitorInfo();
@@ -219,6 +226,28 @@ namespace TestLibUniWinC
             uniwinc.FitToMonitor(monitor);
         }
 
+        /// <summary>
+        /// ウィンドウクラス一覧を取得してコンボボックス内容を更新
+        /// </summary>
+        private void UpdateWindowListCombobox()
+        {
+            comboBoxWindowClass.Items.Clear();
+            windowList.Load();
+
+            var myHWnd = Process.GetCurrentProcess().MainWindowHandle;
+            Console.WriteLine("My HWND: " + myHWnd.ToString("X8"));
+
+            var list = windowList.GetArray();
+            for (int index = 0; index < list.Length; index++)
+            {
+                var item = list[index];
+                comboBoxWindowClass.Items.Add(item);
+                if (item.Handle == myHWnd)
+                {
+                    comboBoxWindowClass.SelectedIndex = index;
+                }
+            }
+        }
 
         private void checkBoxTransparent_CheckedChanged(object sender, EventArgs e)
         {
@@ -354,6 +383,17 @@ namespace TestLibUniWinC
             {
                 var type = (UniWinCore.TransparentType)item;
                 uniwinc.SetTransparentType(type);
+            }
+        }
+
+        private void buttonSetTarget_Click(object sender, EventArgs e)
+        {
+            var item = (WindowInfo)comboBoxWindowClass.SelectedItem;
+
+            if ((uniwinc != null) && (item != null))
+            {
+                Console.WriteLine(item.ProcessName + " " + item.Handle.ToString("X8"));
+                uniwinc.AttachWindow(item.Handle);
             }
         }
     }

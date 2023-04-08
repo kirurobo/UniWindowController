@@ -90,6 +90,10 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AttachMyWindow([MarshalAs(UnmanagedType.LPWStr)] IntPtr hWnd);
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool DetachWindow();
 
             [DllImport("LibUniWinC")]
@@ -130,7 +134,7 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetSize(out float x, out float y);
 
-            [DllImport("LibUniWinC"), Obsolete]
+            [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetClientSize(out float x, out float y);
 
@@ -187,6 +191,10 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern int GetDebugInfo();
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AttachWindow(IntPtr hWnd);
         }
         #endregion
 
@@ -445,6 +453,13 @@ namespace Kirurobo
             return IsActive;
         }
 
+        public bool AttachWindow(IntPtr hWnd)
+        {
+            LibUniWinC.AttachWindow(hWnd);
+            IsActive = LibUniWinC.IsActive();
+            return IsActive;
+        }
+
         /// <summary>
         /// 自分のプロセスで現在アクティブなウィンドウを選択
         /// エディタの場合、ウィンドウが閉じたりドッキングしたりするため、フォーカス時に呼ぶ
@@ -591,7 +606,6 @@ namespace Kirurobo
         /// Get the client area ize.
         /// </summary>
         /// <returns>x is width and y is height</returns>
-        [Obsolete]
         public Vector2 GetClientSize()
         {
             Vector2 size = Vector2.zero;
