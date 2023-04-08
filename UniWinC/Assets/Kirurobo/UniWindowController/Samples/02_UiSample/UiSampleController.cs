@@ -33,7 +33,7 @@ namespace Kirurobo
         public Slider alphaSlider;
         public Toggle topmostToggle;
         public Toggle bottommostToggle;
-        [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
+        public Toggle zoomedToggle;
         public Toggle dragMoveToggle;
         public Toggle allowDropToggle;
         public Dropdown fitWindowDropdown;
@@ -111,6 +111,11 @@ namespace Kirurobo
                     //Debug.Log("Window state changed: " + type);
                     ShowEventMessage("State changed: " + type);
                     //ShowEventMessage("State changed: " + type + "4:isKey 2:canBecomeKey, 1:canBecomeMain  : " + uniwinc.GetDebugInfo().ToString());
+
+                    if (type == UniWindowController.WindowStateEventType.Resized)
+                    {
+                        Debug.Log($"Resized:{uniwinc.windowSize}");
+                    }
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
@@ -385,32 +390,32 @@ namespace Kirurobo
             {
                 if (transparentToggle)
                 {
-                    transparentToggle.isOn = uniwinc.isTransparent;
+                    transparentToggle.SetIsOnWithoutNotify(uniwinc.isTransparent);
                 }
 
                 if (alphaSlider)
                 {
-                    alphaSlider.value = uniwinc.alphaValue;
+                    alphaSlider.SetValueWithoutNotify(uniwinc.alphaValue);
                 }
 
                 if (topmostToggle)
                 {
-                    topmostToggle.isOn = uniwinc.isTopmost;
+                    topmostToggle.SetIsOnWithoutNotify(uniwinc.isTopmost);
                 }
                 
                 if (bottommostToggle)
                 {
-                    bottommostToggle.isOn = uniwinc.isBottommost;
+                    bottommostToggle.SetIsOnWithoutNotify(uniwinc.isBottommost);
                 }
                 
                 if (zoomedToggle)
                 {
-                    zoomedToggle.isOn = uniwinc.isZoomed;
+                    zoomedToggle.SetIsOnWithoutNotify(uniwinc.isZoomed);
                 }
 
                 if (allowDropToggle)
                 {
-                    allowDropToggle.isOn = uniwinc.allowDropFiles;
+                    allowDropToggle.SetIsOnWithoutNotify(uniwinc.allowDropFiles);
                 }
 
                 if (dragMoveToggle)
@@ -467,7 +472,7 @@ namespace Kirurobo
             {
                 if (clickThroughToggle)
                 {
-                    clickThroughToggle.isOn = uniwinc.isClickThrough;
+                    clickThroughToggle.SetIsOnWithoutNotify(uniwinc.isClickThrough);
                     if (uniwinc.hitTestType == UniWindowController.HitTestType.None)
                     {
                         clickThroughToggle.interactable = true;
