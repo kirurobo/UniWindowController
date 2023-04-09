@@ -407,7 +407,7 @@ void refreshWindowRect() {
 			hTargetWnd_,
 			NULL,
 			0, 0, (rect.right - rect.left + 1), (rect.bottom - rect.top + 1),
-			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 		);
 
 		// 元のサイズに戻す。この時もリサイズイベントは発生するはず
@@ -415,7 +415,7 @@ void refreshWindowRect() {
 			hTargetWnd_,
 			NULL,
 			0, 0, (rect.right - rect.left), (rect.bottom - rect.top),
-			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 		);
 
 		ShowWindow(hTargetWnd_, SW_SHOW);
@@ -692,84 +692,93 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		int w = rcWin.right - rcWin.left;
 		int h = rcWin.bottom - rcWin.top;
 
-		bool hasMenu =  (GetMenu(hTargetWnd_) != NULL);
+		bool hasMenu =  (GetMenu(hTargetWnd_) != NULL);		// ウィンドウがメニューを持っているか
 
 		int bZoomed = IsZoomed(hTargetWnd_);
 		int bIconic = IsIconic(hTargetWnd_);
-
-		// クライアント領域とウィンドウサイズが同じならば枠無しと判定
-		BOOL bNoBorder = (w == (rcCli.right - rcCli.left)) && (h == (rcCli.bottom - rcCli.top));
 
 		// 最大化されていたら、一度最大化は解除
 		if (bZoomed) {
 			ShowWindow(hTargetWnd_, SW_NORMAL);
 		}
 
+		int offset = 1;
+		LONG newStyle;
 		if (bBorderless) {
-			// 枠無しウィンドウにする
-			LONG currentWS = (WS_VISIBLE | WS_POPUP);
-
-			//int dx = (originalWindowInfo_.rcWindow.right - originalWindowInfo_.rcWindow.left) - (originalWindowInfo_.rcClient.right - originalWindowInfo_.rcClient.left);
-			//int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
-			//int bw = dx / 2;	// 枠の片側幅 [px]
-
-			AdjustWindowRect(&rcCli, currentWS, hasMenu);
-			newW = rcCli.right - rcCli.left;
-			newH = rcCli.bottom - rcCli.top;
-			//newW = w - dx;
-			//newH = h - dy;
-
-			int bw = (w - newW) / 2;	// 枠の片側幅 [px]
-			newX = rcWin.left + bw;
-			newY = rcWin.top + ((h - newH) - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
-
-			// ウィンドウスタイルを適用
-			SetWindowLong(hTargetWnd_, GWL_STYLE, currentWS);
+			// 枠無しウィンドウのスタイル
+			newStyle = (WS_VISIBLE | WS_POPUP);
+			offset = -1;
+		} else {
+			// 初期のウィンドウスタイル（必ずしも枠ありとは限らない）
+			newStyle = originalWindowInfo_.dwStyle;
+			offset = 1;
 		}
-		else {
-			//int dx = (originalWindowInfo_.rcWindow.right - originalWindowInfo_.rcWindow.left) - (originalWindowInfo_.rcClient.right - originalWindowInfo_.rcClient.left);
-			//int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
-			//int bw = dx / 2;	// 枠の片側幅 [px]
-
-			AdjustWindowRect(&rcCli, originalWindowInfo_.dwStyle, hasMenu);
-			newW = rcCli.right - rcCli.left;
-			newH = rcCli.bottom - rcCli.top;
-			//newW = rcCli.right - rcCli.left + dx;
-			//newH = rcCli.bottom - rcCli.top + dy;
-			//newW = w + dx;
-			//newH = h + dy;
-
-			int bw = (w - newW) / 2;	// 枠の片側幅 [px]
-			newX = rcWin.left + bw;
-			newY = rcWin.top + ((h - newH) - bw);
-
-			//newX = rcWin.left - bw;
-			//newY = rcWin.top - (dy - bw);	// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
+		
+		// 変更後のウィンドウサイズを計算
+		AdjustWindowRect(&rcCli, newStyle, hasMenu);
+		newW = rcCli.right - rcCli.left;
+		newH = rcCli.bottom - rcCli.top;
 			
-			// ウィンドウスタイルを戻す
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
-		}
+		int dx = w - newW;	// 変更後に広がる幅（負もある） [px]
+		int dy = h - newH;	// 変更後に広がる高さ（負もある） [px]
+		int bw = dx / 2;	// 枠の片側幅 [px]
+		int bh = bw;		// 本来は枠の下側高さと左右の幅が同じ保証はないが、とりあえず同じとみなしている
+		newX = rcWin.left + bw;
+		newY = rcWin.top + (dy - bh);
 
 		// ウィンドウサイズが変化しないか、最大化や最小化状態なら標準のサイズ更新
 		if (bZoomed) {
+			// ウィンドウスタイルを適用
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+
 			// 最大化されていたら、ここで再度最大化
 			ShowWindow(hTargetWnd_, SW_MAXIMIZE);
 		} else if (bIconic) {
+			// ウィンドウスタイルを適用
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
 			// 最小化されていたら、次に表示されるときの再描画を期待して、何もしない
-//		} else if (newW == w && newH == h) {
-//			// ウィンドウ再描画
-//			refreshWindowRect();
-		}
-		else
-		{
+		//} else if (newW == w && newH == h) {
+		//	// ウィンドウスタイルを適用
+		//	SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+
+		//	// 変更後もウィンドウサイズが変わらなければ、強制サイズ変更による再描画
+		//	refreshWindowRect();
+		} else {
 			// クライアント領域サイズを維持するようサイズと位置を調整
+			//    Unity2019までと異なり、Unity2020ではサイズが戻ってしまうため先にサイズ変更してからウィンドウスタイルを変更
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW + offset, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
+			//ShowWindow(hTargetWnd_, SW_SHOW);
+
 			SetWindowPos(
 				hTargetWnd_,
 				NULL,
 				newX, newY, newW, newH,
-				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 			);
+			//ShowWindow(hTargetWnd_, SW_SHOW);
 
+			// ウィンドウスタイルを適用
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW + offset, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
+			//ShowWindow(hTargetWnd_, SW_SHOW);
+
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
 			ShowWindow(hTargetWnd_, SW_SHOW);
 		}
 	}
@@ -803,8 +812,7 @@ void UNIWINC_API SetAlphaValue(const float alpha) {
 				applyWindowAlphaValue();
 				break;
 			}
-		}
-		else {
+		} else {
 			// 現在が非透過での処理
 			applyWindowAlphaValue();
 		}
@@ -825,7 +833,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 			hTargetWnd_,
 			(bTopmost ? HWND_TOPMOST : HWND_NOTOPMOST),
 			0, 0, 0, 0,
-			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
 
 		// Run callback if the topmost state changed
@@ -853,7 +861,7 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 			hTargetWnd_,
 			(bBottommost ? HWND_BOTTOM : HWND_NOTOPMOST),
 			0, 0, 0, 0,
-			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
 
 		// Run callback if the bottommost state changed
@@ -975,7 +983,7 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 		hTargetWnd_, NULL,
 		newX, newY,
 		0, 0,
-		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_ASYNCWINDOWPOS
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER //| SWP_ASYNCWINDOWPOS
 		);
 }
 
@@ -1024,7 +1032,7 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 	return SetWindowPos(
 		hTargetWnd_, NULL,
 		x, y, w, h,
-		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_ASYNCWINDOWPOS
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED //| SWP_ASYNCWINDOWPOS
 	);
 }
 
@@ -1342,7 +1350,7 @@ LRESULT CALLBACK customWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	case WM_SIZE:		// 最大化、最小化による変化を検出
 		switch (wParam)
 		{
-		case SIZE_RESTORED:
+		case SIZE_RESTORED:		// 最小化でも最大化でもない通常のリサイズ
 		case SIZE_MAXIMIZED:
 		case SIZE_MINIMIZED:
 			// Run callback

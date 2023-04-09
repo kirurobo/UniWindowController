@@ -104,10 +104,7 @@ namespace Kirurobo
         public bool isTransparent
         {
             get { return _isTransparent; }
-            set {
-                Debug.Log($"UniWinC.IsTransparent = {value}");
-                SetTransparent(value);
-            }
+            set { SetTransparent(value); }
         }
         [SerializeField, EditableProperty, Tooltip("Check to set transparent on startup")]
         private bool _isTransparent = false;
@@ -857,7 +854,7 @@ namespace Kirurobo
         /// <param name="transparent"></param>
         private void SetTransparent(bool transparent)
         {
-            //if (_isTransparent == transparent) return;
+            Debug.Log($"UniWinC.IsTransparent = {transparent}");
 
             _isTransparent = transparent;
             SetCameraBackground(transparent);
