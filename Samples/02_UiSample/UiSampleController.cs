@@ -52,6 +52,8 @@ namespace Kirurobo
         public RectTransform menuPanel;
         public RectTransform borderlinePanel;
 
+        Vector2 windowSize; // デバッグ用。前フレームでのウィンドウサイズを保持
+
         /// <summary>
         /// 初期化
         /// </summary>
@@ -149,6 +151,13 @@ namespace Kirurobo
         /// </summary>
         private void Update()
         {
+            Vector2 currentWindowSize = uniwinc.windowSize;
+            if (currentWindowSize != windowSize)
+            {
+                Debug.Log($"Before update: {windowSize}->{currentWindowSize}");
+                windowSize = currentWindowSize;
+            }
+
             // ヒットテスト関連の表示を更新
             UpdateHitTestUI();
 
@@ -231,6 +240,12 @@ namespace Kirurobo
                 }
             }
 
+            currentWindowSize = uniwinc.windowSize;
+            if (currentWindowSize != windowSize)
+            {
+                Debug.Log($"During update: {windowSize}->{currentWindowSize}");
+                windowSize = currentWindowSize;
+            }
 
             // Test for OpenFilePanel
             if (Input.GetKeyUp(KeyCode.O))
@@ -276,6 +291,13 @@ namespace Kirurobo
 #else
                 Application.Quit();
 #endif
+            }
+
+            currentWindowSize = uniwinc.windowSize;
+            if (currentWindowSize != windowSize)
+            {
+                Debug.Log($"After update: {windowSize}->{currentWindowSize}");
+                windowSize = currentWindowSize;
             }
         }
 
