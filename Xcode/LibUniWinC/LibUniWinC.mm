@@ -183,7 +183,6 @@ UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, UniChar* lpwsBuff
     return [LibUniWinC openSavePanelWithLpSettings: lpPanelSettings lpBuffer: lpwsBuffer bufferSize: bufferSize];
 }
 
-
 // for debugging
 UNIWINC_EXPORT SInt32 GetDebugInfo() {
     return [LibUniWinC getDebugInfo];

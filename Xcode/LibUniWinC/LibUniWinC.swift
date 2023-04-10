@@ -929,11 +929,11 @@ public class LibUniWinC : NSObject {
     // MARK: - File drop
     
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
-        if (overlayView == nil) {
-            _setupOverlayView()
-        }
-        
-        overlayView?.setEnabled(enabled: enabled)
+//        if (overlayView == nil) {
+//            _setupOverlayView()
+//        }
+//
+//        overlayView?.setEnabled(enabled: enabled)
         return true
     }
 
@@ -985,82 +985,83 @@ public class LibUniWinC : NSObject {
     ///     - lpBuffer: Pointer of UTF-16 string for output
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
-        let panel = NSOpenPanel()
-        let panelHelper = CustomPanelHelper(panel: panel)
-
-        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
-        let ps = pPanelSettings.pointee
-        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
-        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-
-        if (targetWindow != nil) {
-            if (state.isTopmost) {
-                // Temporarily disable always on top in order to show the dialog
-                targetWindow?.level = NSWindow.Level.floating
-            }
-            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
-            // Set attached window as the parent
-            //panel.parent = targetWindow
-        } else {
-            // Find my window if the window is not attached
-            //let myWindow: NSWindow? = NSApp.orderedWindows.first
-            //panel.parent = myWindow
-        }
-        
-        panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
-        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
-        //panel.allowedFileTypes = fileTypes
-        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
-        panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
-
-        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
-        //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
-
-        if (initialDir != "") {
-            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
-        } else if (initialFile.deletingLastPathComponent != "") {
-            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
-        }
-        panel.nameFieldStringValue = initialFile.lastPathComponent
-        
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsOtherFileTypes = false
-        panel.canCreateDirectories = true
-        //panel.showsTagField = false
-        panel.allowsOtherFileTypes = false
-        panel.level = NSWindow.Level.popUpMenu
-        panel.orderFrontRegardless()
-        panel.center()
-
-        let result = panel.runModal();
-        
-        var text: String = ""
-        if (result == .OK) {
-            if (panel.urls.count > 0) {
-                // Make new-line separated string
-                for url in panel.urls {
-                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-                }
-            }
-        }
-        if (targetWindow != nil) {
-            if (state.isTopmost) {
-                // Re-enable always on top
-                targetWindow?.level = NSWindow.Level.popUpMenu
-            }
-            if (state.isBorderless) {
-                _makeKeyWindow()
-//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
-//                state.isBorderless = false;     // Suppress the callback
-//                setBorderless(isBorderless: false)
-//                state.isBorderless = true;      // Suppress the callback
-//                setBorderless(isBorderless: true)
-            }
-            targetWindow?.makeKeyAndOrderFront(nil)
-        }
-
-        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+//        let panel = NSOpenPanel()
+//        let panelHelper = CustomPanelHelper(panel: panel)
+//
+//        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+//        let ps = pPanelSettings.pointee
+//        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+//        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+//
+//        if (targetWindow != nil) {
+//            if (state.isTopmost) {
+//                // Temporarily disable always on top in order to show the dialog
+//                targetWindow?.level = NSWindow.Level.floating
+//            }
+//            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
+//            // Set attached window as the parent
+//            //panel.parent = targetWindow
+//        } else {
+//            // Find my window if the window is not attached
+//            //let myWindow: NSWindow? = NSApp.orderedWindows.first
+//            //panel.parent = myWindow
+//        }
+//
+//        panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
+//        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
+//        //panel.allowedFileTypes = fileTypes
+//        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+//        panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
+//
+//        panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+//        //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+//
+//        if (initialDir != "") {
+//            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+//        } else if (initialFile.deletingLastPathComponent != "") {
+//            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+//        }
+//        panel.nameFieldStringValue = initialFile.lastPathComponent
+//
+//        panel.canChooseFiles = true
+//        panel.canChooseDirectories = false
+//        panel.allowsOtherFileTypes = false
+//        panel.canCreateDirectories = true
+//        //panel.showsTagField = false
+//        panel.allowsOtherFileTypes = false
+//        panel.level = NSWindow.Level.popUpMenu
+//        panel.orderFrontRegardless()
+//        panel.center()
+//
+//        let result = panel.runModal();
+//
+//        var text: String = ""
+//        if (result == .OK) {
+//            if (panel.urls.count > 0) {
+//                // Make new-line separated string
+//                for url in panel.urls {
+//                    text += "\"" + url.path.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+//                }
+//            }
+//        }
+//        if (targetWindow != nil) {
+//            if (state.isTopmost) {
+//                // Re-enable always on top
+//                targetWindow?.level = NSWindow.Level.popUpMenu
+//            }
+//            if (state.isBorderless) {
+//                _makeKeyWindow()
+////                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+////                state.isBorderless = false;     // Suppress the callback
+////                setBorderless(isBorderless: false)
+////                state.isBorderless = true;      // Suppress the callback
+////                setBorderless(isBorderless: true)
+//            }
+//            targetWindow?.makeKeyAndOrderFront(nil)
+//        }
+//
+//        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+        return false
     }
     
     /// Open file select dialog to save
@@ -1069,72 +1070,73 @@ public class LibUniWinC : NSObject {
     ///     - lpBuffer: Pointer of UTF-16 string for output
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
-        let panel = NSSavePanel()
-        let panelHelper = CustomPanelHelper(panel: panel)
-        
-        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
-        let ps = pPanelSettings.pointee;
-        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
-        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-        
-        if (targetWindow != nil) {
-            if (state.isTopmost) {
-                // Temporarily disable always on top in order to show the dialog
-                targetWindow?.level = NSWindow.Level.floating
-            }
-            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
-            // Set attached window as the parent
-            //panel.parent = targetWindow
-        } else {
-            // Find my window if the window is not attached
-            //let myWindow: NSWindow = NSApp.orderedWindows[0]
-            //panel.parent = myWindow
-        }
-        
-        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
-        //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
-        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
-        if (initialDir != "") {
-            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
-        } else if (initialFile.deletingLastPathComponent != "") {
-            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
-        }
-        panel.nameFieldStringValue = initialFile.lastPathComponent
-        //panel.allowedFileTypes = fileTypes
-        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
-        panel.allowsOtherFileTypes = true
-
-        panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
-        //panel.canSelectHiddenExtension = false
-        //panel.showsTagField = false
-        panel.level = NSWindow.Level.popUpMenu
-        panel.orderFrontRegardless()
-        panel.center()
-        
-        let result = panel.runModal();
-        
-        var text: String = ""
-        if (result == .OK && (panel.url != nil)) {
-            let url: String = panel.url!.path
-            text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
-        }
-        if (targetWindow != nil) {
-            if (state.isTopmost) {
-                targetWindow?.level = NSWindow.Level.popUpMenu
-            }
-            if (state.isBorderless) {
-                // Re-enable always on top
-                _makeKeyWindow()
-//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
-//                state.isBorderless = false;     // Suppress the callback
-//                setBorderless(isBorderless: false)
-//                state.isBorderless = true;      // Suppress the callback
-//                setBorderless(isBorderless: true)
-            }
-            targetWindow?.makeKeyAndOrderFront(nil)
-        }
-
-        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+//        let panel = NSSavePanel()
+//        let panelHelper = CustomPanelHelper(panel: panel)
+//
+//        let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
+//        let ps = pPanelSettings.pointee;
+//        let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
+//        let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
+//
+//        if (targetWindow != nil) {
+//            if (state.isTopmost) {
+//                // Temporarily disable always on top in order to show the dialog
+//                targetWindow?.level = NSWindow.Level.floating
+//            }
+//            // ↓　panel.parent を設定すると accessoryView が見えなくなってしまうためコメントアウト。問題なければ後日削除
+//            // Set attached window as the parent
+//            //panel.parent = targetWindow
+//        } else {
+//            // Find my window if the window is not attached
+//            //let myWindow: NSWindow = NSApp.orderedWindows[0]
+//            //panel.parent = myWindow
+//        }
+//
+//        panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
+//        //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
+//        panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
+//        if (initialDir != "") {
+//            panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
+//        } else if (initialFile.deletingLastPathComponent != "") {
+//            panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
+//        }
+//        panel.nameFieldStringValue = initialFile.lastPathComponent
+//        //panel.allowedFileTypes = fileTypes
+//        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+//        panel.allowsOtherFileTypes = true
+//
+//        panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
+//        //panel.canSelectHiddenExtension = false
+//        //panel.showsTagField = false
+//        panel.level = NSWindow.Level.popUpMenu
+//        panel.orderFrontRegardless()
+//        panel.center()
+//
+//        let result = panel.runModal();
+//
+//        var text: String = ""
+//        if (result == .OK && (panel.url != nil)) {
+//            let url: String = panel.url!.path
+//            text = "\"" + url.replacingOccurrences(of: "\"", with: "\"\"") + "\"\n"
+//        }
+//        if (targetWindow != nil) {
+//            if (state.isTopmost) {
+//                targetWindow?.level = NSWindow.Level.popUpMenu
+//            }
+//            if (state.isBorderless) {
+//                // Re-enable always on top
+//                _makeKeyWindow()
+////                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+////                state.isBorderless = false;     // Suppress the callback
+////                setBorderless(isBorderless: false)
+////                state.isBorderless = true;      // Suppress the callback
+////                setBorderless(isBorderless: true)
+//            }
+//            targetWindow?.makeKeyAndOrderFront(nil)
+//        }
+//
+//        return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
+        return false
     }
 
     /// Parse an UTF-16 null terminated string pointer to String
