@@ -1212,6 +1212,11 @@ public class LibUniWinC : NSObject {
         return true
     }
     
+    /// For Windows only
+    @objc public static func attachWindowHandle(hwnd: UInt64) -> Bool {
+        return true
+    }
+
     /// Return some information for debugging
     @objc public static func getDebugInfo() -> Int32 {
         var result: Int32 = 0
