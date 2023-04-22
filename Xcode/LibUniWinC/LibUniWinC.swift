@@ -929,11 +929,11 @@ public class LibUniWinC : NSObject {
     // MARK: - File drop
     
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
-//        if (overlayView == nil) {
-//            _setupOverlayView()
-//        }
-//
-//        overlayView?.setEnabled(enabled: enabled)
+        if (overlayView == nil) {
+            _setupOverlayView()
+        }
+
+        overlayView?.setEnabled(enabled: enabled)
         return true
     }
 
