@@ -273,9 +273,7 @@ namespace Kirurobo
         public Vector2 windowSize
         {
             get { return (_uniWinCore != null ? _uniWinCore.GetWindowSize() : Vector2.zero); }
-            set {
-                _uniWinCore?.SetWindowSize(value);
-            }
+            set { _uniWinCore?.SetWindowSize(value); }
         }
 
         /// <summary>
@@ -854,16 +852,14 @@ namespace Kirurobo
         /// <param name="transparent"></param>
         private void SetTransparent(bool transparent)
         {
-            Debug.Log($"UniWinC.IsTransparent = {transparent}");
-
             _isTransparent = transparent;
             SetCameraBackground(transparent);
-//#if !UNITY_EDITOR
+#if !UNITY_EDITOR
             if (_uniWinCore != null)
             {
                 _uniWinCore.EnableTransparent(transparent);
             }
-//#endif
+#endif
             UpdateClickThrough();
         }
 

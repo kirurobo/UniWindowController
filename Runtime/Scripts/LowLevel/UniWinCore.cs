@@ -96,10 +96,6 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AttachMyWindow([MarshalAs(UnmanagedType.LPWStr)] IntPtr hWnd);
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool DetachWindow();
 
             [DllImport("LibUniWinC")]
@@ -504,15 +500,9 @@ namespace Kirurobo
         public void EnableTransparent(bool isTransparent)
         {
             // エディタは透過できなかったり、枠が通常と異なるのでスキップ
-            Debug.Log($"EnableTransparent:{isTransparent}");
-            Debug.Log("Before: " + GetDebubgWindowSizeInfo());
 #if !UNITY_EDITOR
-            //LibUniWinC.SetTransparent(isTransparent);
+            LibUniWinC.SetTransparent(isTransparent);
             LibUniWinC.SetBorderless(isTransparent);
-            Debug.Log("After: " + GetDebubgWindowSizeInfo());
-#else
-            LibUniWinC.SetBorderless(isTransparent);
-            Debug.Log("After: " + GetDebubgWindowSizeInfo());
 #endif
             this._isTransparent = isTransparent;
         }
