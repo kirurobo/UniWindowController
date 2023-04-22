@@ -72,6 +72,10 @@ UNIWINC_EXPORT void SetBorderless(BOOL isBorderless) {
     [LibUniWinC setBorderlessWithIsBorderless:isBorderless];
 }
 
+UNIWINC_EXPORT void SetAlphaValue(Float32 alpha) {
+    [LibUniWinC setAlphaValueWithAlpha: alpha];
+}
+
 UNIWINC_EXPORT void SetTopmost(BOOL isTopmost) {
     [LibUniWinC setTopmostWithIsTopmost:isTopmost];
 }
@@ -101,6 +105,10 @@ UNIWINC_EXPORT BOOL SetSize(Float32 width, Float32 height) {
 }
 
 UNIWINC_EXPORT BOOL GetSize(Float32* width, Float32* height) {
+    return [LibUniWinC getSizeWithWidth:width height:height];
+}
+
+UNIWINC_EXPORT BOOL GetClientSize(Float32* width, Float32* height) {
     return [LibUniWinC getSizeWithWidth:width height:height];
 }
 
@@ -154,18 +162,6 @@ UNIWINC_EXPORT BOOL GetCursorPosition(Float32* x, Float32* y) {
     return [LibUniWinC getCursorPositionWithX:x y:y];
 }
 
-UNIWINC_EXPORT void SetTransparentType(SInt32 type) {
-    [LibUniWinC setTransparentTypeWithType: type];
-}
-
-UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
-    [LibUniWinC setKeyColorWithColor: color];
-}
-
-UNIWINC_EXPORT void SetAlphaValue(Float32 alpha) {
-    [LibUniWinC setAlphaValueWithAlpha: alpha];
-}
-
 // Call periodically to maintain window state.
 UNIWINC_EXPORT void Update() {
     [LibUniWinC update];
@@ -180,7 +176,23 @@ UNIWINC_EXPORT BOOL OpenSavePanel(const void* lpPanelSettings, UniChar* lpwsBuff
 }
 
 
-// for debugging
+// For Windows only (Nothing to do on Mac)
+UNIWINC_EXPORT void SetTransparentType(SInt32 type) {
+    [LibUniWinC setTransparentTypeWithType: type];
+}
+
+// For Windows only (Nothing to do on Mac)
+UNIWINC_EXPORT void SetKeyColor(SInt32 color) {
+    [LibUniWinC setKeyColorWithColor: color];
+}
+
+// For Windows only (Nothing to do on Mac)
+UNIWINC_EXPORT BOOL AttachWindowHandle(UInt64 hwnd) {
+    return [LibUniWinC attachWindowHandleWithHwnd: hwnd];
+}
+
+
+// For debugging
 UNIWINC_EXPORT SInt32 GetDebugInfo() {
     return [LibUniWinC getDebugInfo];
 }

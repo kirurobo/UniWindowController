@@ -27,7 +27,7 @@ namespace Kirurobo
         private float touchDuration = 0f;
         private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
         private float lastEventOccurredTime = -5f;     // Timestamp the last event occurred [s]
-        private float eventMessageTimeout = 5f;        // Show event message while this period [s]
+        private float eventMessageTimeout = 1f;        // Show event message while this period [s]
 
         public Toggle transparentToggle;
         public Slider alphaSlider;
@@ -312,6 +312,7 @@ namespace Kirurobo
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
+                    + "\nClient: " + uniwinc.clientSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
                     + "\nUnity Cur.:" + (Vector2)Input.mousePosition
                     );
@@ -384,32 +385,32 @@ namespace Kirurobo
             {
                 if (transparentToggle)
                 {
-                    transparentToggle.isOn = uniwinc.isTransparent;
+                    transparentToggle.SetIsOnWithoutNotify(uniwinc.isTransparent);
                 }
 
                 if (alphaSlider)
                 {
-                    alphaSlider.value = uniwinc.alphaValue;
+                    alphaSlider.SetValueWithoutNotify(uniwinc.alphaValue);
                 }
 
                 if (topmostToggle)
                 {
-                    topmostToggle.isOn = uniwinc.isTopmost;
+                    topmostToggle.SetIsOnWithoutNotify(uniwinc.isTopmost);
                 }
                 
                 if (bottommostToggle)
                 {
-                    bottommostToggle.isOn = uniwinc.isBottommost;
+                    bottommostToggle.SetIsOnWithoutNotify(uniwinc.isBottommost);
                 }
                 
                 if (zoomedToggle)
                 {
-                    zoomedToggle.isOn = uniwinc.isZoomed;
+                    zoomedToggle.SetIsOnWithoutNotify(uniwinc.isZoomed);
                 }
 
                 if (allowDropToggle)
                 {
-                    allowDropToggle.isOn = uniwinc.allowDropFiles;
+                    allowDropToggle.SetIsOnWithoutNotify(uniwinc.allowDropFiles);
                 }
 
                 if (dragMoveToggle)
@@ -466,7 +467,7 @@ namespace Kirurobo
             {
                 if (clickThroughToggle)
                 {
-                    clickThroughToggle.isOn = uniwinc.isClickThrough;
+                    clickThroughToggle.SetIsOnWithoutNotify(uniwinc.isClickThrough);
                     if (uniwinc.hitTestType == UniWindowController.HitTestType.None)
                     {
                         clickThroughToggle.interactable = true;

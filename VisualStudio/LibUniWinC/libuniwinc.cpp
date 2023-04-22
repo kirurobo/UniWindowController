@@ -1,4 +1,4 @@
-// LibUniWinC.cpp
+ï»¿// LibUniWinC.cpp
 
 #include "pch.h"
 #include "libuniwinc.h"
@@ -17,7 +17,7 @@ static SIZE szVirtualScreen_;
 static INT nPrimaryMonitorHeight_;
 static BOOL bIsTransparent_ = FALSE;
 static BOOL bIsBorderless_ = FALSE;
-static BYTE byAlpha_ = 0xFF;						// ƒEƒBƒ“ƒhƒE‘S‘Ì‚Ì“§–¾“x 0x00:“§–¾ ` 0xFF:•s“§–¾
+static BYTE byAlpha_ = 0xFF;						// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å…¨ä½“ã®é€æ˜åº¦ 0x00:é€æ˜ ï½ 0xFF:ä¸é€æ˜
 static BOOL bIsTopmost_ = FALSE;
 static BOOL bIsBottommost_ = FALSE;
 static BOOL bIsBackground_ = FALSE;
@@ -26,9 +26,9 @@ static BOOL bAllowDropFile_ = FALSE;
 static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
 static TransparentType nTransparentType_ = TransparentType::Alpha;
 static TransparentType nCurrentTransparentType_ = TransparentType::Alpha;
-static INT nMonitorCount_ = 0;							// ƒ‚ƒjƒ^”Bƒ‚ƒjƒ^‰ğ‘œ“xˆê——æ“¾‚Íˆê“I‚É0‚É–ß‚é
-static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];	// EnumDisplayMonitors‚Ì‡”Ô‚Å•Û‚µ‚½AŠe‰æ–Ê‚ÌRECT
-static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// ‚±‚Ìƒ‰ƒCƒuƒ‰ƒŠ“Æ©‚Ìƒ‚ƒjƒ^”Ô†‚ğƒL[‚Æ‚µ‚½AEnumDisplayMonitors‚Å‚Ì‡”Ô
+static INT nMonitorCount_ = 0;							// ãƒ¢ãƒ‹ã‚¿æ•°ã€‚ãƒ¢ãƒ‹ã‚¿è§£åƒåº¦ä¸€è¦§å–å¾—æ™‚ã¯ä¸€æ™‚çš„ã«0ã«æˆ»ã‚‹
+static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];	// EnumDisplayMonitorsã®é †ç•ªã§ä¿æŒã—ãŸã€å„ç”»é¢ã®RECT
+static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// ã“ã®ãƒ©ã‚¤ãƒ–ãƒ©ãƒªç‹¬è‡ªã®ãƒ¢ãƒ‹ã‚¿ç•ªå·ã‚’ã‚­ãƒ¼ã¨ã—ãŸã€EnumDisplayMonitorsã§ã®é †ç•ª
 static HMONITOR hMonitors_[UNIWINC_MAX_MONITORCOUNT];	// Monitor handles
 static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
@@ -53,7 +53,7 @@ void destroyCustomWindowProcedure();
 
 
 /// <summary>
-/// Šù‚ÉƒEƒBƒ“ƒhƒE‚ª‘I‘ğÏ‚İ‚È‚çAŒ³‚Ìó‘Ô‚É–ß‚µ‚Ä‘I‘ğ‚ğ‰ğœ
+/// æ—¢ã«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒé¸æŠæ¸ˆã¿ãªã‚‰ã€å…ƒã®çŠ¶æ…‹ã«æˆ»ã—ã¦é¸æŠã‚’è§£é™¤
 /// </summary>
 void detachWindow()
 {
@@ -65,25 +65,25 @@ void detachWindow()
 		//endHook();
 
 		if (IsWindow(hTargetWnd_)) {
-			// “§–¾‰»‚ÍA‹N“®‚Í–³Œø‚Å‚ ‚é‚à‚Ì‚Æ‚µ‚ÄA–ß‚·‚Æ‚«‚Í–³Œø‰»
+			// é€æ˜åŒ–ã¯ã€èµ·å‹•æ™‚ã¯ç„¡åŠ¹ã§ã‚ã‚‹ã‚‚ã®ã¨ã—ã¦ã€æˆ»ã™ã¨ãã¯ç„¡åŠ¹åŒ–
 			SetTransparent(FALSE);
 
-			//// •Ç†‰»‚ª‚İ‚ç‚ê‚Ä‚¢‚ê‚ÎƒEƒBƒ“ƒhƒE‚Ìe‚ğ–ß‚·
+			//// å£ç´™åŒ–ãŒè©¦ã¿ã‚‰ã‚Œã¦ã„ã‚Œã°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®è¦ªã‚’æˆ»ã™
 			//if (hDesktopWnd_ != NULL) {
 			//	SetParent(hTargetWnd_, hParentWnd_);
 			//}
 
-			//// í‚ÉÅ‘O–Ê‚ÍA‹N“®‚Ìó‘Ô‚É‡‚í‚¹‚é‚æ‚¤–ß‚·	«SetWindowLong‚Å–{—ˆ–ß‚é‚Í‚¸‚Å•s—vH
+			//// å¸¸ã«æœ€å‰é¢ã¯ã€èµ·å‹•æ™‚ã®çŠ¶æ…‹ã«åˆã‚ã›ã‚‹ã‚ˆã†æˆ»ã™	â†“SetWindowLongã§æœ¬æ¥æˆ»ã‚‹ã¯ãšã§ä¸è¦ï¼Ÿ
 			//SetTopmost((originalWindowInfo.dwExStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
 
-			// Å‰‚ÌƒXƒ^ƒCƒ‹‚É–ß‚·
+			// æœ€åˆã®ã‚¹ã‚¿ã‚¤ãƒ«ã«æˆ»ã™
 			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, originalWindowInfo_.dwExStyle);
 
-			// ƒEƒBƒ“ƒhƒEˆÊ’u‚ğ–ß‚·
+			// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½ç½®ã‚’æˆ»ã™
 			SetWindowPlacement(hTargetWnd_, &originalWindowPlacement_);
 
-			// •\¦‚ğXV
+			// è¡¨ç¤ºã‚’æ›´æ–°
 			refreshWindowRect();
 		}
 	}
@@ -91,17 +91,17 @@ void detachWindow()
 }
 
 /// <summary>
-/// w’èƒnƒ“ƒhƒ‹‚ÌƒEƒBƒ“ƒhƒE‚ğ¡Œãg‚¤‚æ‚¤‚É‚·‚é
+/// æŒ‡å®šãƒãƒ³ãƒ‰ãƒ«ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä»Šå¾Œä½¿ã†ã‚ˆã†ã«ã™ã‚‹
 /// </summary>
 /// <param name="hWnd"></param>
 void attachWindow(const HWND hWnd) {
-	// ‘I‘ğÏ‚İƒEƒBƒ“ƒhƒE‚ªˆÙ‚È‚é‚à‚Ì‚Å‚ ‚ê‚ÎAŒ³‚É–ß‚·
+	// é¸æŠæ¸ˆã¿ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒç•°ãªã‚‹ã‚‚ã®ã§ã‚ã‚Œã°ã€å…ƒã«æˆ»ã™
 	if (hTargetWnd_ != hWnd) {
 		detachWindow();
 	}
 
-	// ‚Æ‚è‚ ‚¦‚¸‚±‚Ìƒ^ƒCƒ~ƒ“ƒO‚Å‰æ–ÊƒTƒCƒY‚àXV
-	//   –{—ˆ‚Í‰æ–Ê‰ğ‘œ“x•ÏX‚ÉXV‚µ‚½‚¢BƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ‚Å‚Ç‚¤H
+	// ã¨ã‚Šã‚ãˆãšã“ã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ç”»é¢ã‚µã‚¤ã‚ºã‚‚æ›´æ–°
+	//   æœ¬æ¥ã¯ç”»é¢è§£åƒåº¦å¤‰æ›´æ™‚ã«æ›´æ–°ã—ãŸã„ã€‚ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã§ã©ã†ï¼Ÿ
 	updateScreenSize();
 
 	// Set the target
@@ -129,7 +129,7 @@ void attachWindow(const HWND hWnd) {
 }
 
 
-/// ƒI[ƒi[ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğ’T‚µ‚ÄƒAƒ^ƒbƒ`‚·‚éÛ‚ÌƒR[ƒ‹ƒoƒbƒN
+/// ã‚ªãƒ¼ãƒŠãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’æ¢ã—ã¦ã‚¢ã‚¿ãƒƒãƒã™ã‚‹éš›ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
 /// </summary>
 /// <param name="hWnd"></param>
 /// <param name="lParam"></param>
@@ -140,23 +140,23 @@ BOOL CALLBACK attachOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 	DWORD pid;
 	GetWindowThreadProcessId(hWnd, &pid);
 
-	// ƒvƒƒZƒXID‚ªˆê’v‚·‚ê‚Î©•ª‚ÌƒEƒBƒ“ƒhƒE‚Æ‚·‚é
+	// ãƒ—ãƒ­ã‚»ã‚¹IDãŒä¸€è‡´ã™ã‚Œã°è‡ªåˆ†ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã¨ã™ã‚‹
 	if (pid == currentPid) {
 
-		// ƒI[ƒi[ƒEƒBƒ“ƒhƒE‚ğ’T‚·
-		// UnityƒGƒfƒBƒ^‚¾‚Æ–{‘Ì‚ª‘I‚Î‚ê‚Ä“Æ—§Gameƒrƒ…[‚ª‘I‚Î‚ê‚È‚¢c
+		// ã‚ªãƒ¼ãƒŠãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æ¢ã™
+		// Unityã‚¨ãƒ‡ã‚£ã‚¿ã ã¨æœ¬ä½“ãŒé¸ã°ã‚Œã¦ç‹¬ç«‹Gameãƒ“ãƒ¥ãƒ¼ãŒé¸ã°ã‚Œãªã„â€¦
 		HWND hOwner = GetWindow(hWnd, GW_OWNER);
 		if (hOwner) {
-			// ‚ ‚ê‚ÎƒI[ƒi[‚ğ‘I‘ğ
+			// ã‚ã‚Œã°ã‚ªãƒ¼ãƒŠãƒ¼ã‚’é¸æŠ
 			attachWindow(hOwner);
 		}
 		else {
-			// ƒI[ƒi[‚ª–³‚¯‚ê‚Î‚±‚ÌƒEƒBƒ“ƒhƒE‚ğ‘I‘ğ
+			// ã‚ªãƒ¼ãƒŠãƒ¼ãŒç„¡ã‘ã‚Œã°ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é¸æŠ
 			attachWindow(hWnd);
 		}
 		return FALSE;
 
-		//// “¯‚¶ƒvƒƒZƒXID‚Å‚àA•\¦‚³‚ê‚Ä‚¢‚éƒEƒBƒ“ƒhƒE‚Ì‚İ‚ğ‘I‘ğ
+		//// åŒã˜ãƒ—ãƒ­ã‚»ã‚¹IDã§ã‚‚ã€è¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã¿ã‚’é¸æŠ
 		//LONG style = GetWindowLong(hWnd, GWL_STYLE);
 		//if (style & WS_VISIBLE) {
 		//	hTargetWnd_ = hWnd;
@@ -168,7 +168,7 @@ BOOL CALLBACK attachOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 }
 
 /// <summary>
-/// ƒI[ƒi[ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğ’T‚·Û‚ÌƒR[ƒ‹ƒoƒbƒN
+/// ã‚ªãƒ¼ãƒŠãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’æ¢ã™éš›ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
 /// </summary>
 /// <param name="hWnd"></param>
 /// <param name="lParam"></param>
@@ -179,18 +179,18 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 	DWORD pid;
 	GetWindowThreadProcessId(hWnd, &pid);
 
-	// ƒvƒƒZƒXID‚ªˆê’v‚·‚ê‚Î©•ª‚ÌƒEƒBƒ“ƒhƒE‚Æ‚·‚é
+	// ãƒ—ãƒ­ã‚»ã‚¹IDãŒä¸€è‡´ã™ã‚Œã°è‡ªåˆ†ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã¨ã™ã‚‹
 	if (pid == currentPid) {
 
-		// ƒI[ƒi[ƒEƒBƒ“ƒhƒE‚ğ’T‚·
-		// UnityƒGƒfƒBƒ^‚¾‚Æ–{‘Ì‚ª‘I‚Î‚ê‚Ä“Æ—§Gameƒrƒ…[‚ª‘I‚Î‚ê‚È‚¢c
+		// ã‚ªãƒ¼ãƒŠãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æ¢ã™
+		// Unityã‚¨ãƒ‡ã‚£ã‚¿ã ã¨æœ¬ä½“ãŒé¸ã°ã‚Œã¦ç‹¬ç«‹Gameãƒ“ãƒ¥ãƒ¼ãŒé¸ã°ã‚Œãªã„â€¦
 		HWND hOwner = GetWindow(hWnd, GW_OWNER);
 		if (hOwner) {
-			// ‚ ‚ê‚ÎƒI[ƒi[‚ğ‘I‘ğ
+			// ã‚ã‚Œã°ã‚ªãƒ¼ãƒŠãƒ¼ã‚’é¸æŠ
 			hPanelOwnerWnd_ = hOwner;
 		}
 		else {
-			// ƒI[ƒi[‚ª–³‚¯‚ê‚Î‚±‚ÌƒEƒBƒ“ƒhƒE‚ğ‘I‘ğ
+			// ã‚ªãƒ¼ãƒŠãƒ¼ãŒç„¡ã‘ã‚Œã°ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é¸æŠ
 			hPanelOwnerWnd_ = hWnd;
 		}
 		return FALSE;
@@ -200,7 +200,7 @@ BOOL CALLBACK findOwnerWindowProc(const HWND hWnd, const LPARAM lParam)
 }
 
 /// <summary>
-/// ƒfƒXƒNƒgƒbƒv‚ÌƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğ’T‚·Û‚ÌƒR[ƒ‹ƒoƒbƒN
+/// ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’æ¢ã™éš›ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
 /// </summary>
 /// <param name="hWnd"></param>
 /// <param name="lParam"></param>
@@ -211,8 +211,8 @@ BOOL CALLBACK findDesktopWindowProc(const HWND hWnd, const LPARAM lParam)
 	int len = GetClassName(hWnd, className, UNIWINC_MAX_CLASSNAME);
 
 	if (len > 0) {
-		// ƒNƒ‰ƒX–¼‚ªæ“¾‚Å‚«AWorkerW ‚Ü‚½‚Í Progman ‚È‚ç‚»‚Ìq‚Å SHELLDLL_DefView ‚ğ‘ÎÛ‚Æ‚·‚é
-		// Ql http://www.orangemaker.sakura.ne.jp/labo/memo/sdk-mfc/win7Desktop.html
+		// ã‚¯ãƒ©ã‚¹åãŒå–å¾—ã§ãã€WorkerW ã¾ãŸã¯ Progman ãªã‚‰ãã®å­ã§ SHELLDLL_DefView ã‚’å¯¾è±¡ã¨ã™ã‚‹
+		// å‚è€ƒ http://www.orangemaker.sakura.ne.jp/labo/memo/sdk-mfc/win7Desktop.html
 		if ((lstrcmp(TEXT("WorkerW"), className) == 0) || (lstrcmp(TEXT("Progman"), className) == 0)) {
 			if (bExpedtDesktopWnd) {
 				hDesktopWnd_ = hWnd;
@@ -234,8 +234,8 @@ BOOL CALLBACK findDesktopWindowProc(const HWND hWnd, const LPARAM lParam)
 }
 
 /// <summary>
-/// ƒ‚ƒjƒ^î•ñæ“¾‚ÌƒR[ƒ‹ƒoƒbƒN
-/// EnumDisplayMonitors()‚ÅŒÄ‚Î‚ê‚éB‚»‚ÌÛ‚ÍÅ‰‚ÉnMonitorCount‚ª0‚ÉƒZƒbƒg‚³‚ê‚é‚à‚Ì‚Æ‚·‚éB
+/// ãƒ¢ãƒ‹ã‚¿æƒ…å ±å–å¾—æ™‚ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
+/// EnumDisplayMonitors()ã§å‘¼ã°ã‚Œã‚‹ã€‚ãã®éš›ã¯æœ€åˆã«nMonitorCountãŒ0ã«ã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã‚‚ã®ã¨ã™ã‚‹ã€‚
 /// </summary>
 /// <param name="hMon"></param>
 /// <param name="hDc"></param>
@@ -244,50 +244,50 @@ BOOL CALLBACK findDesktopWindowProc(const HWND hWnd, const LPARAM lParam)
 /// <returns></returns>
 BOOL CALLBACK monitorEnumProc(HMONITOR hMon, HDC hDc, LPRECT lpRect, LPARAM lParam)
 {
-	// Å‘åæ‚èˆµ‚¢ƒ‚ƒjƒ^”‚É’B‚µ‚½‚ç’TõI—¹
+	// æœ€å¤§å–ã‚Šæ‰±ã„ãƒ¢ãƒ‹ã‚¿æ•°ã«é”ã—ãŸã‚‰æ¢ç´¢çµ‚äº†
 	if (nMonitorCount_ >= UNIWINC_MAX_MONITORCOUNT) return FALSE;
 
-	// RECT‚ğ‹L‰¯
+	// RECTã‚’è¨˜æ†¶
 	pMonitorRect_[nMonitorCount_] = *lpRect;
 
-	// ƒvƒ‰ƒCƒ}ƒŠƒ‚ƒjƒ^‚Ì‚‚³‚ğ‹L‰¯
+	// ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¢ãƒ‹ã‚¿ã®é«˜ã•ã‚’è¨˜æ†¶
 	if (lpRect->left == 0 && lpRect->top == 0) {
-		// Œ´“_‚ÉˆÊ’u‚·‚éƒ‚ƒjƒ^‚ªƒvƒ‰ƒCƒ}ƒŠƒ‚ƒjƒ^‚¾‚Æ”»’f
+		// åŸç‚¹ã«ä½ç½®ã™ã‚‹ãƒ¢ãƒ‹ã‚¿ãŒãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¢ãƒ‹ã‚¿ã ã¨åˆ¤æ–­
 		nPrimaryMonitorHeight_ = lpRect->bottom;
 	}
 
-	// ƒCƒ“ƒfƒbƒNƒX‚ğˆê’U“oê‡‚Å•Û‘¶
+	// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ä¸€æ—¦ç™»å ´é †ã§ä¿å­˜
 	pMonitorIndices_[nMonitorCount_] = nMonitorCount_;
 
 	// Store the monitor handle
 	hMonitors_[nMonitorCount_] = hMon;
 
-	// ƒ‚ƒjƒ^”ƒJƒEƒ“ƒg
+	// ãƒ¢ãƒ‹ã‚¿æ•°ã‚«ã‚¦ãƒ³ãƒˆ
 	nMonitorCount_++;
 
 	return TRUE;
 }
 
 /// <summary>
-/// Ú‘±ƒ‚ƒjƒ^”‚Æ‚»‚ê‚ç‚ÌƒTƒCƒYˆê——‚ğæ“¾
+/// æ¥ç¶šãƒ¢ãƒ‹ã‚¿æ•°ã¨ãã‚Œã‚‰ã®ã‚µã‚¤ã‚ºä¸€è¦§ã‚’å–å¾—
 /// </summary>
-/// <returns>¬Œ÷‚È‚çTRUE</returns>
+/// <returns>æˆåŠŸãªã‚‰TRUE</returns>
 BOOL updateMonitorRectangles() {
-	//  ƒJƒEƒ“ƒg‚·‚é‚½‚ßˆê“I‚É0‚É–ß‚·
+	//  ã‚«ã‚¦ãƒ³ãƒˆã™ã‚‹ãŸã‚ä¸€æ™‚çš„ã«0ã«æˆ»ã™
 	nMonitorCount_ = 0;
 
-	// ƒ‚ƒjƒ^‚ğ—ñ‹“‚µ‚ÄRECT‚ğ•Û‘¶
+	// ãƒ¢ãƒ‹ã‚¿ã‚’åˆ—æŒ™ã—ã¦RECTã‚’ä¿å­˜
 	if (!EnumDisplayMonitors(NULL, NULL, monitorEnumProc, NULL)) {
 		return FALSE;
 	}
 
-	// ƒ‚ƒjƒ^‚ÌˆÊ’u‚ğŠî€‚Éƒoƒuƒ‹ƒ\[ƒg
+	// ãƒ¢ãƒ‹ã‚¿ã®ä½ç½®ã‚’åŸºæº–ã«ãƒãƒ–ãƒ«ã‚½ãƒ¼ãƒˆ
 	for (int i = 0; i < (nMonitorCount_ - 1); i++) {
 		for (int j = (nMonitorCount_ - 1); j > i; j--) {
 			RECT pr = pMonitorRect_[pMonitorIndices_[j - 1]];
 			RECT cr = pMonitorRect_[pMonitorIndices_[j]];
 
-			// ¶‚É‚ ‚éƒ‚ƒjƒ^‚ªæA‰¡‚ª“¯‚¶‚È‚ç‰º‚É‚ ‚éƒ‚ƒjƒ^‚ªæ‚Æ‚È‚é‚æ‚¤ƒ\[ƒg
+			// å·¦ã«ã‚ã‚‹ãƒ¢ãƒ‹ã‚¿ãŒå…ˆã€æ¨ªãŒåŒã˜ãªã‚‰ä¸‹ã«ã‚ã‚‹ãƒ¢ãƒ‹ã‚¿ãŒå…ˆã¨ãªã‚‹ã‚ˆã†ã‚½ãƒ¼ãƒˆ
 			if (pr.left >  cr.left || ((pr.left == cr.left) && (pr.bottom < cr.bottom))) {
 				int index = pMonitorIndices_[j - 1];
 				pMonitorIndices_[j - 1] = pMonitorIndices_[j];
@@ -300,7 +300,7 @@ BOOL updateMonitorRectangles() {
 }
 
 /// <summary>
-/// ‘S–Ê‚ğGlass‚É‚·‚é
+/// å…¨é¢ã‚’Glassã«ã™ã‚‹
 /// </summary>
 void enableTransparentByDWM()
 {
@@ -311,29 +311,29 @@ void enableTransparentByDWM()
 }
 
 /// <summary>
-/// ˜g‚Ì‚İGlass‚É‚·‚é
+/// æ ã®ã¿Glassã«ã™ã‚‹
 /// </summary>
 void disableTransparentByDWM()
 {
 	if (!hTargetWnd_) return;
 
-	// TODO: ‚Å‚«‚ê‚ÎŒˆ‚ß‘Å‚¿‚Å‚Í–³‚­‚¹‚é‚Æ‚æ‚¢
-	//   –{—ˆ‚ÌƒEƒBƒ“ƒhƒE‚ª‰½‚ç‚©‚Ì”ÍˆÍw’è‚ÅGlass‚É‚µ‚Ä‚¢‚½ê‡‚ÍAc”O‚È‚ª‚ç•\¦‚ª–ß‚è‚Ü‚¹‚ñ
+	// TODO: ã§ãã‚Œã°æ±ºã‚æ‰“ã¡ã§ã¯ç„¡ãã›ã‚‹ã¨ã‚ˆã„
+	//   æœ¬æ¥ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒä½•ã‚‰ã‹ã®ç¯„å›²æŒ‡å®šã§Glassã«ã—ã¦ã„ãŸå ´åˆã¯ã€æ®‹å¿µãªãŒã‚‰è¡¨ç¤ºãŒæˆ»ã‚Šã¾ã›ã‚“
 	MARGINS margins = { 0, 0, 0, 0 };
 	DwmExtendFrameIntoClientArea(hTargetWnd_, &margins);
 }
 
 /// <summary>
-/// DWM—˜—p‚Ü‚½‚ÍƒEƒBƒ“ƒhƒE”ñ“§‰ß‚Ì“§–¾“xİ’è
+/// DWMåˆ©ç”¨æ™‚ã¾ãŸã¯ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦éé€éæ™‚ã®é€æ˜åº¦è¨­å®š
 /// </summary>
 void applyWindowAlphaValue() {
 	if (!hTargetWnd_) return;
 
-	// ”¼“§–¾‚Ìê‡AƒŒƒCƒ„[ƒhƒEƒBƒ“ƒhƒE‚É‚È‚Á‚Ä‚¢‚È‚¯‚ê‚ÎˆÈ~‚ÍƒŒƒCƒ„[ƒhƒEƒBƒ“ƒhƒE‚É‚·‚é
+	// åŠé€æ˜ã®å ´åˆã€ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ‰ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ãªã£ã¦ã„ãªã‘ã‚Œã°ä»¥é™ã¯ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ‰ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ã™ã‚‹
 	if (byAlpha_ < 0xFF) {
 		LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 
-		// ‚Ü‚¾ƒŒƒCƒ„[ƒhƒEƒBƒ“ƒhƒE‚É‚È‚Á‚Ä‚¢‚È‚¯‚ê‚ÎAİ’è
+		// ã¾ã ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ‰ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ãªã£ã¦ã„ãªã‘ã‚Œã°ã€è¨­å®š
 		if (!(exstyle & WS_EX_LAYERED)) {
 			exstyle |= WS_EX_LAYERED;
 			SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
@@ -345,7 +345,7 @@ void applyWindowAlphaValue() {
 }
 
 /// <summary>
-/// SetLayeredWindowsAttributes ‚É‚æ‚Á‚Äw’èF‚ğ“§‰ß‚³‚¹‚é
+/// SetLayeredWindowsAttributes ã«ã‚ˆã£ã¦æŒ‡å®šè‰²ã‚’é€éã•ã›ã‚‹
 /// </summary>
 void enableTransparentBySetLayered()
 {
@@ -353,7 +353,7 @@ void enableTransparentBySetLayered()
 
 	LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 
-	// ƒŒƒCƒ„[ƒhƒEƒBƒ“ƒhƒE‚É‚È‚Á‚Ä‚¢‚È‚¯‚ê‚ÎAİ’è
+	// ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ‰ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ãªã£ã¦ã„ãªã‘ã‚Œã°ã€è¨­å®š
 	if (!(exstyle & WS_EX_LAYERED)) {
 		exstyle |= WS_EX_LAYERED;
 		SetWindowLong(hTargetWnd_, GWL_EXSTYLE, exstyle);
@@ -363,7 +363,7 @@ void enableTransparentBySetLayered()
 }
 
 /// <summary>
-/// SetLayeredWindowsAttributes ‚É‚æ‚éw’èF“§‰ß‚ğ‰ğœ
+/// SetLayeredWindowsAttributes ã«ã‚ˆã‚‹æŒ‡å®šè‰²é€éã‚’è§£é™¤
 /// </summary>
 void disableTransparentBySetLayered()
 {
@@ -374,7 +374,7 @@ void disableTransparentBySetLayered()
 }
 
 /// <summary>
-/// •Ç†‚Ìe‚Æ‚È‚éƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğæ“¾
+/// å£ç´™ã®è¦ªã¨ãªã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
 /// </summary>
 void findDesktopWindow() {
 	bExpedtDesktopWnd = FALSE;
@@ -382,40 +382,40 @@ void findDesktopWindow() {
 }
 
 /// <summary>
-/// ˜g‚ğÁ‚µ‚½Û‚É•`‰æƒTƒCƒY‚ª‡‚í‚È‚­‚È‚é‚±‚Æ‚É‘Î‰‚·‚é‚½‚ßAƒEƒBƒ“ƒhƒE‚ğ‹­§ƒŠƒTƒCƒY‚µ‚ÄXV
+/// æ ã‚’æ¶ˆã—ãŸéš›ã«æç”»ã‚µã‚¤ã‚ºãŒåˆã‚ãªããªã‚‹ã“ã¨ã«å¯¾å¿œã™ã‚‹ãŸã‚ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’å¼·åˆ¶ãƒªã‚µã‚¤ã‚ºã—ã¦æ›´æ–°
 /// </summary>
 void refreshWindowRect() {
 	if (!hTargetWnd_) return;
 
 	if (IsZoomed(hTargetWnd_)) {
-		// Å‘å‰»‚³‚ê‚Ä‚¢‚½ê‡‚ÍAƒEƒBƒ“ƒhƒEƒTƒCƒY•ÏX‚Ì‘ã‚í‚è‚Éˆê“xÅ¬‰»‚µ‚ÄÄ“xÅ‘å‰»
+		// æœ€å¤§åŒ–ã•ã‚Œã¦ã„ãŸå ´åˆã¯ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºå¤‰æ›´ã®ä»£ã‚ã‚Šã«ä¸€åº¦æœ€å°åŒ–ã—ã¦å†åº¦æœ€å¤§åŒ–
 		ShowWindow(hTargetWnd_, SW_MINIMIZE);
 		ShowWindow(hTargetWnd_, SW_MAXIMIZE);
 	}
 	else if (IsIconic(hTargetWnd_)) {
-		// Å¬‰»‚³‚ê‚Ä‚¢‚½ê‡‚ÍAŸ‚É•\¦‚³‚ê‚é‚Æ‚«‚ÉXV‚³‚ê‚é‚à‚Ì‚Æ‚µ‚ÄA‰½‚à‚µ‚È‚¢
+		// æœ€å°åŒ–ã•ã‚Œã¦ã„ãŸå ´åˆã¯ã€æ¬¡ã«è¡¨ç¤ºã•ã‚Œã‚‹ã¨ãã«æ›´æ–°ã•ã‚Œã‚‹ã‚‚ã®ã¨ã—ã¦ã€ä½•ã‚‚ã—ãªã„
 	}
 	else if (IsWindowVisible(hTargetWnd_)) {
-		// ’Êí‚ÌƒEƒBƒ“ƒhƒE‚¾‚Á‚½ê‡‚ÍAƒEƒBƒ“ƒhƒEƒTƒCƒY‚ğ1px•Ï‚¦‚é‚±‚Æ‚ÅÄ•`‰æ
+		// é€šå¸¸ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã ã£ãŸå ´åˆã¯ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’1pxå¤‰ãˆã‚‹ã“ã¨ã§å†æç”»
 
-		// Œ»İ‚ÌƒEƒBƒ“ƒhƒEƒTƒCƒY‚ğæ“¾
+		// ç¾åœ¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’å–å¾—
 		RECT rect;
 		GetWindowRect(hTargetWnd_, &rect);
 
-		// 1px‰¡•‚ğL‚°‚ÄAƒŠƒTƒCƒYƒCƒxƒ“ƒg‚ğ‹­§“I‚É‹N‚±‚·
+		// 1pxæ¨ªå¹…ã‚’åºƒã’ã¦ã€ãƒªã‚µã‚¤ã‚ºã‚¤ãƒ™ãƒ³ãƒˆã‚’å¼·åˆ¶çš„ã«èµ·ã“ã™
 		SetWindowPos(
 			hTargetWnd_,
 			NULL,
 			0, 0, (rect.right - rect.left + 1), (rect.bottom - rect.top + 1),
-			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 		);
 
-		// Œ³‚ÌƒTƒCƒY‚É–ß‚·B‚±‚Ì‚àƒŠƒTƒCƒYƒCƒxƒ“ƒg‚Í”­¶‚·‚é‚Í‚¸
+		// å…ƒã®ã‚µã‚¤ã‚ºã«æˆ»ã™ã€‚ã“ã®æ™‚ã‚‚ãƒªã‚µã‚¤ã‚ºã‚¤ãƒ™ãƒ³ãƒˆã¯ç™ºç”Ÿã™ã‚‹ã¯ãš
 		SetWindowPos(
 			hTargetWnd_,
 			NULL,
 			0, 0, (rect.right - rect.left), (rect.bottom - rect.top),
-			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+			SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 		);
 
 		ShowWindow(hTargetWnd_, SW_SHOW);
@@ -431,7 +431,7 @@ BOOL compareRect(const RECT rcA, const RECT rcB) {
 /// </summary>
 /// <returns></returns>
 void updateScreenSize() {
-	//nPrimaryMonitorHeight_ = GetSystemMetrics(SM_CYSCREEN);	// 150% ‚È‚Ç‚Ì‚ÍÀ‰ğ‘œ“x‚Æˆê’v‚µ‚È‚¢
+	//nPrimaryMonitorHeight_ = GetSystemMetrics(SM_CYSCREEN);	// 150% ãªã©ã®æ™‚ã¯å®Ÿè§£åƒåº¦ã¨ä¸€è‡´ã—ãªã„
 
 	// Update the monitor resolution list.
 	//   To use the nPrimaryMonitorHeight, do this after its acquisition.
@@ -439,7 +439,7 @@ void updateScreenSize() {
 }
 
 /// <summary>
-/// Œ»İAÀÛ‚Éí‚ÉÅ‘O–Ê‚É‚È‚Á‚Ä‚¢‚é‚©‚ğ’²‚×‚é
+/// ç¾åœ¨ã€å®Ÿéš›ã«å¸¸ã«æœ€å‰é¢ã«ãªã£ã¦ã„ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 /// </summary>
 /// <returns></returns>
 BOOL getTopMost() {
@@ -457,16 +457,16 @@ BOOL getTopMost() {
 #pragma region For window style
 
 /// <summary>
-/// ƒEƒBƒ“ƒhƒEó‘Ô‚ª’u‚«Š·‚í‚Á‚Ä‚¢‚é‚©’èŠú“I‚É’²‚×‚ÄA‹­§“I‚ÉC³
+/// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦çŠ¶æ…‹ãŒç½®ãæ›ã‚ã£ã¦ã„ã‚‹ã‹å®šæœŸçš„ã«èª¿ã¹ã¦ã€å¼·åˆ¶çš„ã«ä¿®æ­£
 /// </summary>
 /// <returns></returns>
 void UNIWINC_API Update() {
-	// ¡‚Ì‚Æ‚±‚ëWindows‚Å‚Í‰½‚à‚µ‚È‚¢
+	// ä»Šã®ã¨ã“ã‚Windowsã§ã¯ä½•ã‚‚ã—ãªã„
 	return;
 }
 
 /// <summary>
-/// —˜—p‰Â”\‚Èó‘Ô‚È‚çTRUE‚ğ•Ô‚·
+/// åˆ©ç”¨å¯èƒ½ãªçŠ¶æ…‹ãªã‚‰TRUEã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsActive() {
@@ -477,7 +477,7 @@ BOOL UNIWINC_API IsActive() {
 }
 
 /// <summary>
-/// “§‰ß‚É‚µ‚Ä‚¢‚é‚©”Û‚©‚ğ•Ô‚·
+/// é€éã«ã—ã¦ã„ã‚‹ã‹å¦ã‹ã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsTransparent() {
@@ -485,7 +485,7 @@ BOOL UNIWINC_API IsTransparent() {
 }
 
 /// <summary>
-/// ˜g‚ğÁ‹‚µ‚Ä‚¢‚é‚©”Û‚©‚ğ•Ô‚·
+/// æ ã‚’æ¶ˆå»ã—ã¦ã„ã‚‹ã‹å¦ã‹ã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsBorderless() {
@@ -493,7 +493,7 @@ BOOL UNIWINC_API IsBorderless() {
 }
 
 /// <summary>
-/// Å‘O–Ê‚É‚µ‚Ä‚¢‚é‚©”Û‚©‚ğ•Ô‚·
+/// æœ€å‰é¢ã«ã—ã¦ã„ã‚‹ã‹å¦ã‹ã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsTopmost() {
@@ -501,7 +501,7 @@ BOOL UNIWINC_API IsTopmost() {
 }
 
 /// <summary>
-/// Å”w–Ê‚É‚µ‚Ä‚¢‚é‚©”Û‚©‚ğ•Ô‚·
+/// æœ€èƒŒé¢ã«ã—ã¦ã„ã‚‹ã‹å¦ã‹ã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsBottommost() {
@@ -509,7 +509,7 @@ BOOL UNIWINC_API IsBottommost() {
 }
 
 /// <summary>
-/// •Ç†‚É‚µ‚Ä‚¢‚é‚©”Û‚©‚ğ•Ô‚·
+/// å£ç´™ã«ã—ã¦ã„ã‚‹ã‹å¦ã‹ã‚’è¿”ã™
 /// </summary>
 /// <returns></returns>
 BOOL UNIWINC_API IsBackground() {
@@ -589,43 +589,52 @@ BOOL UNIWINC_API AttachMyActiveWindow() {
 }
 
 /// <summary>
+/// Attach to the specified window
+/// </summary>
+/// <returns></returns>
+BOOL UNIWINC_API AttachWindowHandle(const HWND hWnd) {
+	attachWindow(hWnd);
+	return TRUE;
+}
+
+/// <summary>
 /// Select the transparentize method
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
 void UNIWINC_API SetTransparentType(const TransparentType type) {
 	if (bIsTransparent_) {
-		// “§–¾‰»ó‘Ô‚Å‚ ‚ê‚ÎAˆê“x‰ğœ‚µ‚Ä‚©‚çİ’è
+		// é€æ˜åŒ–çŠ¶æ…‹ã§ã‚ã‚Œã°ã€ä¸€åº¦è§£é™¤ã—ã¦ã‹ã‚‰è¨­å®š
 		SetTransparent(FALSE);
 		nTransparentType_ = type;
 		SetTransparent(TRUE);
 	}
 	else {
-		// “§–¾‰»ó‘Ô‚Å‚È‚¯‚ê‚ÎA‚»‚Ì‚Ü‚Üİ’è
+		// é€æ˜åŒ–çŠ¶æ…‹ã§ãªã‘ã‚Œã°ã€ãã®ã¾ã¾è¨­å®š
 		nTransparentType_ = type;
 	}
 }
 
 /// <summary>
-/// ’PF“§‰ß‚É“§‰ß‚Æ‚·‚éF‚ğw’è
+/// å˜è‰²é€éæ™‚ã«é€éã¨ã™ã‚‹è‰²ã‚’æŒ‡å®š
 /// </summary>
-/// <param name="color">“§‰ß‚·‚éF</param>
+/// <param name="color">é€éã™ã‚‹è‰²</param>
 /// <returns></returns>
 void UNIWINC_API SetKeyColor(const COLORREF color) {
 	if (bIsTransparent_ && (nTransparentType_ == TransparentType::ColorKey)) {
-		// “§–¾‰»ó‘Ô‚Å‚ ‚ê‚ÎAˆê“x‰ğœ‚µ‚Ä‚©‚çİ’è
+		// é€æ˜åŒ–çŠ¶æ…‹ã§ã‚ã‚Œã°ã€ä¸€åº¦è§£é™¤ã—ã¦ã‹ã‚‰è¨­å®š
 		SetTransparent(FALSE);
 		dwKeyColor_ = color;
 		SetTransparent(TRUE);
 	}
 	else {
-		// “§–¾‰»ó‘Ô‚Å‚È‚¯‚ê‚ÎA‚»‚Ì‚Ü‚Üİ’è
+		// é€æ˜åŒ–çŠ¶æ…‹ã§ãªã‘ã‚Œã°ã€ãã®ã¾ã¾è¨­å®š
 		dwKeyColor_ = color;
 	}
 }
 
 /// <summary>
-/// “§‰ß‚¨‚æ‚Ñ˜gÁ‚µ‚ğİ’è^‰ğœ
+/// é€éãŠã‚ˆã³æ æ¶ˆã—ã‚’è¨­å®šï¼è§£é™¤
 /// </summary>
 /// <param name="bTransparent"></param>
 /// <returns></returns>
@@ -658,17 +667,17 @@ void UNIWINC_API SetTransparent(const BOOL bTransparent) {
 			}
 		}
 
-		// –ß‚·•û–@‚ğŒˆ‚ß‚é‚½‚ßA“§–¾‰»‚ª•ÏX‚³‚ê‚½‚Ìƒ^ƒCƒv‚ğ‹L‰¯
+		// æˆ»ã™æ–¹æ³•ã‚’æ±ºã‚ã‚‹ãŸã‚ã€é€æ˜åŒ–ãŒå¤‰æ›´ã•ã‚ŒãŸæ™‚ã®ã‚¿ã‚¤ãƒ—ã‚’è¨˜æ†¶
 		nCurrentTransparentType_ = nTransparentType_;
 	}
 
-	// “§–¾‰»ó‘Ô‚ğ‹L‰¯
+	// é€æ˜åŒ–çŠ¶æ…‹ã‚’è¨˜æ†¶
 	bIsTransparent_ = bTransparent;
 }
 
 
 /// <summary>
-/// ƒEƒBƒ“ƒhƒE˜g‚ğ—LŒø^–³Œø‚É‚·‚é
+/// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æ ã‚’æœ‰åŠ¹ï¼ç„¡åŠ¹ã«ã™ã‚‹
 /// </summary>
 /// <param name="bBorderless"></param>
 void UNIWINC_API SetBorderless(const BOOL bBorderless) {
@@ -678,85 +687,108 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		GetWindowRect(hTargetWnd_, &rcWin);
 		GetClientRect(hTargetWnd_, &rcCli);
 
+		newX = rcWin.left;
+		newY = rcWin.top;
 		int w = rcWin.right - rcWin.left;
 		int h = rcWin.bottom - rcWin.top;
+
+		bool hasMenu =  (GetMenu(hTargetWnd_) != NULL);		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’æŒã£ã¦ã„ã‚‹ã‹
 
 		int bZoomed = IsZoomed(hTargetWnd_);
 		int bIconic = IsIconic(hTargetWnd_);
 
-		// Å‘å‰»‚³‚ê‚Ä‚¢‚½‚çAˆê“xÅ‘å‰»‚Í‰ğœ
+		// æœ€å¤§åŒ–ã•ã‚Œã¦ã„ãŸã‚‰ã€ä¸€åº¦æœ€å¤§åŒ–ã¯è§£é™¤
 		if (bZoomed) {
 			ShowWindow(hTargetWnd_, SW_NORMAL);
 		}
 
+		int offset = 1;
+		LONG newStyle;
 		if (bBorderless) {
-			// ˜g–³‚µƒEƒBƒ“ƒhƒE‚É‚·‚é
-			LONG currentWS = (WS_VISIBLE | WS_POPUP);
-			SetWindowLong(hTargetWnd_, GWL_STYLE, currentWS);
-
-			newW = rcCli.right - rcCli.left;
-			newH = rcCli.bottom - rcCli.top;
-
-			int bw = (w - newW) / 2;	// ˜g‚Ì•Ğ‘¤• [px]
-			newX = rcWin.left + bw;
-			newY = rcWin.top + ((h - newH) - bw);	// –{—ˆ‚Í˜g‚Ì‰º‘¤‚‚³‚Æ¶‰E‚Ì•‚ª“¯‚¶•ÛØ‚Í‚È‚¢‚ªA‚Æ‚è‚ ‚¦‚¸“¯‚¶‚Æ‚İ‚È‚µ‚Ä‚¢‚é
-
+			// æ ç„¡ã—ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¹ã‚¿ã‚¤ãƒ«
+			newStyle = (WS_VISIBLE | WS_POPUP);
+			offset = -1;
+		} else {
+			// åˆæœŸã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¹ã‚¿ã‚¤ãƒ«ï¼ˆå¿…ãšã—ã‚‚æ ã‚ã‚Šã¨ã¯é™ã‚‰ãªã„ï¼‰
+			newStyle = originalWindowInfo_.dwStyle;
+			offset = 1;
 		}
-		else {
-			// ƒEƒBƒ“ƒhƒEƒXƒ^ƒCƒ‹‚ğ–ß‚·
-			SetWindowLong(hTargetWnd_, GWL_STYLE, originalWindowInfo_.dwStyle);
+		
+		// å¤‰æ›´å¾Œã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’è¨ˆç®—
+		AdjustWindowRect(&rcCli, newStyle, hasMenu);
+		newW = rcCli.right - rcCli.left;
+		newH = rcCli.bottom - rcCli.top;
+			
+		int dx = w - newW;	// å¤‰æ›´å¾Œã«åºƒãŒã‚‹å¹…ï¼ˆè² ã‚‚ã‚ã‚‹ï¼‰ [px]
+		int dy = h - newH;	// å¤‰æ›´å¾Œã«åºƒãŒã‚‹é«˜ã•ï¼ˆè² ã‚‚ã‚ã‚‹ï¼‰ [px]
+		int bw = dx / 2;	// æ ã®ç‰‡å´å¹… [px]
+		int bh = bw;		// æœ¬æ¥ã¯æ ã®ä¸‹å´é«˜ã•ã¨å·¦å³ã®å¹…ãŒåŒã˜ä¿è¨¼ã¯ãªã„ãŒã€ã¨ã‚Šã‚ãˆãšåŒã˜ã¨ã¿ãªã—ã¦ã„ã‚‹
+		newX = rcWin.left + bw;
+		newY = rcWin.top + (dy - bh);
 
-			int dx = (originalWindowInfo_.rcWindow.right - originalWindowInfo_.rcWindow.left) - (originalWindowInfo_.rcClient.right - originalWindowInfo_.rcClient.left);
-			int dy = (originalWindowInfo_.rcWindow.bottom - originalWindowInfo_.rcWindow.top) - (originalWindowInfo_.rcClient.bottom - originalWindowInfo_.rcClient.top);
-			int bw = dx / 2;	// ˜g‚Ì•Ğ‘¤• [px]
-
-			newW = rcCli.right - rcCli.left + dx;
-			newH = rcCli.bottom- rcCli.top + dy;
-
-			newX = rcWin.left - bw;
-			newY = rcWin.top - (dy - bw);	// –{—ˆ‚Í˜g‚Ì‰º‘¤‚‚³‚Æ¶‰E‚Ì•‚ª“¯‚¶•ÛØ‚Í‚È‚¢‚ªA‚Æ‚è‚ ‚¦‚¸“¯‚¶‚Æ‚İ‚È‚µ‚Ä‚¢‚é
-		}
-
-		// ƒEƒBƒ“ƒhƒEƒTƒCƒY‚ª•Ï‰»‚µ‚È‚¢‚©AÅ‘å‰»‚âÅ¬‰»ó‘Ô‚È‚ç•W€‚ÌƒTƒCƒYXV
+		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºãŒå¤‰åŒ–ã—ãªã„ã‹ã€æœ€å¤§åŒ–ã‚„æœ€å°åŒ–çŠ¶æ…‹ãªã‚‰æ¨™æº–ã®ã‚µã‚¤ã‚ºæ›´æ–°
 		if (bZoomed) {
-			// Å‘å‰»‚³‚ê‚Ä‚¢‚½‚çA‚±‚±‚ÅÄ“xÅ‘å‰»
+			// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¹ã‚¿ã‚¤ãƒ«ã‚’é©ç”¨
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+
+			// æœ€å¤§åŒ–ã•ã‚Œã¦ã„ãŸã‚‰ã€ã“ã“ã§å†åº¦æœ€å¤§åŒ–
 			ShowWindow(hTargetWnd_, SW_MAXIMIZE);
 		} else if (bIconic) {
-			// Å¬‰»‚³‚ê‚Ä‚¢‚½‚çAŸ‚É•\¦‚³‚ê‚é‚Æ‚«‚ÌÄ•`‰æ‚ğŠú‘Ò‚µ‚ÄA‰½‚à‚µ‚È‚¢
-		} else if (newW == w && newH == h) {
-			// ƒEƒBƒ“ƒhƒEÄ•`‰æ
-			refreshWindowRect();
-		}
-		else
-		{
-			// ƒNƒ‰ƒCƒAƒ“ƒg—ÌˆæƒTƒCƒY‚ğˆÛ‚·‚é‚æ‚¤ƒTƒCƒY‚ÆˆÊ’u‚ğ’²®
+			// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¹ã‚¿ã‚¤ãƒ«ã‚’é©ç”¨
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+			// æœ€å°åŒ–ã•ã‚Œã¦ã„ãŸã‚‰ã€æ¬¡ã«è¡¨ç¤ºã•ã‚Œã‚‹ã¨ãã®å†æç”»ã‚’æœŸå¾…ã—ã¦ã€SetWindowPosã‚„ShowWindowã¯çœç•¥
+		} else {
+			// ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆé ˜åŸŸã‚µã‚¤ã‚ºã‚’ç¶­æŒã™ã‚‹ã‚ˆã†ã‚µã‚¤ã‚ºã¨ä½ç½®ã‚’èª¿æ•´
+			//    Unity2019ã¾ã§ã®æ‰‹é †ã§ã¯Unity2020ã§ã¯ã‚µã‚¤ã‚ºãŒæˆ»ã£ã¦ã—ã¾ã†ã€‚ã‚µã‚¤ã‚ºå¤‰æ›´ã‚’ç¹°ã‚Šè¿”ã—ãŸã‚Šã€å¾Œã§ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¹ã‚¿ã‚¤ãƒ«ã‚’å¤‰æ›´ã—ã¦ã¿ã‚‹ã€‚
+			//    ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒªã‚µã‚¤ã‚ºã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ãŒãšã‚ŒãŸå ´åˆã®æŒ™å‹•ãŒä¸å®‰ãªãŸã‚ã€SWP_ASYNCWINDOWPOSã‚’å¤–ã—ãŸã€‚
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW + offset, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
 			SetWindowPos(
 				hTargetWnd_,
 				NULL,
 				newX, newY, newW, newH,
-				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 			);
 
+			// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¹ã‚¿ã‚¤ãƒ«ã‚’é©ç”¨
+			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
+
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW + offset, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
+			SetWindowPos(
+				hTargetWnd_,
+				NULL,
+				newX, newY, newW, newH,
+				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
+			);
 			ShowWindow(hTargetWnd_, SW_SHOW);
 		}
 	}
 
-	// ˜g–³‚µ‚©‚ğ‹L‰¯
+	// æ ç„¡ã—ã‹å¦ã‹ã‚’è¨˜æ†¶
 	bIsBorderless_ = bBorderless;
 }
 
 /// <summary>
-/// ƒEƒBƒ“ƒhƒE‘S‘Ì‚Ì“§–¾“x‚ğİ’è
+/// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å…¨ä½“ã®é€æ˜åº¦ã‚’è¨­å®š
 /// </summary>
 /// <param name=""></param>
 /// <returns></returns>
 void UNIWINC_API SetAlphaValue(const float alpha) {
-	// “§–¾“xw’è’l‚ğ‹L‰¯
+	// é€æ˜åº¦æŒ‡å®šå€¤ã‚’è¨˜æ†¶
 	byAlpha_ = (BYTE)(0xFF * alpha);
 
 	if (hTargetWnd_) {
 		if (bIsTransparent_) {
-			// Œ»İ‚ª“§‰ß‚Ìˆ—
+			// ç¾åœ¨ãŒé€éæ™‚ã®å‡¦ç†
 
 			switch (nTransparentType_)
 			{
@@ -764,27 +796,26 @@ void UNIWINC_API SetAlphaValue(const float alpha) {
 				applyWindowAlphaValue();
 				break;
 			case TransparentType::ColorKey:
-				enableTransparentBySetLayered();	// “§‰ßŠJn‚Æ“¯‚¶ŠÖ”‚Åİ’è
+				enableTransparentBySetLayered();	// é€éé–‹å§‹ã¨åŒã˜é–¢æ•°ã§è¨­å®š
 				break;
 			default:
 				applyWindowAlphaValue();
 				break;
 			}
-		}
-		else {
-			// Œ»İ‚ª”ñ“§‰ß‚Å‚Ìˆ—
+		} else {
+			// ç¾åœ¨ãŒéé€éã§ã®å‡¦ç†
 			applyWindowAlphaValue();
 		}
 	}
 }
 
 /// <summary>
-/// Å‘O–Ê‰»^‰ğœ
+/// æœ€å‰é¢åŒ–ï¼è§£é™¤
 /// </summary>
 /// <param name="bTopmost"></param>
 /// <returns></returns>
 void UNIWINC_API SetTopmost(const BOOL bTopmost) {
-	// Å”w–Ê‰»‚³‚ê‚Ä‚¢‚½‚çA‰ğœ
+	// æœ€èƒŒé¢åŒ–ã•ã‚Œã¦ã„ãŸã‚‰ã€è§£é™¤
 	bIsBottommost_ = FALSE;
 
 	if (hTargetWnd_) {
@@ -792,13 +823,13 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 			hTargetWnd_,
 			(bTopmost ? HWND_TOPMOST : HWND_NOTOPMOST),
 			0, 0, 0, 0,
-			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
 
 		// Run callback if the topmost state changed
 		if (bIsTopmost_ != bTopmost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
+				hWindowStyleChangedHandler_((INT32)(bTopmost ? WindowStateEventType::TopMostEnabled : WindowStateEventType::TopMostDisabled));
 			}
 		}
 	}
@@ -807,12 +838,12 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 }
 
 /// <summary>
-/// Å”w–Ê‰»^‰ğœ
+/// æœ€èƒŒé¢åŒ–ï¼è§£é™¤
 /// </summary>
 /// <param name="bBottommost"></param>
 /// <returns></returns>
 void UNIWINC_API SetBottommost(const BOOL bBottommost) {
-	// Å‘O–Ê‰»‚³‚ê‚Ä‚¢‚½‚çA‰ğœ
+	// æœ€å‰é¢åŒ–ã•ã‚Œã¦ã„ãŸã‚‰ã€è§£é™¤
 	bIsTopmost_ = FALSE;
 
 	if (hTargetWnd_) {
@@ -820,13 +851,13 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 			hTargetWnd_,
 			(bBottommost ? HWND_BOTTOM : HWND_NOTOPMOST),
 			0, 0, 0, 0,
-			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
 
 		// Run callback if the bottommost state changed
 		if (bIsBottommost_ != bBottommost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
+				hWindowStyleChangedHandler_((INT32)(bBottommost ? WindowStateEventType::BottomMostEnabled : WindowStateEventType::BottomMostDisabled));
 			}
 		}
 	}
@@ -835,14 +866,14 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 }
 
 /// <summary>
-/// •Ç†‰»^‰ğœ
+/// å£ç´™åŒ–ï¼è§£é™¤
 /// </summary>
 /// <param name="bEnabled"></param>
 /// <returns></returns>
 void UNIWINC_API SetBackground(const BOOL bEnabled) {
 	if (hTargetWnd_) {
 		if (bEnabled) {
-			// ƒfƒXƒNƒgƒbƒv‚É‚ ‚½‚éƒEƒBƒ“ƒhƒE‚ª–¢æ“¾‚È‚çA‚±‚±‚Åæ“¾
+			// ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã«ã‚ãŸã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒæœªå–å¾—ãªã‚‰ã€ã“ã“ã§å–å¾—
 			if (hDesktopWnd_ == NULL) {
 				findDesktopWindow();
 			}
@@ -868,7 +899,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 		// Run callback if the bottommost state changed
 		if (bIsBackground_!= bEnabled) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
+				hWindowStyleChangedHandler_((INT32)(bEnabled ? WindowStateEventType::WallpaperModeEnabled : WindowStateEventType::WallpaperModeDisabled));
 			}
 		}
 	}
@@ -894,7 +925,7 @@ void UNIWINC_API SetMaximized(const BOOL bZoomed) {
 }
 
 /// <summary>
-/// ƒNƒŠƒbƒNƒXƒ‹[iƒ}ƒEƒX‘€ì–³Œø‰»j‚ğİ’è^‰ğœ
+/// ã‚¯ãƒªãƒƒã‚¯ã‚¹ãƒ«ãƒ¼ï¼ˆãƒã‚¦ã‚¹æ“ä½œç„¡åŠ¹åŒ–ï¼‰ã‚’è¨­å®šï¼è§£é™¤
 /// </summary>
 /// <param name="bTransparent"></param>
 /// <returns></returns>
@@ -911,7 +942,7 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 			LONG exstyle = GetWindowLong(hTargetWnd_, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_TRANSPARENT;
 
-			// ”¼“§–¾‚ğˆÛ‚·‚é‚½‚ßAƒŒƒCƒ„[ƒhƒEƒBƒ“ƒhƒE‚Í–ß‚³‚È‚¢‚æ‚¤ƒRƒƒ“ƒgƒAƒEƒg
+			// åŠé€æ˜ã‚’ç¶­æŒã™ã‚‹ãŸã‚ã€ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ‰ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã¯æˆ»ã•ãªã„ã‚ˆã†ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 			//if (!bIsTransparent_ && !(originalWindowInfo_.dwExStyle & WS_EX_LAYERED)) {
 			//	exstyle &= ~WS_EX_LAYERED;
 			//}
@@ -924,17 +955,17 @@ void UNIWINC_API SetClickThrough(const BOOL bTransparent) {
 /// <summary>
 /// Set the window position
 /// </summary>
-/// <param name="x">ƒEƒBƒ“ƒhƒE¶’[À•W [px]</param>
-/// <param name="y">ƒvƒ‰ƒCƒ}ƒŠ[‰æ–Ê‰º’[‚ğŒ´“_‚Æ‚µAã‚ª³‚ÌYÀ•W [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="x">ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦ç«¯åº§æ¨™ [px]</param>
+/// <param name="y">ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¼ç”»é¢ä¸‹ç«¯ã‚’åŸç‚¹ã¨ã—ã€ä¸ŠãŒæ­£ã®Yåº§æ¨™ [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API SetPosition(const float x, const float y) {
 	if (hTargetWnd_ == NULL) return FALSE;
 
-	// Œ»İ‚ÌƒEƒBƒ“ƒhƒEˆÊ’u‚ÆƒTƒCƒY‚ğæ“¾
+	// ç¾åœ¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’å–å¾—
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 
-	// ˆø”‚Ì y ‚ÍCocoa‘Š“–‚ÌÀ•WŒn‚ÅƒEƒBƒ“ƒhƒE¶‰º‚È‚Ì‚ÅA•ÏŠ·
+	// å¼•æ•°ã® y ã¯Cocoaç›¸å½“ã®åº§æ¨™ç³»ã§ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦ä¸‹ãªã®ã§ã€å¤‰æ›
 	int newY = (nPrimaryMonitorHeight_ - (int)y) - (rect.bottom - rect.top);
 	int newX = (int)(x);
 
@@ -942,16 +973,16 @@ BOOL UNIWINC_API SetPosition(const float x, const float y) {
 		hTargetWnd_, NULL,
 		newX, newY,
 		0, 0,
-		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_ASYNCWINDOWPOS
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER //| SWP_ASYNCWINDOWPOS
 		);
 }
 
 /// <summary>
 /// Get the window position
 /// </summary>
-/// <param name="x">ƒEƒBƒ“ƒhƒE¶’[À•W [px]</param>
-/// <param name="y">ƒvƒ‰ƒCƒ}ƒŠ[‰æ–Ê‰º’[‚ğŒ´“_‚Æ‚µAã‚ª³‚ÌYÀ•W [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="x">ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦ç«¯åº§æ¨™ [px]</param>
+/// <param name="y">ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¼ç”»é¢ä¸‹ç«¯ã‚’åŸç‚¹ã¨ã—ã€ä¸ŠãŒæ­£ã®Yåº§æ¨™ [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API GetPosition(float* x, float* y) {
 	*x = 0;
 	*y = 0;
@@ -961,7 +992,7 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
 		*x = (float)(rect.left);
-		*y = (float)(nPrimaryMonitorHeight_- rect.bottom);	// ¶‰ºŠî€‚Æ‚·‚é
+		*y = (float)(nPrimaryMonitorHeight_- rect.bottom);	// å·¦ä¸‹åŸºæº–ã¨ã™ã‚‹
 		return TRUE;
 	}
 	return FALSE;
@@ -970,13 +1001,13 @@ BOOL UNIWINC_API GetPosition(float* x, float* y) {
 /// <summary>
 /// Set the window size
 /// </summary>
-/// <param name="width">• [px]</param>
-/// <param name="height">‚‚³ [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="width">å¹… [px]</param>
+/// <param name="height">é«˜ã• [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API SetSize(const float width, const float height) {
 	if (hTargetWnd_ == NULL) return FALSE;
 
-	// Œ»İ‚ÌƒEƒBƒ“ƒhƒEˆÊ’u‚ÆƒTƒCƒY‚ğæ“¾
+	// ç¾åœ¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’å–å¾—
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 
@@ -985,22 +1016,22 @@ BOOL UNIWINC_API SetSize(const float width, const float height) {
 	int w = (int)(width);
 	int h = (int)(height);
 
-	// ¶‰ºŒ´“_‚Æ‚·‚é‚½‚ß‚É’²®‚µ‚½AV‹KYÀ•W
+	// å·¦ä¸‹åŸç‚¹ã¨ã™ã‚‹ãŸã‚ã«èª¿æ•´ã—ãŸã€æ–°è¦Yåº§æ¨™
 	y = y - h;
 
 	return SetWindowPos(
 		hTargetWnd_, NULL,
 		x, y, w, h,
-		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_ASYNCWINDOWPOS
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED //| SWP_ASYNCWINDOWPOS
 	);
 }
 
 /// <summary>
 /// Get the window size with the border
 /// </summary>
-/// <param name="width">• [px]</param>
-/// <param name="height">‚‚³ [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="width">å¹… [px]</param>
+/// <param name="height">é«˜ã• [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API GetSize(float* width, float* height) {
 	*width = 0;
 	*height = 0;
@@ -1008,8 +1039,29 @@ BOOL UNIWINC_API GetSize(float* width, float* height) {
 	if (hTargetWnd_ == NULL) return FALSE;
 	RECT rect;
 	if (GetWindowRect(hTargetWnd_, &rect)) {
-		*width = (float)(rect.right - rect.left);	// +1 ‚Í•s—v‚È‚æ‚¤
-		*height = (float)(rect.bottom - rect.top);	// +1 ‚Í•s—v‚È‚æ‚¤
+		*width = (float)(rect.right - rect.left);	// +1 ã¯ä¸è¦ãªã‚ˆã†
+		*height = (float)(rect.bottom - rect.top);	// +1 ã¯ä¸è¦ãªã‚ˆã†
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/// <summary>
+/// Get the client area size of the window
+/// </summary>
+/// <param name="width">å¹… [px]</param>
+/// <param name="height">é«˜ã• [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
+BOOL UNIWINC_API GetClientSize(float* width, float* height) {
+	*width = 0;
+	*height = 0;
+
+	if (hTargetWnd_ == NULL) return FALSE;
+	RECT rect;
+	if (GetClientRect(hTargetWnd_, &rect)) {
+		*width = (float)(rect.right - rect.left);
+		*height = (float)(rect.bottom - rect.top);
 
 		return TRUE;
 	}
@@ -1045,18 +1097,18 @@ BOOL UNIWINC_API UnregisterWindowStyleChangedCallback() {
 #pragma region For monitor Info.
 
 /// <summary>
-/// ‚±‚ÌƒEƒBƒ“ƒhƒE‚ªŒ»İ•\¦‚³‚ê‚Ä‚¢‚éƒ‚ƒjƒ^”Ô†‚ğæ“¾
+/// ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒç¾åœ¨è¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ãƒ¢ãƒ‹ã‚¿ç•ªå·ã‚’å–å¾—
 /// </summary>
 /// <returns></returns>
 INT32 UNIWINC_API GetCurrentMonitor() {
 	int primaryIndex = 0;
 
-	//  ƒEƒBƒ“ƒhƒE–¢æ“¾‚È‚çƒvƒ‰ƒCƒ}ƒŠƒ‚ƒjƒ^‚ğ’T‚·
+	//  ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æœªå–å¾—ãªã‚‰ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¢ãƒ‹ã‚¿ã‚’æ¢ã™
 	if (hTargetWnd_ == NULL) {
 		for (int i = 0; i < nMonitorCount_; i++) {
 			RECT mr = pMonitorRect_[pMonitorIndices_[i]];
 
-			// Œ´“_‚É‚ ‚éƒ‚ƒjƒ^‚Íƒvƒ‰ƒCƒ}ƒŠ‚Æ”»’è
+			// åŸç‚¹ã«ã‚ã‚‹ãƒ¢ãƒ‹ã‚¿ã¯ãƒ—ãƒ©ã‚¤ãƒãƒªã¨åˆ¤å®š
 			if (mr.left == 0 && mr.top == 0) {
 				primaryIndex = i;
 				break;
@@ -1065,48 +1117,48 @@ INT32 UNIWINC_API GetCurrentMonitor() {
 		return primaryIndex;
 	}
 
-	// Œ»İ‚ÌƒEƒBƒ“ƒhƒE‚Ì’†SÀ•W‚ğæ“¾
+	// ç¾åœ¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä¸­å¿ƒåº§æ¨™ã‚’å–å¾—
 	RECT rect;
 	GetWindowRect(hTargetWnd_, &rect);
 	LONG cx = (rect.right - 1 + rect.left) / 2;
 	LONG cy = (rect.bottom - 1 + rect.top) / 2;
 
-	// ƒEƒBƒ“ƒhƒE‚Ì’†‰›‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éƒ‚ƒjƒ^‚ğŒŸõ
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä¸­å¤®ãŒå«ã¾ã‚Œã¦ã„ã‚‹ãƒ¢ãƒ‹ã‚¿ã‚’æ¤œç´¢
 	for (int i = 0; i < nMonitorCount_; i++) {
 		RECT mr = pMonitorRect_[pMonitorIndices_[i]];
 
-		// ƒEƒBƒ“ƒhƒE’†S‚ª“ü‚Á‚Ä‚¢‚ê‚Î‚»‚Ì‰æ–Ê”Ô†‚ğ•Ô‚µ‚ÄI—¹
+		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä¸­å¿ƒãŒå…¥ã£ã¦ã„ã‚Œã°ãã®ç”»é¢ç•ªå·ã‚’è¿”ã—ã¦çµ‚äº†
 		if (mr.left <= cx && cx < mr.right && mr.top <= cy && cy < mr.bottom) {
 			return i;
 		}
 
-		// Œ´“_‚É‚ ‚éƒ‚ƒjƒ^‚Íƒvƒ‰ƒCƒ}ƒŠ‚Æ”»’è
+		// åŸç‚¹ã«ã‚ã‚‹ãƒ¢ãƒ‹ã‚¿ã¯ãƒ—ãƒ©ã‚¤ãƒãƒªã¨åˆ¤å®š
 		if (mr.left == 0 && mr.top == 0) {
 			primaryIndex = i;
 		}
 	}
 
-	// ”»’è‚Å‚«‚È‚¯‚ê‚Îƒvƒ‰ƒCƒ}ƒŠƒ‚ƒjƒ^‚Ì‰æ–Ê”Ô†‚ğ•Ô‚·
+	// åˆ¤å®šã§ããªã‘ã‚Œã°ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¢ãƒ‹ã‚¿ã®ç”»é¢ç•ªå·ã‚’è¿”ã™
 	return primaryIndex;
 }
 
 
 /// <summary>
-/// Ú‘±‚³‚ê‚Ä‚¢‚éƒ‚ƒjƒ^”‚ğæ“¾
+/// æ¥ç¶šã•ã‚Œã¦ã„ã‚‹ãƒ¢ãƒ‹ã‚¿æ•°ã‚’å–å¾—
 /// </summary>
-/// <returns>ƒ‚ƒjƒ^”</returns>
+/// <returns>ãƒ¢ãƒ‹ã‚¿æ•°</returns>
 INT32  UNIWINC_API GetMonitorCount() {
-	//// SM_CMONITORS ‚Å‚Í•\¦‚³‚ê‚Ä‚¢‚éƒ‚ƒjƒ^‚Ì‚İ‘ÎÛ‚Æ‚È‚éiEnumDisplay‚Æ‚ÍˆÙ‚È‚éj
+	//// SM_CMONITORS ã§ã¯è¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ãƒ¢ãƒ‹ã‚¿ã®ã¿å¯¾è±¡ã¨ãªã‚‹ï¼ˆEnumDisplayã¨ã¯ç•°ãªã‚‹ï¼‰
 	//return GetSystemMetrics(SM_CMONITORS);
 	return nMonitorCount_;
 }
 
 /// <summary>
-/// ƒ‚ƒjƒ^‚ÌˆÊ’uAƒTƒCƒY‚ğæ“¾
+/// ãƒ¢ãƒ‹ã‚¿ã®ä½ç½®ã€ã‚µã‚¤ã‚ºã‚’å–å¾—
 /// </summary>
-/// <param name="width">• [px]</param>
-/// <param name="height">‚‚³ [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="width">å¹… [px]</param>
+/// <param name="height">é«˜ã• [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float* y, float* width, float* height) {
 	*x = 0;
 	*y = 0;
@@ -1119,7 +1171,7 @@ BOOL  UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, float* x, float*
 
 	RECT rect = pMonitorRect_[pMonitorIndices_[monitorIndex]];
 	*x = (float)(rect.left);
-	*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// ¶‰ºŠî€‚Æ‚·‚é
+	*y = (float)(nPrimaryMonitorHeight_ - rect.bottom);		// å·¦ä¸‹åŸºæº–ã¨ã™ã‚‹
 	*width = (float)(rect.right - rect.left);
 	*height = (float)(rect.bottom - rect.top);
 	return TRUE;
@@ -1153,11 +1205,11 @@ BOOL UNIWINC_API UnregisterMonitorChangedCallback() {
 #pragma region For mouse cursor
 
 /// <summary>
-/// ƒ}ƒEƒXƒJ[ƒ\ƒ‹À•W‚ğæ“¾
+/// ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«åº§æ¨™ã‚’å–å¾—
 /// </summary>
-/// <param name="x">ƒEƒBƒ“ƒhƒE¶’[À•W [px]</param>
-/// <param name="y">ƒvƒ‰ƒCƒ}ƒŠ[‰æ–Ê‰º’[‚ğŒ´“_‚Æ‚µAã‚ª³‚ÌYÀ•W [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="x">ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦ç«¯åº§æ¨™ [px]</param>
+/// <param name="y">ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¼ç”»é¢ä¸‹ç«¯ã‚’åŸç‚¹ã¨ã—ã€ä¸ŠãŒæ­£ã®Yåº§æ¨™ [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API GetCursorPosition(float* x, float* y) {
 	*x = 0;
 	*y = 0;
@@ -1165,7 +1217,7 @@ BOOL UNIWINC_API GetCursorPosition(float* x, float* y) {
 	POINT pos;
 	if (GetCursorPos(&pos)) {
 		*x = (float)pos.x;
-		*y = (float)(nPrimaryMonitorHeight_ - pos.y - 1);	// ¶‰ºŠî€‚Æ‚·‚é
+		*y = (float)(nPrimaryMonitorHeight_ - pos.y - 1);	// å·¦ä¸‹åŸºæº–ã¨ã™ã‚‹
 		return TRUE;
 	}
 	return FALSE;
@@ -1173,11 +1225,11 @@ BOOL UNIWINC_API GetCursorPosition(float* x, float* y) {
 }
 
 /// <summary>
-/// ƒ}ƒEƒXƒJ[ƒ\ƒ‹À•W‚ğİ’è
+/// ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«åº§æ¨™ã‚’è¨­å®š
 /// </summary>
-/// <param name="x">ƒEƒBƒ“ƒhƒE¶’[À•W [px]</param>
-/// <param name="y">ƒvƒ‰ƒCƒ}ƒŠ[‰æ–Ê‰º’[‚ğŒ´“_‚Æ‚µAã‚ª³‚ÌYÀ•W [px]</param>
-/// <returns>¬Œ÷‚·‚ê‚Î true</returns>
+/// <param name="x">ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦ç«¯åº§æ¨™ [px]</param>
+/// <param name="y">ãƒ—ãƒ©ã‚¤ãƒãƒªãƒ¼ç”»é¢ä¸‹ç«¯ã‚’åŸç‚¹ã¨ã—ã€ä¸ŠãŒæ­£ã®Yåº§æ¨™ [px]</param>
+/// <returns>æˆåŠŸã™ã‚Œã° true</returns>
 BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 	POINT pos;
 
@@ -1199,8 +1251,8 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 /// <param name="hDrop"></param>
 /// <returns></returns>
 BOOL receiveDropFiles(HDROP hDrop) {
-	// TODO: Windows‚Å‚Í“Áê•¶š‚ªƒtƒ@ƒCƒ‹–¼‚É“ü‚é—á‚Í‚Ü‚¸–³‚³‚»‚¤‚¾‚ªAmacOS‚Æ“¯—l‚Éƒ_ƒuƒ‹ƒNƒH[ƒe[ƒVƒ‡ƒ“ˆÍ‚İ‚É‚µ‚½•û‚ª‚æ‚¢
-	//		CSV‚Æ“¯—l‚Éƒ_ƒuƒ‹ƒNƒH[ƒe[ƒVƒ‡ƒ“‚ª•¶š‚Æ‚µ‚Ä‚ ‚ê‚Î“ñd‚É‚·‚é
+	// TODO: Windowsã§ã¯ç‰¹æ®Šæ–‡å­—ãŒãƒ•ã‚¡ã‚¤ãƒ«åã«å…¥ã‚‹ä¾‹ã¯ã¾ãšç„¡ã•ãã†ã ãŒã€macOSã¨åŒæ§˜ã«ãƒ€ãƒ–ãƒ«ã‚¯ã‚©ãƒ¼ãƒ†ãƒ¼ã‚·ãƒ§ãƒ³å›²ã¿ã«ã—ãŸæ–¹ãŒã‚ˆã„
+	//		CSVã¨åŒæ§˜ã«ãƒ€ãƒ–ãƒ«ã‚¯ã‚©ãƒ¼ãƒ†ãƒ¼ã‚·ãƒ§ãƒ³ãŒæ–‡å­—ã¨ã—ã¦ã‚ã‚Œã°äºŒé‡ã«ã™ã‚‹
 	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
 
 	if (num > 0) {
@@ -1272,23 +1324,23 @@ LRESULT CALLBACK customWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		break;
 
 	case WM_WINDOWPOSCHANGING:
-		// í‚ÉÅ”w–Ê
+		// å¸¸ã«æœ€èƒŒé¢
 		if (bIsBottommost_) {
 			((WINDOWPOS*)lParam)->hwndInsertAfter = HWND_BOTTOM;
 		}
 		break;
 
-	case WM_STYLECHANGED:	// ƒXƒ^ƒCƒ‹‚Ì•Ï‰»‚ğŒŸo
+	case WM_STYLECHANGED:	// ã‚¹ã‚¿ã‚¤ãƒ«ã®å¤‰åŒ–ã‚’æ¤œå‡º
 		// Run callback
 		if (hWindowStyleChangedHandler_ != nullptr) {
 			hWindowStyleChangedHandler_((INT32)WindowStateEventType::StyleChanged);
 		}
 		break;
 
-	case WM_SIZE:		// Å‘å‰»AÅ¬‰»‚É‚æ‚é•Ï‰»‚ğŒŸo
+	case WM_SIZE:		// æœ€å¤§åŒ–ã€æœ€å°åŒ–ã«ã‚ˆã‚‹å¤‰åŒ–ã‚’æ¤œå‡º
 		switch (wParam)
 		{
-		case SIZE_RESTORED:
+		case SIZE_RESTORED:		// æœ€å°åŒ–ã§ã‚‚æœ€å¤§åŒ–ã§ã‚‚ãªã„é€šå¸¸ã®ãƒªã‚µã‚¤ã‚º
 		case SIZE_MAXIMIZED:
 		case SIZE_MINIMIZED:
 			// Run callback
@@ -1357,8 +1409,8 @@ void createCustomWindowProcedure() {
 }
 
 
-// «ƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ‚Å‚Í‚È‚­ƒƒbƒZ[ƒW‚ğƒtƒbƒN‚·‚éê‡‚Í‚±‚¿‚ç‚ğg‚¤
-//    ‰ğ‘œ“x•ÏX‚ğŒŸo‚·‚é‚½‚ß‚ÉƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ‚ğg‚¤‚à‚Ì‚Æ‚µ‚½
+// â†“ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã§ã¯ãªããƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ãƒ•ãƒƒã‚¯ã™ã‚‹å ´åˆã¯ã“ã¡ã‚‰ã‚’ä½¿ã†
+//    è§£åƒåº¦å¤‰æ›´ã‚’æ¤œå‡ºã™ã‚‹ãŸã‚ã«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã‚’ä½¿ã†ã‚‚ã®ã¨ã—ãŸ
 
 ///// <summary>
 ///// Callback when received WM_DROPFILE message
@@ -1479,48 +1531,48 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 /// <param name="lpBuffer"></param>
 /// <param name="nBufferSize"></param>
 BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
-	// •¡»‚ğ•Û‘¶‚·‚é‚Ì‚É•K—v‚È’·‚³‚ğ’²‚×‚é
+	// è¤‡è£½ã‚’ä¿å­˜ã™ã‚‹ã®ã«å¿…è¦ãªé•·ã•ã‚’èª¿ã¹ã‚‹
 	int bufferLength = nBufferLength;
-	int length = bufferLength;	// OPENFILENAME’†‚ÅÀÛ‚É—˜—p‚µ‚½’·‚³
-	int pathCount = 0;			// NULL‹æØ‚è‚Å‚İ‚½s”B•¡”‘I‘ğ‚Í1‚æ‚è‘å‚«‚­‚È‚é
-	int firstLineLength = bufferLength;	// æ“ª—v‘f‚Ì’·‚³B•¡”‘I‘ğ‚É‚ÍƒtƒHƒ‹ƒ_–¼‚ª“ü‚é•”•ª
+	int length = bufferLength;	// OPENFILENAMEä¸­ã§å®Ÿéš›ã«åˆ©ç”¨ã—ãŸé•·ã•
+	int pathCount = 0;			// NULLåŒºåˆ‡ã‚Šã§ã¿ãŸè¡Œæ•°ã€‚è¤‡æ•°é¸æŠæ™‚ã¯1ã‚ˆã‚Šå¤§ãããªã‚‹
+	int firstLineLength = bufferLength;	// å…ˆé ­è¦ç´ ã®é•·ã•ã€‚è¤‡æ•°é¸æŠæ™‚ã«ã¯ãƒ•ã‚©ãƒ«ãƒ€åãŒå…¥ã‚‹éƒ¨åˆ†
 
-	// —v‘f‚Ì”A‘S‘Ì‚Ì•¶š”‚ğ”‚¦‚é
+	// è¦ç´ ã®æ•°ã€å…¨ä½“ã®æ–‡å­—æ•°ã‚’æ•°ãˆã‚‹
 	for (int i = 0; i < bufferLength; i++) {
 		if (lpBuffer[i] == L'\0') {
 			if (firstLineLength == bufferLength) firstLineLength = i;
 			pathCount++;
-			length = i;		// ‚Æ‚è‚ ‚¦‚¸‚±‚±‚Ü‚Å‚Ì•¶š”‚Í—˜—p‚µ‚Ä‚¢‚é
+			length = i;		// ã¨ã‚Šã‚ãˆãšã“ã“ã¾ã§ã®æ–‡å­—æ•°ã¯åˆ©ç”¨ã—ã¦ã„ã‚‹
 
 			if ((i < (bufferLength - 1)) && (lpBuffer[i + 1] == L'\0')) {
-				// NULL‚ª˜A‘±‚µ‚Ä‚¢‚ê‚ÎI’[‚Æ‚İ‚È‚·i˜A‘±‚·‚éŒã‚ë‚ª‚à‚¤–³‚¢ê‡‚àI’[j
+				// NULLãŒé€£ç¶šã—ã¦ã„ã‚Œã°çµ‚ç«¯ã¨ã¿ãªã™ï¼ˆé€£ç¶šã™ã‚‹å¾Œã‚ãŒã‚‚ã†ç„¡ã„å ´åˆã‚‚çµ‚ç«¯ï¼‰
 				break;
 			}
 			else
 			{
-				// Ÿ‚Ì•¶š‚ªNULL‚Å‚È‚¯‚ê‚ÎƒXƒLƒbƒv‚Å‚«‚é
+				// æ¬¡ã®æ–‡å­—ãŒNULLã§ãªã‘ã‚Œã°ã‚¹ã‚­ãƒƒãƒ—ã§ãã‚‹
 				i++;
 			}
 		}
 	}
 
-	// NULL‚ªÅŒã‚É—ˆ‚È‚©‚Á‚½ê‡‚Ís”’Ç‰Á‚Å‚«‚Ä‚¢‚È‚¢‚Ì‚ÅA1‘‚â‚µ‚Ä‚¨‚­
+	// NULLãŒæœ€å¾Œã«æ¥ãªã‹ã£ãŸå ´åˆã¯è¡Œæ•°è¿½åŠ ã§ãã¦ã„ãªã„ã®ã§ã€1å¢—ã‚„ã—ã¦ãŠã
 	if (length == bufferLength) pathCount++;
 
-	// •¡”‘I‘ğ‚Å‚È‚¢ê‡‚Í‰üs‹æØ‚è‚âƒtƒHƒ‹ƒ_–¼’Ç‰Á‚Ì•K—v‚Í‚È‚­A‚»‚Ì‚Ü‚Ü‚Ì’l‚ÅI—¹
+	// è¤‡æ•°é¸æŠã§ãªã„å ´åˆã¯æ”¹è¡ŒåŒºåˆ‡ã‚Šã‚„ãƒ•ã‚©ãƒ«ãƒ€åè¿½åŠ ã®å¿…è¦ã¯ãªãã€ãã®ã¾ã¾ã®å€¤ã§çµ‚äº†
 	if (pathCount <= 1) {
 		return TRUE;
 	}
 
 
-	// ƒpƒX‚ÌƒŠƒXƒg‚ª•Ô‹pƒoƒbƒtƒ@‚É“ü‚è‚«‚ç‚È‚¢ê‡‚Í¸”s‚Æ‚µ‚Ä‹ó‚Å•Ô‚·
+	// ãƒ‘ã‚¹ã®ãƒªã‚¹ãƒˆãŒè¿”å´ãƒãƒƒãƒ•ã‚¡ã«å…¥ã‚Šãã‚‰ãªã„å ´åˆã¯å¤±æ•—ã¨ã—ã¦ç©ºã§è¿”ã™
 	if (((firstLineLength + 2) * pathCount + length - firstLineLength) > bufferLength) {
-		// Œ‹‰Ê•Ô‹pƒoƒbƒtƒ@‚ğƒNƒŠƒA
+		// çµæœè¿”å´ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢
 		ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
 		return FALSE;
 	}
 
-	// Š®‘S‚ÈƒpƒX‚ğ‰üs‹æØ‚è•¶š—ñ‚Å¶¬
+	// å®Œå…¨ãªãƒ‘ã‚¹ã‚’æ”¹è¡ŒåŒºåˆ‡ã‚Šæ–‡å­—åˆ—ã§ç”Ÿæˆ
 
 	LPWSTR buffer = new (std::nothrow)WCHAR[length];
 	if (buffer == NULL) {
@@ -1529,10 +1581,10 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
 	}
 	ZeroMemory(buffer, length * sizeof(WCHAR));
 
-	// ˆêƒoƒbƒtƒ@‚É“à—e‚ğ‘Ş”ğ
+	// ä¸€æ™‚ãƒãƒƒãƒ•ã‚¡ã«å†…å®¹ã‚’é€€é¿
 	memcpy(buffer, lpBuffer, length * sizeof(WCHAR));
 
-	// Œ‹‰Ê•Ô‹pƒoƒbƒtƒ@‚ğƒNƒŠƒA
+	// çµæœè¿”å´ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢
 	ZeroMemory(lpBuffer, bufferLength * sizeof(WCHAR));
 
 
@@ -1540,27 +1592,27 @@ BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
 	int index = firstLineLength;
 	for (int i = firstLineLength; i < length; i++) {
 		if (buffer[i] == NULL) {
-			// ‰üs‚Å‹æØ‚è
+			// æ”¹è¡Œã§åŒºåˆ‡ã‚Š
 			if (offset > 0) {
 				lpBuffer[offset] = L'\n';
 				offset++;
 			}
 
-			//  ƒtƒHƒ‹ƒ_–¼•”•ª‚ğ•¡»
+			//  ãƒ•ã‚©ãƒ«ãƒ€åéƒ¨åˆ†ã‚’è¤‡è£½
 			memcpy(lpBuffer + offset, buffer, firstLineLength * sizeof(WCHAR));
 			offset += firstLineLength;
-			lpBuffer[offset] = L'\\';	// ƒpƒX‚Ì‹æØ‚è•¶š‚à’Ç‰Á
+			lpBuffer[offset] = L'\\';	// ãƒ‘ã‚¹ã®åŒºåˆ‡ã‚Šæ–‡å­—ã‚‚è¿½åŠ 
 			offset++;
 		}
 		else
 		{
-			// NULL•¶š‚Å‚È‚¯‚ê‚Îƒtƒ@ƒCƒ‹–¼‚Ìˆê•”‚Æ‚µ‚Ä’Ç‰Á
+			// NULLæ–‡å­—ã§ãªã‘ã‚Œã°ãƒ•ã‚¡ã‚¤ãƒ«åã®ä¸€éƒ¨ã¨ã—ã¦è¿½åŠ 
 			lpBuffer[offset] = buffer[i];
 			offset++;
 		}
 	}
 
-	//// ƒfƒoƒbƒO—p
+	//// ãƒ‡ãƒãƒƒã‚°ç”¨
 	//swprintf_s(lpBuffer, bufferSize, L"Files: bufferSize %d, length %d, pathCount %d, firstLineLength %d, Dir %s", bufferSize, length, pathCount, firstLineLength, buffer);
 
 	delete[] buffer;
@@ -1725,7 +1777,7 @@ DWORD GetPanelFlags(const INT32 flags) {
 }
 
 BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
-	// ƒ‚[ƒ_ƒ‹‚É‚·‚é‚½‚ßAƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹–¢æ“¾‚È‚ç’T‚µ‚Äİ’è
+	// ãƒ¢ãƒ¼ãƒ€ãƒ«ã«ã™ã‚‹ãŸã‚ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«æœªå–å¾—ãªã‚‰æ¢ã—ã¦è¨­å®š
 	HWND hwnd = hTargetWnd_;
 	if (hwnd == NULL) {
 		hwnd = hPanelOwnerWnd_;
@@ -1773,7 +1825,7 @@ BOOL UNIWINC_API OpenFilePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 }
 
 BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuffer, const UINT32 nBufferSize) {
-	// ƒ‚[ƒ_ƒ‹‚É‚·‚é‚½‚ßAƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹–¢æ“¾‚È‚ç’T‚µ‚Äİ’è
+	// ãƒ¢ãƒ¼ãƒ€ãƒ«ã«ã™ã‚‹ãŸã‚ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«æœªå–å¾—ãªã‚‰æ¢ã—ã¦è¨­å®š
 	HWND hwnd = hTargetWnd_;
 	if (hwnd == NULL) {
 		hwnd = hPanelOwnerWnd_;
@@ -1824,18 +1876,19 @@ BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 
 
 /// <summary>
-/// ƒfƒoƒbƒO‚Éî•ñ‚ğ“n‚·‚½‚ß‚ÌŠÖ”
+/// ãƒ‡ãƒãƒƒã‚°æ™‚ã«æƒ…å ±ã‚’æ¸¡ã™ãŸã‚ã®é–¢æ•°
 /// </summary>
 /// <returns></returns>
 INT32 UNIWINC_API GetDebugInfo() {
-	return 0;
+	LONG style = GetWindowLong(hTargetWnd_, GWL_STYLE);
+	return style;
 }
 
 // ========================================================================
 #pragma region Windows only public functions
 
 /// <summary>
-/// Œ»İ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğæ“¾
+/// ç¾åœ¨é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
 /// </summary>
 /// <returns></returns>
 HWND UNIWINC_API GetWindowHandle() {
@@ -1843,7 +1896,7 @@ HWND UNIWINC_API GetWindowHandle() {
 }
 
 /// <summary>
-/// •Ç†‰»‚Ìe‚Æ‚È‚éƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ğæ“¾
+/// å£ç´™åŒ–ã®è¦ªã¨ãªã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
 /// </summary>
 /// <returns></returns>
 HWND UNIWINC_API GetDesktopWindowHandle() {
@@ -1851,7 +1904,7 @@ HWND UNIWINC_API GetDesktopWindowHandle() {
 }
 
 /// <summary>
-/// ©•ª‚ÌƒvƒƒZƒXID‚ğæ“¾
+/// è‡ªåˆ†ã®ãƒ—ãƒ­ã‚»ã‚¹IDã‚’å–å¾—
 /// </summary>
 /// <returns></returns>
 DWORD UNIWINC_API GetMyProcessId() {

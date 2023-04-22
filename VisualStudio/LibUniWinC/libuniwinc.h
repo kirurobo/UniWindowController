@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifdef LIBUNIWINC_EXPORTS
 #define UNIWINC_API __stdcall
@@ -28,6 +28,15 @@ enum class WindowStateEventType : int {
 	None = 0,
 	StyleChanged = 1,
 	Resized = 2,
+
+	// 以下はStyleChangedに加えて詳細情報を伝えるために用意（開発時のデバッグ用途が主のため今後の仕様変更はありえる）
+	//   1: StyleChanged flag, 8: Enabled flag
+	TopMostEnabled = 16 + 1 + 8,
+	TopMostDisabled = 16 + 1,
+	BottomMostEnabled = 32 + 1 + 8,
+	BottomMostDisabled = 32 + 1,
+	WallpaperModeEnabled = 64 + 1 + 8,
+	WallpaperModeDisabled = 64 + 1,
 };
 
 enum class PanelFlag : int {
@@ -57,15 +66,15 @@ typedef struct tagPANELSETTINGS {
 
 // Function called when window style (e.g. maximized, transparetize, etc.)
 //   param: The argument is indicate the kind of event
-using WindowStyleChangedCallback = void(*)(INT32);
+using WindowStyleChangedCallback =  void(UNIWINC_API *)(INT32);
 
 // Function called when files have selected
 //   param: The argument is a \0 ended  UTF-16 string with each path separated by \n
-using FilesCallback = void(*)(WCHAR*);
+using FilesCallback = void(UNIWINC_API *)(WCHAR*);
 
 // Function called when displays have changed
 //   param: The argument is the numbers of monitors
-using MonitorChangedCallback = void(*)(INT32);
+using MonitorChangedCallback = void(UNIWINC_API *)(INT32);
 
 
 // Winodow state functions
@@ -96,6 +105,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API SetPosition(const float x, const float y);
 UNIWINC_EXPORT BOOL UNIWINC_API GetPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetSize(float* width, float* height);
+UNIWINC_EXPORT BOOL UNIWINC_API GetClientSize(float* width, float* height);
 UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
 
 // Event handling
@@ -132,3 +142,4 @@ UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
 UNIWINC_EXPORT HWND UNIWINC_API GetDesktopWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();
+UNIWINC_EXPORT BOOL UNIWINC_API AttachWindowHandle(const HWND);

@@ -809,6 +809,23 @@ public class LibUniWinC : NSObject {
         height.pointee = Float32(currentSize.height)
         return true
     }
+    
+    /// ウィンドウのクライアント領域サイズを取得
+    /// - Parameters:
+    ///   - width: 幅
+    ///   - height: 高さ
+    /// - Returns: 成功すれば true
+    @objc public static func getClientSize(width: UnsafeMutablePointer<Float32>, height: UnsafeMutablePointer<Float32>) -> Bool {
+        if (targetWindow == nil) {
+            width.pointee = 0;
+            height.pointee = 0;
+            return false
+        }
+        let currentSize = targetWindow!.contentView!.frame.size
+        width.pointee = Float32(currentSize.width)
+        height.pointee = Float32(currentSize.height)
+        return true
+    }
 
     @objc public static func registerWindowStyleChangedCallback(callback: @escaping intCallback) -> Bool {
         windowStyleChangedCallback = callback
@@ -915,7 +932,7 @@ public class LibUniWinC : NSObject {
         if (overlayView == nil) {
             _setupOverlayView()
         }
-        
+
         overlayView?.setEnabled(enabled: enabled)
         return true
     }
@@ -989,7 +1006,7 @@ public class LibUniWinC : NSObject {
             //let myWindow: NSWindow? = NSApp.orderedWindows.first
             //panel.parent = myWindow
         }
-        
+
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
@@ -1005,7 +1022,7 @@ public class LibUniWinC : NSObject {
             panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
-        
+
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsOtherFileTypes = false
@@ -1017,7 +1034,7 @@ public class LibUniWinC : NSObject {
         panel.center()
 
         let result = panel.runModal();
-        
+
         var text: String = ""
         if (result == .OK) {
             if (panel.urls.count > 0) {
@@ -1054,12 +1071,12 @@ public class LibUniWinC : NSObject {
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSSavePanel()
         let panelHelper = CustomPanelHelper(panel: panel)
-        
+
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-        
+
         if (targetWindow != nil) {
             if (state.isTopmost) {
                 // Temporarily disable always on top in order to show the dialog
@@ -1073,7 +1090,7 @@ public class LibUniWinC : NSObject {
             //let myWindow: NSWindow = NSApp.orderedWindows[0]
             //panel.parent = myWindow
         }
-        
+
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1093,9 +1110,9 @@ public class LibUniWinC : NSObject {
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()
         panel.center()
-        
+
         let result = panel.runModal();
-        
+
         var text: String = ""
         if (result == .OK && (panel.url != nil)) {
             let url: String = panel.url!.path
@@ -1195,6 +1212,11 @@ public class LibUniWinC : NSObject {
         return true
     }
     
+    /// For Windows only
+    @objc public static func attachWindowHandle(hwnd: UInt64) -> Bool {
+        return true
+    }
+
     /// Return some information for debugging
     @objc public static func getDebugInfo() -> Int32 {
         var result: Int32 = 0
