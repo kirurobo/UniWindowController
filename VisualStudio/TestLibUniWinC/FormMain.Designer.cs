@@ -34,6 +34,8 @@
             this.timerMainLoop = new System.Windows.Forms.Timer(this.components);
             this.trackBarAlpha = new System.Windows.Forms.TrackBar();
             this.groupBoxWindowSettings = new System.Windows.Forms.GroupBox();
+            this.comboBoxWindowClass = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.checkBoxBottommost = new System.Windows.Forms.CheckBox();
             this.comboBoxTransparentType = new System.Windows.Forms.ComboBox();
@@ -47,6 +49,7 @@
             this.checkBoxAllowDrop = new System.Windows.Forms.CheckBox();
             this.buttonSaveFile = new System.Windows.Forms.Button();
             this.buttonOpenFile = new System.Windows.Forms.Button();
+            this.buttonSetTarget = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarAlpha)).BeginInit();
             this.groupBoxWindowSettings.SuspendLayout();
             this.groupBoxInformation.SuspendLayout();
@@ -57,14 +60,14 @@
             // 
             this.comboBoxFitMonitor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxFitMonitor.FormattingEnabled = true;
-            this.comboBoxFitMonitor.Location = new System.Drawing.Point(24, 144);
+            this.comboBoxFitMonitor.Location = new System.Drawing.Point(24, 140);
             this.comboBoxFitMonitor.Name = "comboBoxFitMonitor";
             this.comboBoxFitMonitor.Size = new System.Drawing.Size(121, 23);
             this.comboBoxFitMonitor.TabIndex = 3;
             // 
             // buttonFitMonitor
             // 
-            this.buttonFitMonitor.Location = new System.Drawing.Point(161, 140);
+            this.buttonFitMonitor.Location = new System.Drawing.Point(161, 136);
             this.buttonFitMonitor.Margin = new System.Windows.Forms.Padding(4);
             this.buttonFitMonitor.Name = "buttonFitMonitor";
             this.buttonFitMonitor.Size = new System.Drawing.Size(67, 29);
@@ -83,7 +86,7 @@
             this.trackBarAlpha.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBarAlpha.LargeChange = 16;
-            this.trackBarAlpha.Location = new System.Drawing.Point(425, 21);
+            this.trackBarAlpha.Location = new System.Drawing.Point(425, 109);
             this.trackBarAlpha.Maximum = 255;
             this.trackBarAlpha.Name = "trackBarAlpha";
             this.trackBarAlpha.Size = new System.Drawing.Size(289, 56);
@@ -98,9 +101,12 @@
             this.groupBoxWindowSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxWindowSettings.BackColor = System.Drawing.SystemColors.Control;
+            this.groupBoxWindowSettings.Controls.Add(this.comboBoxWindowClass);
+            this.groupBoxWindowSettings.Controls.Add(this.label2);
             this.groupBoxWindowSettings.Controls.Add(this.label1);
             this.groupBoxWindowSettings.Controls.Add(this.checkBoxBottommost);
             this.groupBoxWindowSettings.Controls.Add(this.comboBoxTransparentType);
+            this.groupBoxWindowSettings.Controls.Add(this.buttonSetTarget);
             this.groupBoxWindowSettings.Controls.Add(this.buttonFitMonitor);
             this.groupBoxWindowSettings.Controls.Add(this.comboBoxFitMonitor);
             this.groupBoxWindowSettings.Controls.Add(this.trackBarAlpha);
@@ -108,15 +114,34 @@
             this.groupBoxWindowSettings.Controls.Add(this.checkBoxTransparent);
             this.groupBoxWindowSettings.Location = new System.Drawing.Point(12, 12);
             this.groupBoxWindowSettings.Name = "groupBoxWindowSettings";
-            this.groupBoxWindowSettings.Size = new System.Drawing.Size(731, 173);
+            this.groupBoxWindowSettings.Size = new System.Drawing.Size(731, 177);
             this.groupBoxWindowSettings.TabIndex = 5;
             this.groupBoxWindowSettings.TabStop = false;
             this.groupBoxWindowSettings.Text = "Window settings";
             // 
+            // comboBoxWindowClass
+            // 
+            this.comboBoxWindowClass.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboBoxWindowClass.FormattingEnabled = true;
+            this.comboBoxWindowClass.Location = new System.Drawing.Point(425, 25);
+            this.comboBoxWindowClass.Name = "comboBoxWindowClass";
+            this.comboBoxWindowClass.Size = new System.Drawing.Size(280, 23);
+            this.comboBoxWindowClass.TabIndex = 8;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(368, 31);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(48, 15);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "Target";
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(368, 35);
+            this.label1.Location = new System.Drawing.Point(368, 123);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 15);
             this.label1.TabIndex = 7;
@@ -125,7 +150,7 @@
             // checkBoxBottommost
             // 
             this.checkBoxBottommost.AutoSize = true;
-            this.checkBoxBottommost.Location = new System.Drawing.Point(14, 101);
+            this.checkBoxBottommost.Location = new System.Drawing.Point(14, 97);
             this.checkBoxBottommost.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxBottommost.Name = "checkBoxBottommost";
             this.checkBoxBottommost.Size = new System.Drawing.Size(107, 19);
@@ -138,7 +163,7 @@
             // 
             this.comboBoxTransparentType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTransparentType.FormattingEnabled = true;
-            this.comboBoxTransparentType.Location = new System.Drawing.Point(144, 35);
+            this.comboBoxTransparentType.Location = new System.Drawing.Point(144, 31);
             this.comboBoxTransparentType.Name = "comboBoxTransparentType";
             this.comboBoxTransparentType.Size = new System.Drawing.Size(121, 23);
             this.comboBoxTransparentType.TabIndex = 3;
@@ -147,7 +172,7 @@
             // checkBoxTopmost
             // 
             this.checkBoxTopmost.AutoSize = true;
-            this.checkBoxTopmost.Location = new System.Drawing.Point(16, 74);
+            this.checkBoxTopmost.Location = new System.Drawing.Point(16, 70);
             this.checkBoxTopmost.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxTopmost.Name = "checkBoxTopmost";
             this.checkBoxTopmost.Size = new System.Drawing.Size(84, 19);
@@ -159,7 +184,7 @@
             // checkBoxTransparent
             // 
             this.checkBoxTransparent.AutoSize = true;
-            this.checkBoxTransparent.Location = new System.Drawing.Point(16, 37);
+            this.checkBoxTransparent.Location = new System.Drawing.Point(16, 33);
             this.checkBoxTransparent.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxTransparent.Name = "checkBoxTransparent";
             this.checkBoxTransparent.Size = new System.Drawing.Size(105, 19);
@@ -177,9 +202,9 @@
             this.groupBoxInformation.Controls.Add(this.buttonShowMonitorInfo);
             this.groupBoxInformation.Controls.Add(this.buttonCheck);
             this.groupBoxInformation.Controls.Add(this.textBoxMessage);
-            this.groupBoxInformation.Location = new System.Drawing.Point(12, 306);
+            this.groupBoxInformation.Location = new System.Drawing.Point(12, 269);
             this.groupBoxInformation.Name = "groupBoxInformation";
-            this.groupBoxInformation.Size = new System.Drawing.Size(731, 364);
+            this.groupBoxInformation.Size = new System.Drawing.Size(731, 279);
             this.groupBoxInformation.TabIndex = 6;
             this.groupBoxInformation.TabStop = false;
             this.groupBoxInformation.Text = "Information";
@@ -217,7 +242,7 @@
             this.textBoxMessage.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxMessage.Multiline = true;
             this.textBoxMessage.Name = "textBoxMessage";
-            this.textBoxMessage.Size = new System.Drawing.Size(717, 298);
+            this.textBoxMessage.Size = new System.Drawing.Size(717, 213);
             this.textBoxMessage.TabIndex = 2;
             // 
             // groupBoxFileHandling
@@ -228,7 +253,7 @@
             this.groupBoxFileHandling.Controls.Add(this.checkBoxAllowDrop);
             this.groupBoxFileHandling.Controls.Add(this.buttonSaveFile);
             this.groupBoxFileHandling.Controls.Add(this.buttonOpenFile);
-            this.groupBoxFileHandling.Location = new System.Drawing.Point(12, 205);
+            this.groupBoxFileHandling.Location = new System.Drawing.Point(12, 195);
             this.groupBoxFileHandling.Name = "groupBoxFileHandling";
             this.groupBoxFileHandling.Size = new System.Drawing.Size(731, 68);
             this.groupBoxFileHandling.TabIndex = 5;
@@ -270,12 +295,23 @@
             this.buttonOpenFile.UseVisualStyleBackColor = true;
             this.buttonOpenFile.Click += new System.EventHandler(this.buttonOpenFile_Click);
             // 
+            // buttonSetTarget
+            // 
+            this.buttonSetTarget.Location = new System.Drawing.Point(632, 55);
+            this.buttonSetTarget.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonSetTarget.Name = "buttonSetTarget";
+            this.buttonSetTarget.Size = new System.Drawing.Size(67, 29);
+            this.buttonSetTarget.TabIndex = 0;
+            this.buttonSetTarget.Text = "Select";
+            this.buttonSetTarget.UseVisualStyleBackColor = true;
+            this.buttonSetTarget.Click += new System.EventHandler(this.buttonSetTarget_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(755, 682);
+            this.ClientSize = new System.Drawing.Size(755, 560);
             this.Controls.Add(this.groupBoxFileHandling);
             this.Controls.Add(this.groupBoxInformation);
             this.Controls.Add(this.groupBoxWindowSettings);
@@ -317,6 +353,9 @@
         private System.Windows.Forms.CheckBox checkBoxAllowDrop;
         private System.Windows.Forms.Button buttonSaveFile;
         private System.Windows.Forms.Button buttonOpenFile;
+        private System.Windows.Forms.ComboBox comboBoxWindowClass;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button buttonSetTarget;
     }
 }
 

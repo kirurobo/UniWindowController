@@ -35,20 +35,29 @@ namespace Kirurobo
         /// <summary>
         /// State changed event type (Experimental)
         /// </summary>
+        [Flags]
         public enum WindowStateEventType : int
         {
             None = 0,
             StyleChanged = 1,
-            Resized = 2
+            Resized = 2,
+
+            // 以降は仕様変更もありえる
+            TopMostEnabled = 16 + 1 + 8,
+            TopMostDisabled = 16 + 1,
+            BottomMostEnabled = 32 + 1 + 8,
+            BottomMostDisabled = 32 + 1,
+            WallpaperModeEnabled = 64 + 1 + 8,
+            WallpaperModeDisabled = 64 + 1,
         };
 
         #region Native functions
         protected class LibUniWinC
         {
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer(CallingConvention.Winapi)]
             public delegate void StringCallback([MarshalAs(UnmanagedType.LPWStr)] string returnString);
 
-            [UnmanagedFunctionPointer((CallingConvention.Cdecl))]
+            [UnmanagedFunctionPointer((CallingConvention.Winapi))]
             public delegate void IntCallback([MarshalAs(UnmanagedType.I4)] int value);
 
 
@@ -179,6 +188,8 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetCursorPosition(out float x, out float y);
 
+
+            #region Working on Windows only
             [DllImport("LibUniWinC")]
             public static extern void SetTransparentType(int type);
 
@@ -187,6 +198,11 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             public static extern int GetDebugInfo();
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AttachWindowHandle(IntPtr hWnd);
+            #endregion
         }
         #endregion
 
@@ -445,6 +461,13 @@ namespace Kirurobo
             return IsActive;
         }
 
+        public bool AttachWindowHandle(IntPtr hWnd)
+        {
+            LibUniWinC.AttachWindowHandle(hWnd);
+            IsActive = LibUniWinC.IsActive();
+            return IsActive;
+        }
+
         /// <summary>
         /// 自分のプロセスで現在アクティブなウィンドウを選択
         /// エディタの場合、ウィンドウが閉じたりドッキングしたりするため、フォーカス時に呼ぶ
@@ -466,6 +489,14 @@ namespace Kirurobo
         public void Update()
         {
             LibUniWinC.Update();
+        }
+
+        string GetDebubgWindowSizeInfo()
+        {
+            float x, y, cx, cy;
+            LibUniWinC.GetSize(out x, out y);
+            LibUniWinC.GetClientSize(out cx, out cy);
+            return $"W:{x},H:{y} CW:{cx},CH:{cy}";
         }
 
         /// <summary>
@@ -591,7 +622,6 @@ namespace Kirurobo
         /// Get the client area ize.
         /// </summary>
         /// <returns>x is width and y is height</returns>
-        [Obsolete]
         public Vector2 GetClientSize()
         {
             Vector2 size = Vector2.zero;
@@ -599,7 +629,7 @@ namespace Kirurobo
             return size;
         }
 
-        #endregion
+#endregion
 
         #region File opening
         public void SetAllowDrop(bool enabled)

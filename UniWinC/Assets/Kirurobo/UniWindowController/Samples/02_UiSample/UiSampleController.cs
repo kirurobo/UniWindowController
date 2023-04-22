@@ -385,32 +385,32 @@ namespace Kirurobo
             {
                 if (transparentToggle)
                 {
-                    transparentToggle.isOn = uniwinc.isTransparent;
+                    transparentToggle.SetIsOnWithoutNotify(uniwinc.isTransparent);
                 }
 
                 if (alphaSlider)
                 {
-                    alphaSlider.value = uniwinc.alphaValue;
+                    alphaSlider.SetValueWithoutNotify(uniwinc.alphaValue);
                 }
 
                 if (topmostToggle)
                 {
-                    topmostToggle.isOn = uniwinc.isTopmost;
+                    topmostToggle.SetIsOnWithoutNotify(uniwinc.isTopmost);
                 }
                 
                 if (bottommostToggle)
                 {
-                    bottommostToggle.isOn = uniwinc.isBottommost;
+                    bottommostToggle.SetIsOnWithoutNotify(uniwinc.isBottommost);
                 }
                 
                 if (zoomedToggle)
                 {
-                    zoomedToggle.isOn = uniwinc.isZoomed;
+                    zoomedToggle.SetIsOnWithoutNotify(uniwinc.isZoomed);
                 }
 
                 if (allowDropToggle)
                 {
-                    allowDropToggle.isOn = uniwinc.allowDropFiles;
+                    allowDropToggle.SetIsOnWithoutNotify(uniwinc.allowDropFiles);
                 }
 
                 if (dragMoveToggle)
@@ -467,7 +467,7 @@ namespace Kirurobo
             {
                 if (clickThroughToggle)
                 {
-                    clickThroughToggle.isOn = uniwinc.isClickThrough;
+                    clickThroughToggle.SetIsOnWithoutNotify(uniwinc.isClickThrough);
                     if (uniwinc.hitTestType == UniWindowController.HitTestType.None)
                     {
                         clickThroughToggle.interactable = true;
