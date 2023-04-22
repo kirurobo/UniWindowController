@@ -63,19 +63,21 @@ namespace Kirurobo
         /// <summary>
         /// Identifies the type of <see cref="OnStateChanged">OnStateChanged</see> event when it occurs
         /// </summary>
+        [Flags]
         public enum WindowStateEventType : int
         {
             None = 0,
             StyleChanged = 1,
             Resized = 2,
-            OrderChanged = 4,
-            EnabledTopMost = 1 + 8 + 4,
-            DisabledTopMost = 1 + 8,
-            EnabledBottomMost = 1 + 16 + 4,
-            DisabledBottomMost = 1 + 16,
-            EnabledBackground = 1 + 32 + 4,
-            DisabledBackground = 1 + 32,
-        }
+
+            // 以降は仕様変更もありえる
+            TopMostEnabled = 16 + 1 + 8,
+            TopMostDisabled = 16 + 1,
+            BottomMostEnabled = 32 + 1 + 8,
+            BottomMostDisabled = 32 + 1,
+            WallpaperModeEnabled = 64 + 1 + 8,
+            WallpaperModeDisabled = 64 + 1,
+        };
 
         /// <summary>
         /// Get the current instance of UniWindowController

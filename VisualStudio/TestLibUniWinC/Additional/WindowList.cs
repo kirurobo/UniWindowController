@@ -13,8 +13,8 @@ namespace TestLibUniWinC
     /// </summary>
     internal class WindowList
     {
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate bool EnumWindowsDelegate(IntPtr hWnd, long lParam);
+        //[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+        delegate bool EnumWindowsDelegate(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -24,11 +24,11 @@ namespace TestLibUniWinC
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool EnumChildWindows(IntPtr hWnd, EnumWindowsDelegate lpEnumFunc, IntPtr lParam);
 
-        [DllImport("user32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetWindowText(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] StringBuilder lpString, int nMaxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetClassName(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] StringBuilder lpClassName, int nMaxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
         [DllImport("user32.dll")]
         public static extern int GetWindowThreadProcessId(IntPtr hWnd, out long lpdwProcessId);
@@ -53,7 +53,8 @@ namespace TestLibUniWinC
             // 重複を無くすため、列挙したhWndを記憶
             List<IntPtr> hWndList = new List<IntPtr>();
 
-            EnumWindows(new EnumWindowsDelegate(delegate (IntPtr hWnd, long lParam)
+            //EnumWindows(EnumWindowCallback, IntPtr.Zero);
+            EnumWindows(new EnumWindowsDelegate(delegate (IntPtr hWnd, IntPtr lParam)
             {
                 if (hWndList.Contains(hWnd)) return true;
 
@@ -74,12 +75,12 @@ namespace TestLibUniWinC
                 if (includeChildren)
                 {
                     // 子ウィンドウも一覧に含める
-                    EnumChildWindows(hWnd, new EnumWindowsDelegate(delegate (IntPtr hWndChild, long lParamChild)
+                    EnumChildWindows(hWnd, new EnumWindowsDelegate(delegate (IntPtr hWndChild, IntPtr lParamChild)
                     {
                         if (hWndList.Contains(hWnd)) return true;
 
                         StringBuilder sbChild = new StringBuilder(1024);
-                        if (IsWindowVisible(hWndChild) &&   GetWindowText(hWndChild, sbChild, sbChild.Capacity) != 0)
+                        if (IsWindowVisible(hWndChild) && GetWindowText(hWndChild, sbChild, sbChild.Capacity) != 0)
                         {
                             GetWindowThreadProcessId(hWndChild, out long pid);
                             Process p = Process.GetProcessById((int)pid);

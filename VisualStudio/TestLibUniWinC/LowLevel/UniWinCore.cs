@@ -35,11 +35,20 @@ namespace Kirurobo
         /// <summary>
         /// State changed event type (Experimental)
         /// </summary>
+        [Flags]
         public enum WindowStateEventType : int
         {
             None = 0,
             StyleChanged = 1,
-            Resized = 2
+            Resized = 2,
+
+            // 以降は仕様変更もありえる
+            TopMostEnabled = 16 + 1 + 8,
+            TopMostDisabled = 16 + 1,
+            BottomMostEnabled = 32 + 1 + 8,
+            BottomMostDisabled = 32 + 1,
+            WallpaperModeEnabled = 64 + 1 + 8,
+            WallpaperModeDisabled = 64 + 1,
         };
 
         #region Native functions
@@ -87,10 +96,6 @@ namespace Kirurobo
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool AttachMyActiveWindow();
-
-            [DllImport("LibUniWinC")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AttachMyWindow([MarshalAs(UnmanagedType.LPWStr)] IntPtr hWnd);
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -183,6 +188,8 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetCursorPosition(out float x, out float y);
 
+
+            #region Working on Windows only
             [DllImport("LibUniWinC")]
             public static extern void SetTransparentType(int type);
 
@@ -194,7 +201,8 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AttachWindow(IntPtr hWnd);
+            public static extern bool AttachWindowHandle(IntPtr hWnd);
+            #endregion
         }
         #endregion
 
@@ -453,9 +461,9 @@ namespace Kirurobo
             return IsActive;
         }
 
-        public bool AttachWindow(IntPtr hWnd)
+        public bool AttachWindowHandle(IntPtr hWnd)
         {
-            LibUniWinC.AttachWindow(hWnd);
+            LibUniWinC.AttachWindowHandle(hWnd);
             IsActive = LibUniWinC.IsActive();
             return IsActive;
         }
@@ -483,6 +491,14 @@ namespace Kirurobo
             LibUniWinC.Update();
         }
 
+        string GetDebubgWindowSizeInfo()
+        {
+            float x, y, cx, cy;
+            LibUniWinC.GetSize(out x, out y);
+            LibUniWinC.GetClientSize(out cx, out cy);
+            return $"W:{x},H:{y} CW:{cx},CH:{cy}";
+        }
+
         /// <summary>
         /// 透過を設定／解除
         /// </summary>
@@ -491,10 +507,8 @@ namespace Kirurobo
         {
             // エディタは透過できなかったり、枠が通常と異なるのでスキップ
 #if !UNITY_EDITOR
-            LibUniWinC.SetBorderless(isTransparent);
             LibUniWinC.SetTransparent(isTransparent);
-            //int wstyle = LibUniWinC.GetDebugInfo();
-            //Console.WriteLine(wstyle.ToString("X8"));
+            LibUniWinC.SetBorderless(isTransparent);
 #endif
             this._isTransparent = isTransparent;
         }
@@ -623,9 +637,9 @@ namespace Kirurobo
             LibUniWinC.SetAllowDrop(enabled);
         }
 
-#endregion
+        #endregion
 
-#region Event observers
+        #region Event observers
 
         /// <summary>
         /// Check files dropping and unset the dropped flag
@@ -685,9 +699,9 @@ namespace Kirurobo
             return true;
         }
 
-#endregion
+        #endregion
 
-#region About mouse cursor
+        #region About mouse cursor
         /// <summary>
         /// Set the mouse pointer position.
         /// </summary>
@@ -713,9 +727,9 @@ namespace Kirurobo
         {
             return true;
         }
-#endregion
+        #endregion
 
-#region for Windows only
+        #region for Windows only
         /// <summary>
         /// 透過方法を指定（Windowsのみ対応）
         /// </summary>
@@ -735,9 +749,9 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
-#endregion
+        #endregion
 
-#region About monitors
+        #region About monitors
         /// <summary>
         /// Get the monitor index where the window is located
         /// </summary>
@@ -835,7 +849,7 @@ namespace Kirurobo
         {
             return LibUniWinC.GetDebugInfo();
         }
-#endregion
+        #endregion
 
     }
 }

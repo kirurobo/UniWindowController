@@ -35,17 +35,20 @@ namespace Kirurobo
         /// <summary>
         /// State changed event type (Experimental)
         /// </summary>
+        [Flags]
         public enum WindowStateEventType : int
         {
             None = 0,
             StyleChanged = 1,
             Resized = 2,
-            EnabledTopMost = 1 + 8 + 4,
-            DisabledTopMost = 1 + 8,
-            EnabledBottomMost = 1 + 16 + 4,
-            DisabledBottomMost = 1 + 16,
-            EnabledBackground = 1 + 32 + 4,
-            DisabledBackground = 1 + 32,
+
+            // 以降は仕様変更もありえる
+            TopMostEnabled = 16 + 1 + 8,
+            TopMostDisabled = 16 + 1,
+            BottomMostEnabled = 32 + 1 + 8,
+            BottomMostDisabled = 32 + 1,
+            WallpaperModeEnabled = 64 + 1 + 8,
+            WallpaperModeDisabled = 64 + 1,
         };
 
         #region Native functions
@@ -185,6 +188,8 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetCursorPosition(out float x, out float y);
 
+
+            #region Working on Windows only
             [DllImport("LibUniWinC")]
             public static extern void SetTransparentType(int type);
 
@@ -196,7 +201,8 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AttachWindow(IntPtr hWnd);
+            public static extern bool AttachWindowHandle(IntPtr hWnd);
+            #endregion
         }
         #endregion
 
@@ -455,9 +461,9 @@ namespace Kirurobo
             return IsActive;
         }
 
-        public bool AttachWindow(IntPtr hWnd)
+        public bool AttachWindowHandle(IntPtr hWnd)
         {
-            LibUniWinC.AttachWindow(hWnd);
+            LibUniWinC.AttachWindowHandle(hWnd);
             IsActive = LibUniWinC.IsActive();
             return IsActive;
         }

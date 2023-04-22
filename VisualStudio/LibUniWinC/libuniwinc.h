@@ -28,12 +28,15 @@ enum class WindowStateEventType : int {
 	None = 0,
 	StyleChanged = 1,
 	Resized = 2,
-	EnabledTopMost = 1 + 8 + 4,
-	DisabledTopMost = 1 + 8,
-	EnabledBottomMost = 1 + 16 + 4,
-	DisabledBottomMost = 1 + 16,
-	EnabledBackground = 1 + 32 + 4,
-	DisabledBackground = 1 + 32,
+
+	// 以下はStyleChangedに加えて詳細情報を伝えるために用意（開発時のデバッグ用途が主のため今後の仕様変更はありえる）
+	//   1: StyleChanged flag, 8: Enabled flag
+	TopMostEnabled = 16 + 1 + 8,
+	TopMostDisabled = 16 + 1,
+	BottomMostEnabled = 32 + 1 + 8,
+	BottomMostDisabled = 32 + 1,
+	WallpaperModeEnabled = 64 + 1 + 8,
+	WallpaperModeDisabled = 64 + 1,
 };
 
 enum class PanelFlag : int {
@@ -139,4 +142,4 @@ UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
 UNIWINC_EXPORT HWND UNIWINC_API GetDesktopWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();
-UNIWINC_EXPORT BOOL UNIWINC_API AttachWindow(const HWND);
+UNIWINC_EXPORT BOOL UNIWINC_API AttachWindowHandle(const HWND);

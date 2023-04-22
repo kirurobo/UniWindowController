@@ -393,7 +393,7 @@ namespace TestLibUniWinC
             if ((uniwinc != null) && (item != null))
             {
                 Console.WriteLine(item.ProcessName + " " + item.Handle.ToString("X8"));
-                uniwinc.AttachWindow(item.Handle);
+                uniwinc.AttachWindowHandle(item.Handle);
             }
         }
     }

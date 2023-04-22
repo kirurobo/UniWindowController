@@ -592,7 +592,7 @@ BOOL UNIWINC_API AttachMyActiveWindow() {
 /// Attach to the specified window
 /// </summary>
 /// <returns></returns>
-BOOL UNIWINC_API AttachWindow(const HWND hWnd) {
+BOOL UNIWINC_API AttachWindowHandle(const HWND hWnd) {
 	attachWindow(hWnd);
 	return TRUE;
 }
@@ -736,31 +736,23 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		} else if (bIconic) {
 			// ウィンドウスタイルを適用
 			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
-			// 最小化されていたら、次に表示されるときの再描画を期待して、何もしない
-		//} else if (newW == w && newH == h) {
-		//	// ウィンドウスタイルを適用
-		//	SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
-
-		//	// 変更後もウィンドウサイズが変わらなければ、強制サイズ変更による再描画
-		//	refreshWindowRect();
+			// 最小化されていたら、次に表示されるときの再描画を期待して、SetWindowPosやShowWindowは省略
 		} else {
 			// クライアント領域サイズを維持するようサイズと位置を調整
-			//    Unity2019までと異なり、Unity2020ではサイズが戻ってしまうため先にサイズ変更してからウィンドウスタイルを変更
+			//    Unity2019までの手順ではUnity2020ではサイズが戻ってしまう。サイズ変更を繰り返したり、後でウィンドウスタイルを変更してみる。
+			//    ウィンドウリサイズのタイミングがずれた場合の挙動が不安なため、SWP_ASYNCWINDOWPOSを外した。
 			SetWindowPos(
 				hTargetWnd_,
 				NULL,
 				newX, newY, newW + offset, newH,
 				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 			);
-			//ShowWindow(hTargetWnd_, SW_SHOW);
-
 			SetWindowPos(
 				hTargetWnd_,
 				NULL,
 				newX, newY, newW, newH,
 				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 			);
-			//ShowWindow(hTargetWnd_, SW_SHOW);
 
 			// ウィンドウスタイルを適用
 			SetWindowLong(hTargetWnd_, GWL_STYLE, newStyle);
@@ -771,8 +763,6 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 				newX, newY, newW + offset, newH,
 				SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS
 			);
-			//ShowWindow(hTargetWnd_, SW_SHOW);
-
 			SetWindowPos(
 				hTargetWnd_,
 				NULL,
@@ -783,7 +773,7 @@ void UNIWINC_API SetBorderless(const BOOL bBorderless) {
 		}
 	}
 
-	// 枠無しかを記憶
+	// 枠無しか否かを記憶
 	bIsBorderless_ = bBorderless;
 }
 
@@ -839,7 +829,7 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 		// Run callback if the topmost state changed
 		if (bIsTopmost_ != bTopmost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)(bTopmost ? WindowStateEventType::EnabledTopMost : WindowStateEventType::DisabledTopMost));
+				hWindowStyleChangedHandler_((INT32)(bTopmost ? WindowStateEventType::TopMostEnabled : WindowStateEventType::TopMostDisabled));
 			}
 		}
 	}
@@ -867,7 +857,7 @@ void UNIWINC_API SetBottommost(const BOOL bBottommost) {
 		// Run callback if the bottommost state changed
 		if (bIsBottommost_ != bBottommost) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)(bBottommost ? WindowStateEventType::EnabledBottomMost : WindowStateEventType::DisabledBottomMost));
+				hWindowStyleChangedHandler_((INT32)(bBottommost ? WindowStateEventType::BottomMostEnabled : WindowStateEventType::BottomMostDisabled));
 			}
 		}
 	}
@@ -909,7 +899,7 @@ void UNIWINC_API SetBackground(const BOOL bEnabled) {
 		// Run callback if the bottommost state changed
 		if (bIsBackground_!= bEnabled) {
 			if (hWindowStyleChangedHandler_ != nullptr) {
-				hWindowStyleChangedHandler_((INT32)(bEnabled ? WindowStateEventType::EnabledBackground : WindowStateEventType::DisabledBackground));
+				hWindowStyleChangedHandler_((INT32)(bEnabled ? WindowStateEventType::WallpaperModeEnabled : WindowStateEventType::WallpaperModeDisabled));
 			}
 		}
 	}
