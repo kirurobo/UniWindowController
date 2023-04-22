@@ -63,13 +63,21 @@ namespace Kirurobo
         /// <summary>
         /// Identifies the type of <see cref="OnStateChanged">OnStateChanged</see> event when it occurs
         /// </summary>
+        [Flags]
         public enum WindowStateEventType : int
         {
             None = 0,
             StyleChanged = 1,
             Resized = 2,
-            OrderChanged = 4,
-        }
+
+            // 以降は仕様変更もありえる
+            TopMostEnabled = 16 + 1 + 8,
+            TopMostDisabled = 16 + 1,
+            BottomMostEnabled = 32 + 1 + 8,
+            BottomMostDisabled = 32 + 1,
+            WallpaperModeEnabled = 64 + 1 + 8,
+            WallpaperModeDisabled = 64 + 1,
+        };
 
         /// <summary>
         /// Get the current instance of UniWindowController
@@ -273,7 +281,6 @@ namespace Kirurobo
         /// <summary>
         /// クライアント領域のサイズを取得
         /// </summary>
-        [Obsolete]
         public Vector2 clientSize
         {
             get { return (_uniWinCore != null ? _uniWinCore.GetClientSize() : Vector2.zero); }
@@ -847,8 +854,6 @@ namespace Kirurobo
         /// <param name="transparent"></param>
         private void SetTransparent(bool transparent)
         {
-            //if (_isTransparent == transparent) return;
-
             _isTransparent = transparent;
             SetCameraBackground(transparent);
 #if !UNITY_EDITOR
