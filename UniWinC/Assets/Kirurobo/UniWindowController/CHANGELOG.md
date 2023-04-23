@@ -8,6 +8,12 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.0] - 2023-04-22
+### Changed
+- The development environment has been updated to Unity 2020.3.43
+### Fixed
+- Fixed size shift when window frame is hidden in Unity 2020 on Windows
+
 ## [v0.8.6] - 2022-06-18
 ### Fixed
 - Window shadow in macOS
