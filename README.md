@@ -15,20 +15,31 @@ Windows、macOS それぞれではコード例やアセットが見つかりま�
 https://twitter.com/i/status/1314440790945361920
 
 
-## ダウンロード
-https://github.com/kirurobo/UniWindowController/releases に .unitypackage ファイルがあります。
-ビルドしたサンプルも置いています。
+## デモ
+[Release のページ](https://github.com/kirurobo/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
 
 
-## 基本の利用法
-1. Unitypackage から自分の Unity プロジェクトにインポート
-2. Runtime/Prefabs にある UniWindowController プレハブをシーンに追加
-3. そこで配置された UniWindowController をインスペクターで確認
-    1. ProjectSettings を適切に直す（緑のボタンでまとめて設定が変更されます）
+## インストール
+UPMの方法ですと、バージョンアップもUPMから行えるようになります。
+
+A. Unity Package Manager (UPM) を利用する手順
+1. Unity エディタの [Window]メニューから [Package Manager] を開く
+2. [+] から [Add package from git URL...] を選択
+3. https://github.com/kirurobo/UniWindowController.git#upm を入力して [Add] する
+
+B. UnityPackage を利用する手順
+1. [Release のページ](https://github.com/kirurobo/UniWindowController/releases) から .unitypackage ファイルをダウンロード
+2. Unity エディタでインポート
+
+
+## Unity プロジェクトでの利用
+1. Runtime/Prefabs にある UniWindowController プレハブをシーンに追加
+2. そこで配置された UniWindowController をインスペクターで確認
+    1. Player Settings を適切に直す（緑のボタンでまとめて設定が変更されます）
     2. `IsTransparent` 等、設定をお好みに合わせる
-4. 左ドラッグでウィンドウ自体を動かしたい場合、 DragMoveCanvas プレハブも追加
-5. PC / Mac スタンドアローンでビルドする
-6. ビルドしたものを起動
+3. 左ドラッグでウィンドウ自体を動かしたい場合、 Runtime/Prefabs の DragMoveCanvas プレハブも追加
+4. PC / Mac スタンドアローンでビルドする
+5. ビルドしたものを起動
 
 
 ## 制限事項
@@ -36,17 +47,18 @@ https://github.com/kirurobo/UniWindowController/releases に .unitypackage フ�
   - 常に最前面やウィンドウ移動等は動作しますが、実行中にゲームビューを閉じたりドッキングの配置を変えることはお勧めしません。一応、ゲームビューにフォーカスを移すとウィンドウを再取得はします。
 - マウスでは良いのですが、タッチ操作には適切な対応がまだ定まっていません。
   - Windows の場合、`TransparentType` を Alpha から ColorKey にすると、半透明の表現が失われる代わりにタッチ操作は自然になります。
-- あまり動作検証をできている訳でもなく、安定して動くとは限りません。
+- 複数ウィンドウには対応していません。
+- 完全に動作検証ができている訳ではなく、不安定な動作もあるかもしれません。
 
 既知の問題については [Issues](https://github.com/kirurobo/UniWindowController/issues) もご覧ください。
 
 
 ## 動作環境
-- Unity: 2018 4.30f1 or later
+- Unity: 2019 4.31f1 or later
   - Scripting Runtime: .NET 4.x or later
-- OS: Windows 10 or macOS
+- OS: Windows 10, Windows 11 or macOS
 
-開発は Unity 2018.4.30f1, Windows 10 / macOS 11.6 で行っています
+開発は Unity 2020.4.30f1, Windows 11 / macOS 13.3 で行っています
 
 
 ## ヒットテストについて
@@ -115,7 +127,7 @@ UniWindowController のインスタンスがなくても使えますが、その
 
 ## ソースのフォルダ構成
 利用するだけならば、Release にある unitypackage をダウンロードしていただけばよく、このリポジトリをクローンする必要はありません。  
-ソースを見たい／ビルドしたい方は、このようになっています。
+ソースを見たい／ビルドしたい場合は、このようになっていますので参照ください。
 
 - UniWinC
   - Unity のプロジェクトです。
