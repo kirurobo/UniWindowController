@@ -24,8 +24,11 @@ UPMの方法ですと、バージョンアップもUPMから行えるように�
 
 A. Unity Package Manager (UPM) を利用する手順
 1. Unity エディタの [Window]メニューから [Package Manager] を開く
-2. [+] から [Add package from git URL...] を選択
-3. https://github.com/kirurobo/UniWindowController.git#upm を入力して [Add] する
+2. [+] から [Add package from git URL...] を選択  
+    ![image](https://user-images.githubusercontent.com/1019117/234160406-f041bda9-262c-4d3f-b41c-45e11c3a94ce.png)
+3. https://github.com/kirurobo/UniWindowController.git#upm を入力して [Add] する  
+    ![image](https://user-images.githubusercontent.com/1019117/234160520-35447b67-dd44-4af6-9c7c-ab71577a4c17.png)
+
 
 B. UnityPackage を利用する手順
 1. [Release のページ](https://github.com/kirurobo/UniWindowController/releases) から .unitypackage ファイルをダウンロード
@@ -143,7 +146,8 @@ UniWindowController のインスタンスがなくても使えますが、その
 
 
 ## 謝辞
-macOS側のコードは かりばぁ さんの[Unity + Mac + Swift で透過最前面ウィンドウを作る](https://qiita.com/KRiver1/items/9ecf65759cf1349f56af)をベースにさせていただきました。  
+- macOS側のコードは かりばぁ さんの [Unity + Mac + Swift で透過最前面ウィンドウを作る](https://qiita.com/KRiver1/items/9ecf65759cf1349f56af) をベースにさせていただきました。  
+- GitHub Actions での UPM ブランチ生成は hecomi さんの [Unity で .unitypackage で配布していたアセットを Package Manager 対応してみた](https://tips.hecomi.com/entry/2021/10/29/001304) を参考にしました。
 この場を借りて感謝を申し上げます。
 
 
