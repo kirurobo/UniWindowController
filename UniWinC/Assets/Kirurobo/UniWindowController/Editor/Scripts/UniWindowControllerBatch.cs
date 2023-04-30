@@ -13,19 +13,31 @@ namespace Kirurobo
         {
             // コマンドライン引数の最後が出力パスだとする
             //string outputPath = System.Environment.GetCommandLineArgs().Last();
-            
+
             // var buildPlayerOptions = new BuildPlayerOptions();
             // buildPlayerOptions.scenes = sceneList.ToArray();
             // buildPlayerOptions.locationPathName = outputPath;
             // buildPlayerOptions.target = BuildTarget.StandaloneOSX;
             // buildPlayerOptions.options = BuildOptions.None;
-            
-            // 事前にエディタから設定したビルド設定を利用する
+
+            // 事前にエディタから設定したビルド設定を利用
+            var scenes = EditorBuildSettings.scenes;
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            var locationPath = EditorUserBuildSettings.GetBuildLocation(buildTarget);
+
+            // ビルド対象は環境に合わせて上書き
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+            buildTarget = BuildTarget.StandaloneOSX;
+            locationPath = "Builds/macOS/" + Application.productName;
+#elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            buildTarget = BuildTarget.StandaloneWindows64;
+            locationPath = "Builds/Win64/" + Application.productName;
+#endif
+
             var buildPlayerOptions = new BuildPlayerOptions
             {
-                scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes),
-                locationPathName = EditorUserBuildSettings.GetBuildLocation(buildTarget),
+                scenes = EditorBuildSettingsScene.GetActiveSceneList(scenes),
+                locationPathName = locationPath,
                 target = buildTarget,
                 options = BuildOptions.None
             };
