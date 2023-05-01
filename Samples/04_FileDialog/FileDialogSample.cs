@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Kirurobo
 {
@@ -9,12 +10,18 @@ namespace Kirurobo
     /// </summary>
     public class FileDialogSample : MonoBehaviour
     {
-        string message = "";
+        public Button openFileButton;
+        public Button openMultipleFilesButton;
+        public Button saveFileButton;
+        public Text messageText;
 
         // Start is called before the first frame update
         void Start()
         {
-            
+            openFileButton.onClick.AddListener(OpenSingleFile);
+            openMultipleFilesButton.onClick.AddListener(OpenMultipleFiles);
+            saveFileButton.onClick.AddListener(OpenSaveFile);
+            messageText.text = "Click a button!";
         }
 
         // Update is called once per frame
@@ -23,70 +30,68 @@ namespace Kirurobo
 
         }
 
-        // Show buttons and a textarea
-        private void OnGUI()
-        {
-            float x = 170f;
-
-            if (GUI.Button(new Rect(x, 10, 160, 80), "Open a file"))
+        /// <summary>
+        /// Open the open file dialog to select single file.
+        /// </summary>
+        private void OpenSingleFile() {
+            FilePanel.Settings settings = new FilePanel.Settings();
+            settings.filters = new FilePanel.Filter[]
             {
-                FilePanel.Settings settings = new FilePanel.Settings();
-                settings.filters = new FilePanel.Filter[]
-                {
-                    new FilePanel.Filter("All files", "*"),
-                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                    new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
-                };
-                settings.title = "Open a file!";
-                settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures);
+                new FilePanel.Filter("All files", "*"),
+                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
+            };
+            settings.title = "Open a file!";
+            settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures);
 
-                message = "Canceled";
-                FilePanel.OpenFilePanel(settings, (files) =>
-                {
-                    message = "Open a file\n" + string.Join("\n", files);
-                });
-            }
-
-            if (GUI.Button(new Rect(x, 100, 160, 80), "Open multiple files"))
+            messageText.text = "";
+            FilePanel.OpenFilePanel(settings, (files) =>
             {
-                FilePanel.Settings settings = new FilePanel.Settings();
-                settings.filters = new FilePanel.Filter[]
-                {
-                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                    new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
-                    new FilePanel.Filter("All files", "*"),
-                };
-                settings.flags = FilePanel.Flag.AllowMultipleSelection;
-                settings.title = "Open multiple files!";
-                settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+                messageText.text = "Open a file\n" + string.Join("\n", files);
+            });
+        }
 
-                message = "Canceled";
-                FilePanel.OpenFilePanel(settings, (files) =>
-                {
-                    message = "Open multiple files\n" + string.Join("\n", files);
-                });
-            }
-
-            if (GUI.Button(new Rect(x, 200, 160, 80), "Save file"))
+        /// <summary>
+        /// Open the open file dialog to select multiple files.
+        /// </summary>
+        private void OpenMultipleFiles() {
+            FilePanel.Settings settings = new FilePanel.Settings();
+            settings.filters = new FilePanel.Filter[]
             {
-                FilePanel.Settings settings = new FilePanel.Settings();
-                settings.filters = new FilePanel.Filter[]
-                {
-                    new FilePanel.Filter("Text file (*.txt;*.log)", "txt", "log"),
-                    new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
-                    new FilePanel.Filter("All files", "*"),
-                };
-                settings.title = "No save is actually performed";
-                settings.initialFile = "Test.txt";
+                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new FilePanel.Filter("Documents (*.txt;*.rtf;*.doc;*.docx)", "txt", "rtf", "doc", "docx"),
+                new FilePanel.Filter("All files", "*"),
+            };
+            settings.flags = FilePanel.Flag.AllowMultipleSelection;
+            settings.title = "Open multiple files!";
+            settings.initialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
 
-                message = "Canceled";
-                FilePanel.SaveFilePanel(settings, (files) =>
-                {
-                    message = "Selected file\n" + string.Join("\n", files);
-                });
-            }
+            messageText.text = "";
+            FilePanel.OpenFilePanel(settings, (files) =>
+            {
+                messageText.text = "Open multiple files\n" + string.Join("\n", files);
+            });
+        }
 
-            GUI.TextArea(new Rect(x + 200, 10, 400, 400), message);
+        /// <summary>
+        /// Open the save file dialog.
+        /// </summary>
+        private void OpenSaveFile() {
+            FilePanel.Settings settings = new FilePanel.Settings();
+            settings.filters = new FilePanel.Filter[]
+            {
+                new FilePanel.Filter("Text file (*.txt;*.log)", "txt", "log"),
+                new FilePanel.Filter("Image files (*.png;*.jpg;*.jpeg;*.tiff;*.gif;*.tga)", "png", "jpg", "jpeg", "tiff", "gif", "tga"),
+                new FilePanel.Filter("All files", "*"),
+            };
+            settings.title = "No save is actually performed";
+            settings.initialFile = "Test.txt";
+
+            messageText.text = "";
+            FilePanel.SaveFilePanel(settings, (files) =>
+            {
+                messageText.text = "Selected file\n" + string.Join("\n", files);
+            });
         }
     }
 }

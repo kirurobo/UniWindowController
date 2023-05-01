@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace Kirurobo
 {
@@ -18,6 +19,8 @@ namespace Kirurobo
 
         private static SampleManager _instance;
         public static SampleManager Instance => _instance ?? (_instance = GameObject.FindObjectOfType<SampleManager>() ?? new SampleManager());
+
+        public Canvas canvas;
 
         private void Awake()
         {
@@ -50,28 +53,45 @@ namespace Kirurobo
 
         }
 
-        private void OnGUI()
+        public void LoadScene(string name)
         {
-            float y = 0;
-
-            for (int index = 0; index < _scenes.Length; index++)
+            if (name == "SimpleSample")
             {
-                if (GUI.Button(new Rect(0, y, 160, 36), _scenes[index]))
-                {
-                    if (index == 1)
-                    {
-                        // SimpleSample の場合はスクリプトでの制御がないため、ここで透明化
-                        UniWindowController.current.isTransparent = true;
-                    } else if (index == 3)
-                    {
-                        // FullScreenSample の場合は強制的に最大化
-                        UniWindowController.current.shouldFitMonitor = true;
-                    }
-
-                    SceneManager.LoadScene(_scenes[index]);
-                }
-                y += 40;
+                // SimpleSample の場合はスクリプトでの制御がないため、ここで透明化
+                UniWindowController.current.isTransparent = true;
             }
+            else if (name == "FullScreenSample")
+            {
+                // FullScreenSample の場合は強制的に最大化
+                UniWindowController.current.shouldFitMonitor = true;
+            }
+
+            SceneManager.LoadScene(name);
         }
+
+        //private void OnGUI()
+        //{
+        //    float y = 0;
+
+        //    for (int index = 0; index < _scenes.Length; index++)
+        //    {
+        //        if (GUI.Button(new Rect(0, y, 160, 36), _scenes[index]))
+        //        {
+        //            //if (index == 1)
+        //            //{
+        //            //    // SimpleSample の場合はスクリプトでの制御がないため、ここで透明化
+        //            //    UniWindowController.current.isTransparent = true;
+        //            //}
+        //            //else if (index == 3)
+        //            //{
+        //            //    // FullScreenSample の場合は強制的に最大化
+        //            //    UniWindowController.current.shouldFitMonitor = true;
+        //            //}
+
+        //            //SceneManager.LoadScene(_scenes[index]);
+        //        }
+        //        y += 40;
+        //    }
+        //}
     }
 }
