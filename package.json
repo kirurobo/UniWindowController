@@ -1,6 +1,6 @@
 {
     "name": "com.kirurobo.uniwinc",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
     "unity": "2020.3",
