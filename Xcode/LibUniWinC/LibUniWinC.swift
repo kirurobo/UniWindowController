@@ -821,7 +821,7 @@ public class LibUniWinC : NSObject {
             height.pointee = 0;
             return false
         }
-        let currentSize = targetWindow!.contentView!.frame.size
+        let currentSize = targetWindow!.contentRect(forFrameRect: targetWindow!.frame).size
         width.pointee = Float32(currentSize.width)
         height.pointee = Float32(currentSize.height)
         return true
@@ -1070,7 +1070,6 @@ public class LibUniWinC : NSObject {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSSavePanel()
-        let panelHelper = CustomPanelHelper(panel: panel)
 
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
@@ -1100,8 +1099,6 @@ public class LibUniWinC : NSObject {
             panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
-        //panel.allowedFileTypes = fileTypes
-        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.allowsOtherFileTypes = true
 
         panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
@@ -1110,7 +1107,13 @@ public class LibUniWinC : NSObject {
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()
         panel.center()
+        
+        // ファイル種類選択欄を追加
+        let panelHelper = CustomPanelHelper(panel: panel)
+        panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
+        //panel.allowedFileTypes = fileTypes
 
+        // ダイアログを開く
         let result = panel.runModal();
 
         var text: String = ""
