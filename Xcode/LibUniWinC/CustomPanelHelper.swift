@@ -14,20 +14,14 @@ class CustomPanelHelper {
     let customAccessoryView = NSView(frame: NSRect(x:0, y:0, width:400, height:40))
     var popup = NSPopUpButton(frame: NSRect(x:80, y:5, width:310, height:25))
     var label = NSTextField(frame: NSRect(x: 10, y:3, width: 70, height:25))
-    var shouldAddSubView : Bool = false
+    var hasSubView : Bool = false
     var extArray : [[String]?] = []
     
     init(panel: NSSavePanel)
     {
         self.panel = panel
         
-        //customAccessoryView.autoresizingMask = [.width, .height]
-        //customAccessoryView.autoresizingMask = [.minXMargin, .maxXMargin]
-        //popup.autoresizingMask = [.width, .height]
-
         label.stringValue = "File type : "
-        //label.string = "File type : "
-        //label.alignment = NSTextAlignment.right
         label.isBordered = false
         label.isSelectable = false
         label.isEditable = false
@@ -38,9 +32,14 @@ class CustomPanelHelper {
         popup.target = self
         
         let center = NotificationCenter.default
+//        center.addObserver(self, selector: #selector(_didPanelExposeObserver(notification:)), name:NSWindow.didExposeNotification, object: panel)
         center.addObserver(self, selector: #selector(_willPanelCloseObserver(notification:)), name: NSWindow.willCloseNotification, object: panel)
     }
     
+//    @objc func _didPanelExposeObserver(notification: Notification) {
+//        //panel.accessoryView = customAccessoryView
+//    }
+                           
     @objc func _willPanelCloseObserver(notification: Notification) {
         // パネルを閉じた後に accessoryView が画面に残ってしまっていたため、削除を試みる
         customAccessoryView.removeFromSuperview()
@@ -56,15 +55,16 @@ class CustomPanelHelper {
         popup.addItem(withTitle: title)
         extArray.append(ext)
         
-        // 初回ならば subView 追加
-        if (!shouldAddSubView) {
+        // 初回ならばデフォルトとして選択し、subView 追加
+        if (!hasSubView) {
+            popup.selectItem(at: 0)
+            panel.allowedFileTypes = extArray.first ?? nil
+            
             customAccessoryView.addSubview(label)
             customAccessoryView.addSubview(popup)
             panel.accessoryView = customAccessoryView
             
-            popup.selectItem(at: 0)
-            panel.allowedFileTypes = extArray.first ?? nil
-            shouldAddSubView = true;
+            hasSubView = true;
         }
     }
     
