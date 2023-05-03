@@ -9,7 +9,7 @@ on:
       - v*
 
 env:
-  MAIN_BRANCH: master
+  MAIN_BRANCH: main
   UPM_BRANCH: upm
   PKG_ROOT_DIR: UniWinC/Assets/Kirurobo/UniWindowController
   SAMPLES_DIR: Samples

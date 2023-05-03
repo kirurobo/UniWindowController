@@ -8,6 +8,11 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.1] - 2023-05-03
+### Fixed
+- Position of file type selection box on macOS
+- GetClientSize() on macOS 
+
 ## [v0.9.0] - 2023-04-22
 ### Changed
 - The development environment has been updated to Unity 2020.3.43
