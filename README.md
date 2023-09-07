@@ -45,6 +45,7 @@ B. Using an UnityPackage
   - Fix the Player Settings appropriately (the green button will change all settings at once)
   - Adjust the settings such as `IsTransparent` to your liking
 3. Add `DragMoveCanvas` prefab in the Runtime/Prefabs if you want to move the window by mouse dragging.
+  - An EventSystem is required for this to work. If it is not present in your scene, add UI → Event System.
 4. Build for PC / Mac standalone
 5. Launch the build
 
