@@ -8,6 +8,12 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.2] - 2023-09-18
+### Fixed
+- DllNotFoundException in the Unity Apple Silicon Editor
+### Changed
+- Added client size display to the UI sample
+
 ## [v0.9.1] - 2023-05-03
 ### Fixed
 - Position of file type selection box on macOS
