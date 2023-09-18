@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>22E261</string>
+	<string>22G91</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.1</string>
+	<string>0.9.2</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
@@ -37,9 +37,9 @@
 	<key>DTSDKName</key>
 	<string>macosx13.3</string>
 	<key>DTXcode</key>
-	<string>1430</string>
+	<string>1431</string>
 	<key>DTXcodeBuild</key>
-	<string>14E222b</string>
+	<string>14E300c</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.14.6</string>
 	<key>NSHumanReadableCopyright</key>
