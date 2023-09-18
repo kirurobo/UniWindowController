@@ -48,6 +48,7 @@ namespace Kirurobo
         public Image pickedColorImage;
         public Text pickedColorText;
         public Text messageText;
+        public Text clientSizeText;
         public Button menuCloseButton;
         public RectTransform menuPanel;
         public RectTransform borderlinePanel;
@@ -111,11 +112,13 @@ namespace Kirurobo
                     //Debug.Log("Window state changed: " + type);
                     ShowEventMessage("State changed: " + type);
                     //ShowEventMessage("State changed: " + type + "4:isKey 2:canBecomeKey, 1:canBecomeMain  : " + uniwinc.GetDebugInfo().ToString());
+                    ShowClientSize();
                 };
                 uniwinc.OnMonitorChanged += () => {
                     UpdateMonitorDropdown();
                     UpdateUI();
-                    ShowEventMessage("Resolution changed!"); 
+                    ShowEventMessage("Resolution changed!");
+                    ShowClientSize();
                 };
                 uniwinc.OnDropFiles += files =>
                 {
@@ -312,10 +315,10 @@ namespace Kirurobo
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
-                    + "\nClient: " + uniwinc.clientSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
                     + "\nUnity Cur.:" + (Vector2)Input.mousePosition
                     );
+                ShowClientSize();
             }
         }
 
@@ -545,6 +548,24 @@ namespace Kirurobo
             if (messageText)
             {
                 messageText.text = text;
+            }
+            else
+            {
+                Debug.Log(text);
+            }
+        }
+
+        /// <summary>
+        /// クライアントサイズ用テキスト枠がUIにあれば、そこにメッセージを出す。無ければコンソールに出力
+        /// </summary>
+        public void ShowClientSize()
+        {
+            if (!uniwinc) return;
+
+            string text = "Client " + uniwinc.clientSize;
+            if (clientSizeText)
+            {
+                clientSizeText.text = text;
             }
             else
             {

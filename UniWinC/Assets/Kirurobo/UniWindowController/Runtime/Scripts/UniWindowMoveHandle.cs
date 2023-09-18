@@ -13,7 +13,7 @@ using UnityEngine.EventSystems;
 
 namespace  Kirurobo
 {
-    public class UniWindowMoveHandle : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+    public class UniWindowMoveHandle : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerUpHandler
     {
         private UniWindowController _uniwinc;
 
@@ -113,6 +113,18 @@ namespace  Kirurobo
             EndDragging();
         }
 
+        /// <summary>
+        /// マウスが上がった際もドラッグ終了とみなす
+        /// </summary>
+        /// <param name="eventData"></param>
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            EndDragging();
+        }
+
+        /// <summary>
+        /// ドラッグ終了とする
+        /// </summary>
         private void EndDragging()
         {
             if (_isDragging)
