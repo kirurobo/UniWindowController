@@ -69,11 +69,6 @@ namespace  Kirurobo
             //Input.simulateMouseWithTouches = false;
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-        }
-
         /// <summary>
         /// ドラッグ開始時の処理
         /// </summary>
