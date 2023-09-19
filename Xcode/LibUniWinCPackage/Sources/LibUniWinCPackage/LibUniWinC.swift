@@ -9,6 +9,7 @@
 //  https://qiita.com/KRiver1/items/9ecf65759cf1349f56af
 //
 // References:
+// - https://qiita.com/fuziki/items/974f70b663ebfadfb136
 // - https://qiita.com/KRiver1/items/9ecf65759cf1349f56af
 // - http://tatsudoya.blog.fc2.com/blog-entry-244.html
 // - https://qiita.com/mybdesign/items/fe3e390741799c1814ad
@@ -20,7 +21,7 @@ import Cocoa
 
 /// Window controller main logic
 @objcMembers
-public class LibUniWinC : NSObject {
+public class LibUniWinC {
     
     // MARK: - Internal structs and classes
     
