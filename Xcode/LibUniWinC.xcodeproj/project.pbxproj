@@ -337,14 +337,16 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/*",
 			);
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(PROJECT_DIR)/../UniWinC/Assets/Kirurobo/UniWindowController/Runtime/Plugins/MacOS/",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncp -r -f $BUILT_PRODUCTS_DIR/*.bundle $SRCROOT/../UniWinC/Assets/Kirurobo/UniWindowController/Runtime/Plugins/MacOS/\n";
+			shellScript = "cp -r -f $BUILT_PRODUCTS_DIR/*.bundle $PROJECT_DIR/../UniWinC/Assets/Kirurobo/UniWindowController/Runtime/Plugins/MacOS/\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
