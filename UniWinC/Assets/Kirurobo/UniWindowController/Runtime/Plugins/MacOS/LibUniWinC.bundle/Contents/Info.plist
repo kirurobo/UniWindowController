@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>23A344</string>
+	<string>23B74</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>LibUniWinC</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.kirurobo.libuniwinc</string>
+	<string>com.kirurobo.LibUniWinC</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -37,11 +37,11 @@
 	<key>DTSDKName</key>
 	<string>macosx14.0</string>
 	<key>DTXcode</key>
-	<string>1500</string>
+	<string>1501</string>
 	<key>DTXcodeBuild</key>
-	<string>15A240d</string>
+	<string>15A507</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.14.6</string>
+	<string>11.0</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2019-2023 kirurobo. All rights reserved.</string>
 </dict>

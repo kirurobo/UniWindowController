@@ -8,9 +8,6 @@
 //
 
 
-import Foundation
-
-
 // Actually the argument type is wchar_t*
 //using StringCallback = void(* _Nonnull)(const void* _Nonnull);
 
@@ -207,12 +204,12 @@ public func Update() -> Void {
 }
 
 @_cdecl("OpenFilePanel")
-public func OpenFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
+public func OpenFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UInt16>?, bufferSize: UInt32) -> Bool {
     return LibUniWinC.openFilePanel(lpSettings: lpSettings, lpBuffer:lpBuffer, bufferSize: bufferSize)
 }
 
 @_cdecl("OpenSavePanel")
-public func OpenSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
+public func OpenSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UInt16>?, bufferSize: UInt32) -> Bool {
     return LibUniWinC.openSavePanel(lpSettings: lpSettings, lpBuffer: lpBuffer, bufferSize: bufferSize)
 }
 
