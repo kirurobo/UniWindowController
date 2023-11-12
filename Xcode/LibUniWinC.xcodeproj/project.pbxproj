@@ -7,18 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		73427E712B00B6B100B62B48 /* CustomPanelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73427E702B00B6B100B62B48 /* CustomPanelHelper.swift */; };
 		736DDB832AF7B19A00A145B0 /* LibUniWinC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736DDB7F2AF7795900A145B0 /* LibUniWinC.swift */; };
 		736DDB842AF7B19A00A145B0 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736DDB7E2AF7795900A145B0 /* OverlayView.swift */; };
 		736DDB852AF7B19A00A145B0 /* UnityInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736DDB7D2AF7795900A145B0 /* UnityInterface.swift */; };
-		736DDB872AF7B2F100A145B0 /* CustomPanelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736DDB862AF7B2F100A145B0 /* CustomPanelHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		73427E702B00B6B100B62B48 /* CustomPanelHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPanelHelper.swift; sourceTree = "<group>"; };
 		736DDB722AF778A700A145B0 /* LibUniWinC.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibUniWinC.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		736DDB7D2AF7795900A145B0 /* UnityInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnityInterface.swift; sourceTree = "<group>"; };
 		736DDB7E2AF7795900A145B0 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		736DDB7F2AF7795900A145B0 /* LibUniWinC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibUniWinC.swift; sourceTree = "<group>"; };
-		736DDB862AF7B2F100A145B0 /* CustomPanelHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CustomPanelHelper.swift; path = ../../Xcode/LibUniWinCPackage/Sources/LibUniWinCPackage/CustomPanelHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +54,7 @@
 				736DDB7F2AF7795900A145B0 /* LibUniWinC.swift */,
 				736DDB7E2AF7795900A145B0 /* OverlayView.swift */,
 				736DDB7D2AF7795900A145B0 /* UnityInterface.swift */,
-				736DDB862AF7B2F100A145B0 /* CustomPanelHelper.swift */,
+				73427E702B00B6B100B62B48 /* CustomPanelHelper.swift */,
 			);
 			path = LibUniWinC;
 			sourceTree = "<group>";
@@ -151,7 +151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				736DDB842AF7B19A00A145B0 /* OverlayView.swift in Sources */,
-				736DDB872AF7B2F100A145B0 /* CustomPanelHelper.swift in Sources */,
+				73427E712B00B6B100B62B48 /* CustomPanelHelper.swift in Sources */,
 				736DDB832AF7B19A00A145B0 /* LibUniWinC.swift in Sources */,
 				736DDB852AF7B19A00A145B0 /* UnityInterface.swift in Sources */,
 			);
