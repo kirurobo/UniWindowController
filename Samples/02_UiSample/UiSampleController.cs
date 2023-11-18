@@ -239,7 +239,7 @@ namespace Kirurobo
                     title = "Open!",
                     filters = new FilePanel.Filter[]{
                         new FilePanel.Filter("Image files", "png", "jpg", "jpeg"),
-                        //new FilePanel.Filter("All files", "*"),
+                        new FilePanel.Filter("All files", "*"),
                     },
                     initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                     initialFile = "test.png",
@@ -258,7 +258,7 @@ namespace Kirurobo
                         new FilePanel.Filter("Shell script", "sh"),
                         new FilePanel.Filter("Log", "log"),
                         new FilePanel.Filter("Plain text", "txt"),
-                        //new FilePanel.Filter("All files", "*"),
+                        new FilePanel.Filter("All files", "*"),
                     },
                     initialFile = "Test.txt",
                     initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
