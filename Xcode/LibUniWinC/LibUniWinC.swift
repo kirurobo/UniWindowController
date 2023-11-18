@@ -283,8 +283,22 @@ public class LibUniWinC {
 
     /// Find my own window
     private static func _findMyWindow() -> NSWindow {
-        let myWindow: NSWindow = NSApp.orderedWindows.first!
-        return myWindow
+        //var myWindow: NSWindow = NSApp.orderedWindows.first!
+        //let myWindow: NSWindow = NSApp.mainWindow ?? NSApp.orderedWindows.first!
+        
+        for window in NSApp.orderedWindows {
+            // キー操作を受け取るウィンドウが見つかれば、それだとする
+            if (window.isKeyWindow) {
+                return window
+            }
+//            print("[DEBUG - orderedWindows]")
+//            print(window.title)
+//            print(window.isKeyWindow)
+//            print(window.isZoomed)
+//            print(window.contentLayoutRect)
+        }
+        // キーウィンドウが見つからなければ先頭とする
+        return NSApp.orderedWindows.first!
     }
 
     /// Detach from the window
@@ -1124,16 +1138,11 @@ public class LibUniWinC {
         }
         if (targetWindow != nil) {
             if (state.isTopmost) {
+                // Re-enable always on top
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
-                // Re-enable always on top
                 _makeKeyWindow()
-//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
-//                state.isBorderless = false;     // Suppress the callback
-//                setBorderless(isBorderless: false)
-//                state.isBorderless = true;      // Suppress the callback
-//                setBorderless(isBorderless: true)
             }
             targetWindow?.makeKeyAndOrderFront(nil)
         }
@@ -1153,7 +1162,7 @@ public class LibUniWinC {
         return String(utf16CodeUnits: textPointer!, count: len)
     }
     
-    /// Call a StringCallback with UTF-16 paramete
+    /// Call a StringCallback with UTF-16 parameter
     /// - Parameters:
     ///   - callback: Registered callback function
     ///   - text: Parrameter as String

@@ -8,6 +8,7 @@
 
 import Cocoa
 import AppKit
+import UniformTypeIdentifiers
 
 class CustomPanelHelper {
     public let panel : NSSavePanel
@@ -16,6 +17,7 @@ class CustomPanelHelper {
     var label = NSTextField(frame: NSRect(x: 10, y:3, width: 70, height:25))
     var hasSubView : Bool = false
     var extArray : [[String]?] = []
+    var extUTTypes : [[UTType]?] = []
     
     init(panel: NSSavePanel)
     {
@@ -32,14 +34,9 @@ class CustomPanelHelper {
         popup.target = self
         
         let center = NotificationCenter.default
-//        center.addObserver(self, selector: #selector(_didPanelExposeObserver(notification:)), name:NSWindow.didExposeNotification, object: panel)
         center.addObserver(self, selector: #selector(_willPanelCloseObserver(notification:)), name: NSWindow.willCloseNotification, object: panel)
     }
-    
-//    @objc func _didPanelExposeObserver(notification: Notification) {
-//        //panel.accessoryView = customAccessoryView
-//    }
-                           
+                               
     @objc func _willPanelCloseObserver(notification: Notification) {
         // パネルを閉じた後に accessoryView が画面に残ってしまっていたため、削除を試みる
         customAccessoryView.removeFromSuperview()
@@ -51,20 +48,53 @@ class CustomPanelHelper {
         center.removeObserver(self, name: NSSavePanel.willCloseNotification, object: panel)
     }
 
-    public func addFileType(title: String, ext: [String]?) -> Void {
+    /// 文字列で指定された拡張子の組みを候補に追加
+    public func addFileType(title: String, extensions: [String]?) -> Void {
         popup.addItem(withTitle: title)
-        extArray.append(ext)
+        extArray.append(extensions)
+        extUTTypes.append(createContentType(extensitons: extensions))
         
         // 初回ならばデフォルトとして選択し、subView 追加
         if (!hasSubView) {
             popup.selectItem(at: 0)
-            panel.allowedFileTypes = extArray.first ?? nil
+            if #available(macOS 11.0, *) {
+                panel.allowedContentTypes = [.jpeg, .png]
+            } else {
+                panel.allowedFileTypes = extArray.first ?? nil
+            }
             
             customAccessoryView.addSubview(label)
             customAccessoryView.addSubview(popup)
             panel.accessoryView = customAccessoryView
             
             hasSubView = true;
+        }
+    }
+    
+    /// 文字列で渡された拡張子群をUTTypeに変換
+    /// allowedFileTypes ではなく allowedContentTypes を利用するため。
+    ///  - Parameters:
+    ///      - ext: 拡張子文字列
+    ///  - Returns:
+    ///      - UTTypeに変換後の配列。nilなら任意を意味する
+    private func createContentType(extensitons: [String]?) -> [UTType]? {
+        if (extensitons == nil) {
+            return nil
+        }
+        
+        var result: [UTType] = []
+        for ext in extensitons! {
+            if (ext != "") {
+                let type = UTType(tag: ext, tagClass: .filenameExtension, conformingTo: nil)
+                if (type != nil) {
+                    result.append(type!)
+                }
+            }
+        }
+        if (result.count > 0) {
+            return result
+        } else {
+            return nil
         }
     }
     
@@ -82,7 +112,7 @@ class CustomPanelHelper {
                 // "*" があれば拡張子指定なし（全てのファイル）とする
                 self.addFileType(
                     title: array.first!,
-                    ext: (array.contains("*") ? nil : Array(array.dropFirst()))
+                    extensions: (array.contains("*") ? nil : Array(array.dropFirst()))
                 )
             }
         }
@@ -90,6 +120,19 @@ class CustomPanelHelper {
     
     /// Apply a file type filter
     @objc func onFileTypeChanged(_ sender: Any?) {
-        panel.allowedFileTypes = extArray[popup.indexOfSelectedItem]
+        if #available(macOS 11.0, *) {
+            let type = extUTTypes[popup.indexOfSelectedItem]
+            if (type == nil) {
+                // ファイルタイプ指定が nil なら、任意の種類を許可する
+                panel.allowsOtherFileTypes = true
+                panel.allowedContentTypes = []
+            } else {
+                // ファイルタイプ指定があればそれのみ許可とする
+                panel.allowsOtherFileTypes = false
+                panel.allowedContentTypes = type!
+            }
+        } else {
+            panel.allowedFileTypes = extArray[popup.indexOfSelectedItem]
+        }
     }
 }
