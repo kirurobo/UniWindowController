@@ -80,7 +80,7 @@ func getOpenFileNames() -> String {
 }
 
 struct ContentView: View {
-    @State private var messageText = "Window"
+    @State private var messageText = "Get all windows"
     @State private var outputText = ""
     @State private var window: NSWindow?
 
@@ -131,7 +131,7 @@ struct ContentView: View {
         }){ Text("Save") }
 
 
-        Text("Window info").padding()
+        Text("Windows info").padding()
         
         Button(action: {
 //            if (LibUniWinC.attachMyWindow()) {
@@ -161,8 +161,6 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ContentView()
 }
