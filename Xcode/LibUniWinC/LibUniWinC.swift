@@ -1126,7 +1126,6 @@ public class LibUniWinC {
         // ファイル種類選択欄を追加
         let panelHelper = CustomPanelHelper(panel: panel)
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
-        //panel.allowedFileTypes = fileTypes
 
         // ダイアログを開く
         let result = panel.runModal();
