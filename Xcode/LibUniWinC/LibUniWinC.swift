@@ -9,6 +9,7 @@
 //  https://qiita.com/KRiver1/items/9ecf65759cf1349f56af
 //
 // References:
+// - https://qiita.com/fuziki/items/974f70b663ebfadfb136
 // - https://qiita.com/KRiver1/items/9ecf65759cf1349f56af
 // - http://tatsudoya.blog.fc2.com/blog-entry-244.html
 // - https://qiita.com/mybdesign/items/fe3e390741799c1814ad
@@ -20,7 +21,7 @@ import Cocoa
 
 /// Window controller main logic
 @objcMembers
-public class LibUniWinC : NSObject {
+public class LibUniWinC {
     
     // MARK: - Internal structs and classes
     
@@ -282,8 +283,22 @@ public class LibUniWinC : NSObject {
 
     /// Find my own window
     private static func _findMyWindow() -> NSWindow {
-        let myWindow: NSWindow = NSApp.orderedWindows.first!
-        return myWindow
+        //var myWindow: NSWindow = NSApp.orderedWindows.first!
+        //let myWindow: NSWindow = NSApp.mainWindow ?? NSApp.orderedWindows.first!
+        
+        for window in NSApp.orderedWindows {
+            // キー操作を受け取るウィンドウが見つかれば、それだとする
+            if (window.isKeyWindow) {
+                return window
+            }
+//            print("[DEBUG - orderedWindows]")
+//            print(window.title)
+//            print(window.isKeyWindow)
+//            print(window.isZoomed)
+//            print(window.contentLayoutRect)
+        }
+        // キーウィンドウが見つからなければ先頭とする
+        return NSApp.orderedWindows.first!
     }
 
     /// Detach from the window
@@ -1111,7 +1126,6 @@ public class LibUniWinC : NSObject {
         // ファイル種類選択欄を追加
         let panelHelper = CustomPanelHelper(panel: panel)
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
-        //panel.allowedFileTypes = fileTypes
 
         // ダイアログを開く
         let result = panel.runModal();
@@ -1123,16 +1137,11 @@ public class LibUniWinC : NSObject {
         }
         if (targetWindow != nil) {
             if (state.isTopmost) {
+                // Re-enable always on top
                 targetWindow?.level = NSWindow.Level.popUpMenu
             }
             if (state.isBorderless) {
-                // Re-enable always on top
                 _makeKeyWindow()
-//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
-//                state.isBorderless = false;     // Suppress the callback
-//                setBorderless(isBorderless: false)
-//                state.isBorderless = true;      // Suppress the callback
-//                setBorderless(isBorderless: true)
             }
             targetWindow?.makeKeyAndOrderFront(nil)
         }
@@ -1152,7 +1161,7 @@ public class LibUniWinC : NSObject {
         return String(utf16CodeUnits: textPointer!, count: len)
     }
     
-    /// Call a StringCallback with UTF-16 paramete
+    /// Call a StringCallback with UTF-16 parameter
     /// - Parameters:
     ///   - callback: Registered callback function
     ///   - text: Parrameter as String

@@ -81,4 +81,4 @@ crashlytics-build.properties
 
 
 # for this project
-!/Assets/Kirurobo/UniWindowController/Plugins/Windows/*/*.dll
+!/Assets/Kirurobo/UniWindowController/Plugins/*
