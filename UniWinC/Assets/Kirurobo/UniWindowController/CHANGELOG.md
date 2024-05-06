@@ -8,6 +8,10 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.3] - 2024-05-06
+### Changed
+- Rewrote the .bundle in Swift
+
 ## [v0.9.2] - 2023-09-18
 ### Fixed
 - DllNotFoundException in the Unity Apple Silicon Editor
