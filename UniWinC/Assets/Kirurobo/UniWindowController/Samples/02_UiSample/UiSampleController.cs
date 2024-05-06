@@ -259,8 +259,8 @@ namespace Kirurobo
                         //// NSSavePanel.accessoryView に何か指定すると発生する。
                         //// それが継承された NSOpenPanel では発生しない。
                         // new FilePanel.Filter("Shell script", "sh"),
-                        //new FilePanel.Filter("Log", "log"),
-                        //new FilePanel.Filter("Plain text", "txt"),
+                        // new FilePanel.Filter("Log", "log"),
+                        // new FilePanel.Filter("Plain text", "txt"),
                         // new FilePanel.Filter("All files", "*"),
                     },
                     initialFile = "Test.txt",
