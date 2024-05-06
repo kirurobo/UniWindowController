@@ -111,13 +111,17 @@ struct ContentView: View {
         Button(action: {
             let title = Array("No save is actually performed\0".utf16)
             let filter = Array("Text file (txt)\ttxt\nImages　(png, jpg, tiff)\tpng\tjpg\tjpeg\ttiff\nAll files\t*\n\0".utf16)
+
             title.withUnsafeBufferPointer { (titlePtr: UnsafeBufferPointer<UInt16>) in
                 filter.withUnsafeBufferPointer { (filterPtr: UnsafeBufferPointer<UInt16>) in
                     var settings = LibUniWinC.PanelSettings(
                         structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
                         flags: 0,
                         titleText: titlePtr.baseAddress,
+                        
+                        // M1 macOS 14.4.1 の環境で accessoryView を使うとエラーとなってしまう？
                         filterText: filterPtr.baseAddress,
+                        
                         initialFile: nil,
                         initialDirectory: nil,
                         defaultExt: nil

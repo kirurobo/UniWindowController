@@ -58,7 +58,7 @@ class CustomPanelHelper {
         if (!hasSubView) {
             popup.selectItem(at: 0)
             if #available(macOS 11.0, *) {
-                panel.allowedContentTypes = [.jpeg, .png]
+                panel.allowedContentTypes = (extUTTypes.first ?? nil) ?? []
             } else {
                 panel.allowedFileTypes = extArray.first ?? nil
             }
