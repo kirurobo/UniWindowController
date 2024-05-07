@@ -118,10 +118,7 @@ struct ContentView: View {
                         structSize: Int32(MemoryLayout<LibUniWinC.PanelSettings>.size),
                         flags: 0,
                         titleText: titlePtr.baseAddress,
-                        
-                        // M1 macOS 14.4.1 の環境で accessoryView を使うとエラーとなってしまう？
-                        filterText: filterPtr.baseAddress,
-                        
+                        filterText: filterPtr.baseAddress,                        
                         initialFile: nil,
                         initialDirectory: nil,
                         defaultExt: nil
