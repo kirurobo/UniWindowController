@@ -5,8 +5,11 @@ name: Generate upm branches
 
 on:
   push:
+    branches:
+      - main
     tags:
       - v*
+  workflow_dispatch:
 
 env:
   MAIN_BRANCH: main

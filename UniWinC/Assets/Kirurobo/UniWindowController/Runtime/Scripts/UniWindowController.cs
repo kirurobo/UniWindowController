@@ -15,6 +15,9 @@ using UnityEditor;
 using System.Reflection;
 using UnityEngine.Events;
 #endif
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Kirurobo
 {
@@ -637,7 +640,11 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByOpaquePixel()
         {
+#if ENABLE_INPUT_SYSTEM
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+#elif ENABLE_LEGACY_INPUT_MANAGER
             Vector2 mousePos = Input.mousePosition;
+#endif
 
             // マウス座標を調べる
             if (GetOnOpaquePixel(mousePos))
@@ -701,7 +708,11 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByRaycast()
         {
-            var position = Input.mousePosition;
+#if ENABLE_INPUT_SYSTEM
+            Vector2 position = Mouse.current.position.ReadValue();
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            Vector2 position = Input.mousePosition;
+#endif
             
             // // uGUIの上か否かを判定
             var raycastResults = new List<RaycastResult>();
