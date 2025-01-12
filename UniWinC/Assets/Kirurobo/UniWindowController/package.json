@@ -1,6 +1,6 @@
 {
     "name": "com.ayutaz.uniwinc",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
     "unity": "2022.3",

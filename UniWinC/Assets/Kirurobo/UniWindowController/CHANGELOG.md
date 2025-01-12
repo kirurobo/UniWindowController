@@ -9,6 +9,10 @@ https://keepachangelog.com/ja/1.0.0/
 --->
 
 
+## [v1.0.2] - 2025-01-12
+### Changed
+- fix asmdef reference
+
 ## [v1.0.1] - 2025-01-12
 ### Changed
 - change name package name
