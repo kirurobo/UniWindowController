@@ -23,7 +23,7 @@ https://twitter.com/i/status/1314440790945361920
 * 新しい入力システムのサポート
 
 ## デモ
-[Release のページ](https://github.com/kirurobo/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
+[Release のページ](https://github.com/ayutaz/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
 
 
 ## インストール
@@ -33,7 +33,7 @@ A. Unity Package Manager (UPM) を利用する手順
 1. Unity エディタの [Window]メニューから [Package Manager] を開く
 2. [+] から [Add package from git URL...] を選択  
     ![image](https://user-images.githubusercontent.com/1019117/234160406-f041bda9-262c-4d3f-b41c-45e11c3a94ce.png)
-3. https://github.com/kirurobo/UniWindowController.git#upm を入力して [Add] する  
+3. https://github.com/ayutaz/UniWindowController.git#upm を入力して [Add] する  
     ![image](https://user-images.githubusercontent.com/1019117/234160520-35447b67-dd44-4af6-9c7c-ab71577a4c17.png)
 
 

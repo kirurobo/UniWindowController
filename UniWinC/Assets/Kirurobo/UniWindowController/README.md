@@ -23,7 +23,7 @@ https://twitter.com/i/status/1314440790945361920
 * new input system support
 
 ## Demo
-You can find some sample builts on the [Release page](https://github.com/kirurobo/UniWindowController/releases).
+You can find some sample builts on the [Release page](https://github.com/ayutaz/UniWindowController/releases).
 
 
 ## Installation
@@ -33,7 +33,7 @@ A. Using the Unity Package Manager (UPM)
 1. Open [Package Manager] from the [Window] menu of the Unity Editor.
 2. Select [+] and then select [Add package from git URL...].  
     ![image](https://user-images.githubusercontent.com/1019117/234160406-f041bda9-262c-4d3f-b41c-45e11c3a94ce.png)
-3. Enter https://github.com/kirurobo/UniWindowController.git#upm and [Add].  
+3. Enter https://github.com/ayutaz/UniWindowController.git#upm and [Add].  
     ![image](https://user-images.githubusercontent.com/1019117/234160520-35447b67-dd44-4af6-9c7c-ab71577a4c17.png)
 
 
