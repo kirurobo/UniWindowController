@@ -8,9 +8,19 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+
+## [v1.0.1] - 2025-01-12
+### Changed
+- change name package name
+
+## [v1.0.0] - 2025-01-12
+### Changed
+- Add new input system support
+
 ## [v0.9.3] - 2024-05-06
 ### Changed
 - Rewrote the .bundle in Swift
+
 
 ## [v0.9.2] - 2023-09-18
 ### Fixed

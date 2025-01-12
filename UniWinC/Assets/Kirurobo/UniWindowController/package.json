@@ -1,9 +1,9 @@
 {
-    "name": "com.kirurobo.uniwinc",
-    "version": "0.9.3",
+    "name": "com.ayutaz.uniwinc",
+    "version": "1.0.1",
     "displayName": "UniWindowController",
     "description": "Unified window controller for Mac and Windows",
-    "unity": "2020.3",
+    "unity": "2022.3",
     "unityRelease": "",
     "dependencies": {},
     "keywords": [
@@ -11,9 +11,9 @@
         "macOS"
     ],
   "author": {
-    "name": "Kirurobo",
-    "email": "kirurobo@gmail.com",
-    "url": "https://github.com/kirurobo/uniwindowcontroller"
+    "name": "ayutaz",
+    "email": "rabbiycats77@gmail.com",
+    "url": "https://github.com/ayutaz/uniwindowcontroller"
   },
   "samples": [
     {

@@ -19,6 +19,8 @@ Windows、macOS それぞれではコード例やアセットが見つかりま�
 ![uniwinc](https://user-images.githubusercontent.com/1019117/96070514-5284e580-0edb-11eb-8a4d-d990a0a028a8.gif)  
 https://twitter.com/i/status/1314440790945361920
 
+## 機能追加 from オリジナルリポジトリ
+* 新しい入力システムのサポート
 
 ## デモ
 [Release のページ](https://github.com/kirurobo/UniWindowController/releases)  にビルドしたサンプルを置いてあります。

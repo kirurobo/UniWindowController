@@ -19,6 +19,9 @@ And it allows also accept file and folder drops.
 https://twitter.com/i/status/1314440790945361920
 
 
+## add feature from original
+* new input system support
+
 ## Demo
 You can find some sample builts on the [Release page](https://github.com/kirurobo/UniWindowController/releases).
 
