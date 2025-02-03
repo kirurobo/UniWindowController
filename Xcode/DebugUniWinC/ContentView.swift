@@ -80,7 +80,7 @@ func getOpenFileNames() -> String {
 }
 
 struct ContentView: View {
-    @State private var messageText = "Get all windows"
+    @State private var buttonText = "Get all windows"
     @State private var outputText = ""
     @State private var window: NSWindow?
 
@@ -131,30 +131,39 @@ struct ContentView: View {
             }
         }){ Text("Save") }
 
-
-        Text("Windows info").padding()
+                
+        Text("Window Info.").padding()
         
         Button(action: {
-//            if (LibUniWinC.attachMyWindow()) {
-//                //LibUniWinC.setTransparent(isTransparent: true)
-//                messageText = "IsActive: " + String(LibUniWinC.isActive())
-//            } else {
-//                messageText = "Can't attach"
-//            }
-            
             let dict = getWindowList()
             
-            outputText = String(findWindowNumber(dict: dict, name: "DebugUniWinC"))
+            buttonText = String(findWindowNumber(dict: dict, name: "DebugUniWinC"))
             window = findWindow(dict: dict, name: "DebugUniWinC")
             if (window != nil) {
-                outputText = "Class Name: " + window!.className
+                buttonText = "Attached class: " + window!.className
                 LibUniWinC._attachWindow(window: window!)
+                
+                outputText = "Title : " + window!.title
+                + "\nStyleMask : " +  window!.styleMask.rawValue.description
+                + "\nFrame : " + window!.frame.debugDescription
+                + "\nIsKeyWindow : " + window!.isKeyWindow.description
+                + "\nIsZoomed : " + window!.isZoomed.description
+                + "\nCanHide : " + window!.canHide.description
+                + "\nIsOpaque : " + window!.isOpaque.description
+                + "\nHasShadow : " + window!.hasShadow.description
+                + "\nIsSheet : " + window!.isSheet.description
+                + "\nOcclusionState : " + window!.occlusionState.rawValue.description
+                + "\n\n"
+                
+                window!.hasShadow = false
+
             } else {
-                outputText = "Window is nil"
+                buttonText = "Current window is nil"
+                outputText = ""
             }
-            messageText = outputText
-            outputText = toString(dict: dict) + getAllWindows()
-        }){ Text(messageText) }
+
+            outputText += toString(dict: dict) + getAllWindows()
+        }){ Text(buttonText) }
         
         ScrollView([.vertical, .horizontal]) {
             Text(outputText)
