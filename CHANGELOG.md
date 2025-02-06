@@ -8,6 +8,14 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.4] - 2025-02-06
+### Changed
+- Support New Input System.
+### Fixed
+- Remember main camera's clear flags and background color before applying automatic camera background switch.
+- To prevent errors on macOS, the save dialogue no longer displays a file type drop-down.
+- Fixed a crash when setting the window to borderless on macOS if the screen was initially in full screen mode.
+
 ## [v0.9.3] - 2024-05-06
 ### Changed
 - Rewrote the .bundle in Swift
