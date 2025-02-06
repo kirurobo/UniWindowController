@@ -555,19 +555,30 @@ public class LibUniWinC {
     ///   - isBorderless: 枠なしにするか
     private static func _setWindowBorderless(window: NSWindow, isBorderless: Bool) -> Void {
         if (isBorderless) {
+            // 枠なしにした後も残っていたため、枠なしの場合は常に影はオフとする
             window.hasShadow = false
-            window.styleMask = [.borderless]
-            //window.styleMask.insert(.borderless)
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
+            
+            // macOSのフルスクリーンでは、styleMask が 0 (== [.borderless]) であった。
+            // そのため .fullscreen が含まれるかというフラグではフルスクリーンを判別できないよう。
+            // その場合にクラッシュすることを防ぐため、すでに .borderless でないときのみ .borderless にすることにする。
+            if (!window.styleMask.contains(.fullScreen) && (window.styleMask != [.borderless]))  {
+                window.styleMask = [.borderless]
+                
+                if (window.hasTitleBar) {
+                    window.titlebarAppearsTransparent = true
+                    window.titleVisibility = .hidden
+                }
+            }
         } else {
             window.styleMask = orgWindowInfo.styleMask
             if (!orgWindowInfo.styleMask.contains(.borderless)) {
                 // 初期状態で.borderlessだったならばそれは残し、そうでなければ枠なしを解除
                 window.styleMask.remove(.borderless)
             }
-            window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
-            window.titleVisibility = orgWindowInfo.titleVisibility
+            if (window.hasTitleBar) {
+                window.titlebarAppearsTransparent = orgWindowInfo.titlebarAppearsTransparent
+                window.titleVisibility = orgWindowInfo.titleVisibility
+            }
             window.hasShadow = orgWindowInfo.hasShadow
         }
     }
@@ -1237,6 +1248,9 @@ public class LibUniWinC {
             if (targetWindow!.canBecomeMain) { result += 1 }
             if (targetWindow!.canBecomeKey) { result += 2 }
             if (targetWindow!.isKeyWindow) { result += 4 }
+            
+//            // styleMaskの値を調べる
+//            result = Int32(targetWindow!.styleMask.rawValue)
         }
         return result
     }

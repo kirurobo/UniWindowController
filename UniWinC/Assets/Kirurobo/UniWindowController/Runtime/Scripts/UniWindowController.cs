@@ -842,6 +842,13 @@ namespace Kirurobo
             // 透過するならカメラの背景を透明色に変更
             if (transparent)
             {
+                // 透明化される前ならば、現時点のカメラ情報を記憶
+                if (!isTransparent)
+                {
+                    originalCameraClearFlags = currentCamera.clearFlags;
+                    originalCameraBackground = currentCamera.backgroundColor;
+                }
+
                 currentCamera.clearFlags = CameraClearFlags.SolidColor;
                 if (transparentType == TransparentType.ColorKey)
                 {
@@ -865,8 +872,8 @@ namespace Kirurobo
         /// <param name="transparent"></param>
         private void SetTransparent(bool transparent)
         {
-            _isTransparent = transparent;
             SetCameraBackground(transparent);
+            _isTransparent = transparent;
 #if !UNITY_EDITOR
             if (_uniWinCore != null)
             {

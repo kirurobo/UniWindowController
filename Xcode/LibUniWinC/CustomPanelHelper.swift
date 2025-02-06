@@ -65,7 +65,11 @@ class CustomPanelHelper {
             
             customAccessoryView.addSubview(label)
             customAccessoryView.addSubview(popup)
-            panel.accessoryView = customAccessoryView
+            
+            // 2024/05/05 現在、NSSavePanel では accessoryView を設定するとエラーでダイアログを開けない
+            if (panel is NSOpenPanel) {
+                panel.accessoryView = customAccessoryView
+            }
             
             hasSubView = true;
         }
