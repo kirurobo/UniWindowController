@@ -43,9 +43,10 @@ B. UnityPackage を利用する手順
 ## Unity プロジェクトでの利用
 1. Runtime/Prefabs にある `UniWindowController` プレハブをシーンに追加
 2. そこで配置された `UniWindowController` をインスペクターで確認
-	- Player Settings を適切に直す（緑のボタンでまとめて設定が変更されます）
-	- `IsTransparent` 等、設定をお好みに合わせる
+  - Player Settings を適切に直す（緑のボタンでまとめて設定が変更されます）
+  - `IsTransparent` 等、設定をお好みに合わせる
 3. 左ドラッグでウィンドウ自体を動かしたい場合、 Runtime/Prefabs の `DragMoveCanvas` プレハブも追加
+  - 動作には EventSystem が必要です。もしシーンに無ければ UI → Event System を追加してください。
 4. PC / Mac スタンドアローンでビルドする
 5. ビルドしたものを起動
 
