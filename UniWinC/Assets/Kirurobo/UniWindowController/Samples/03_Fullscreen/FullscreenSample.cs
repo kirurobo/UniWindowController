@@ -1,4 +1,5 @@
-﻿/**
+﻿#if !UNITY_WSA
+/**
 * UI controller for the fullscreen sample
 * 
 * Author: Kirurobo http://twitter.com/kirurobo
@@ -299,3 +300,4 @@ namespace Kirurobo
         }
     }
 }
+#endif

@@ -21,6 +21,7 @@ using UnityEngine.InputSystem;
 
 namespace Kirurobo
 {
+#if !UNITY_WSA
     /// @cond DOXYGEN_SHOW_INTERNAL_CLASSES
 
     /// <summary>
@@ -37,12 +38,13 @@ namespace Kirurobo
 
     /// @endcond
 
-
+#endif
     /// <summary>
     /// Unified window controller for Windows / Mac
     /// </summary>
     public class UniWindowController : MonoBehaviour
     {
+#if !UNITY_WSA
         /// <summary>
         /// The same as UniWinCore.TransparentType
         /// </summary>
@@ -81,7 +83,7 @@ namespace Kirurobo
             WallpaperModeEnabled = 64 + 1 + 8,
             WallpaperModeDisabled = 64 + 1,
         };
-
+        
         /// <summary>
         /// Get the current instance of UniWindowController
         /// </summary>
@@ -92,6 +94,11 @@ namespace Kirurobo
         /// Low level class
         /// </summary>
         private UniWinCore _uniWinCore = null;
+
+        /// <summary>
+        /// ヒット処理を強制終了
+        /// </summary>
+        public bool IsForceHitTestStop { get; set; } = false;
 
         /// <summary>
         /// Is this window receives mouse events
@@ -606,7 +613,7 @@ namespace Kirurobo
         /// <returns></returns>
         private IEnumerator HitTestCoroutine()
         {
-            while (Application.isPlaying)
+            while (!IsForceHitTestStop && Application.isPlaying)
             {
                 yield return new WaitForEndOfFrame();
 
@@ -1100,5 +1107,7 @@ namespace Kirurobo
             }
             return 0;
         }
+        
+#endif
     }
 }

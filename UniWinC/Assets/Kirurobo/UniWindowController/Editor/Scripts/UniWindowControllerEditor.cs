@@ -1,3 +1,4 @@
+#if !UNITY_WSA
 /*
  * UniWindowControllerEditor.cs
  * 
@@ -379,4 +380,5 @@ namespace Kirurobo
         }
     }
 }
+#endif
 #endif

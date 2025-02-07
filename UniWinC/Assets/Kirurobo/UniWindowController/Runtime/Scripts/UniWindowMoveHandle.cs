@@ -1,4 +1,5 @@
-﻿/*
+﻿#if !UNITY_WSA
+/*
  * UniWindowDragMove.cs
  * 
  * Author: Kirurobo http://twitter.com/kirurobo
@@ -179,3 +180,4 @@ namespace  Kirurobo
         }
     }
 }
+#endif

@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public static class PackageExporter
 {
-    private const string RootDirectory = "Assets/Kirurobo/UniWindowController/Runtime";
+    private const string RootDirectory = "Assets/Kirurobo/UniWindowController/";
     private const string FileName = "UniWindowController";
 
     /// <summary>

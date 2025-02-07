@@ -1,0 +1,63 @@
+name: Release-test
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v.*'
+env:
+  FILE_NAME: "UniWindowController.unitypackage"
+  EXPORT_FILE: "./UniWindowController.unitypackage"
+
+jobs:
+
+  # パッケージ出力
+  create-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      # キャッシュ設定
+      - uses: actions/cache@v4.2.0
+        with:
+          path: Library
+          key: Library-UnityPackageTest-StandaloneLinux64
+          restore-keys: |
+            Library-UnityPackageTest-
+            Library-
+      
+      # 関数を叩いてUnityPackage作成
+      - name: Run the build for StandaloneWindows64
+        uses: game-ci/unity-builder@v4.3.0
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: StandaloneLinux64
+          unityVersion: '6000.0.31f1'
+          buildMethod: PackageExporter.Export
+
+      # Releaseを切る
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "${{ env.VERSION_NAME }}"
+          body: "https://github.com/kameffee/UnityPackageTest.git#${{ env.VERSION_NAME }}"
+          draft: true
+          prerelease: false
+
+      # アップロード
+      - name: Upload UnityPackage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: "${{ env.EXPORT_FILE }}"
+          asset_name: "${{ env.FILE_NAME }}"
+          asset_content_type: application/octet-stream

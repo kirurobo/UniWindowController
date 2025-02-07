@@ -1,3 +1,5 @@
+#if !UNITY_WSA
+
 /**
  * A sample script of UniWindowContoller
  * 
@@ -577,3 +579,4 @@ namespace Kirurobo
         }
     }
 }
+#endif

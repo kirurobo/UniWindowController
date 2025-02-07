@@ -21,6 +21,7 @@ https://twitter.com/i/status/1314440790945361920
 
 ## add feature from original
 * new input system support
+* exclude UWP build
 
 ## Demo
 You can find some sample builts on the [Release page](https://github.com/ayutaz/UniWindowController/releases).

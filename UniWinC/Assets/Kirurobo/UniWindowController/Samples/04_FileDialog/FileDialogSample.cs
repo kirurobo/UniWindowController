@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if !UNITY_WSA
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -95,3 +96,4 @@ namespace Kirurobo
         }
     }
 }
+#endif

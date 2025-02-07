@@ -21,6 +21,7 @@ https://twitter.com/i/status/1314440790945361920
 
 ## 機能追加 from オリジナルリポジトリ
 * 新しい入力システムのサポート
+* UWPのビルド除外
 
 ## デモ
 [Release のページ](https://github.com/ayutaz/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
