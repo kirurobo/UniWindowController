@@ -1,9 +1,9 @@
 {
-    "name": "Unity.UniWindowController.Editor",
+    "name": "Kirurobo.UniWindowController.Editor",
+    "rootNamespace": "",
     "references": [
-        "Unity.UniWindowController"
+        "GUID:785f71526b4175240bb8e068347cab84"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -12,5 +12,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
