@@ -443,6 +443,18 @@ namespace Kirurobo
         
         void Start()
         {
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Vector2 mousePos = Input.mousePosition;
+            Debug.Log("Mouse " + mousePos);
+#elif ENABLE_INPUT_SYSTEM
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Mouse.current.QueryRunInBackground();
+            Debug.Log("Run In Background " + Mouse.current.canRunInBackground);
+#else
+            Debug.Log("Mouse position is not available.");
+#endif
+
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
 
@@ -495,6 +507,16 @@ namespace Kirurobo
 
             // キー、マウス操作の下ウィンドウへの透過状態を更新
             UpdateClickThrough();
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Vector2 mousePos = Input.mousePosition;
+            Debug.Log("Mouse " + mousePos);
+#elif ENABLE_INPUT_SYSTEM
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Debug.Log("NEW Mouse " + mousePos);
+#else
+            Debug.Log("Mouse position is not available.");
+#endif
         }
 
         /// <summary>
@@ -640,10 +662,11 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByOpaquePixel()
         {
-#if ENABLE_INPUT_SYSTEM
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-#elif ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_LEGACY_INPUT_MANAGER
             Vector2 mousePos = Input.mousePosition;
+#elif ENABLE_INPUT_SYSTEM
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+#else
 #endif
 
             // マウス座標を調べる
@@ -708,10 +731,10 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByRaycast()
         {
-#if ENABLE_INPUT_SYSTEM
-            Vector2 position = Mouse.current.position.ReadValue();
-#elif ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_LEGACY_INPUT_MANAGER
             Vector2 position = Input.mousePosition;
+#elif ENABLE_INPUT_SYSTEM
+            Vector2 position = Mouse.current.position.ReadValue();
 #endif
             
             // // uGUIの上か否かを判定
