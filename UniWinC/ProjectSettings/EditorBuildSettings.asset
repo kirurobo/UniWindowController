@@ -5,19 +5,21 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Kirurobo/UniWindowController/Samples/00_Menu/SampleMenu.unity
     guid: bca881472b6085049ad37ab0ad8fe61e
-  - enabled: 1
+  - enabled: 0
     path: Assets/Kirurobo/UniWindowController/Samples/01_SimpleSample/SimpleSample.unity
     guid: b650a883366376446b7db29169c59420
   - enabled: 1
     path: Assets/Kirurobo/UniWindowController/Samples/02_UiSample/UiSample.unity
     guid: c4f4adeee10bff845b320d93a6b82f54
-  - enabled: 1
+  - enabled: 0
     path: Assets/Kirurobo/UniWindowController/Samples/03_Fullscreen/FullscreenSample.unity
     guid: cc8dc9342a8c4436397f75a2389ffc1a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Kirurobo/UniWindowController/Samples/04_FileDialog/FileDialogSample.unity
     guid: 48a0f5141a4d64ffd86a58d24b841e0c
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: dc660a2a123d34488abe1d07904475f4,
+      type: 2}

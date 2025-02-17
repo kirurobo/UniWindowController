@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
+#if ENABLE_LEGACY_INPUT_MANAGER
+#elif ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 

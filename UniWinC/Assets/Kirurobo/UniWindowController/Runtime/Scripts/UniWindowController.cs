@@ -445,11 +445,9 @@ namespace Kirurobo
         {
 
 #if ENABLE_LEGACY_INPUT_MANAGER
-            Vector2 mousePos = Input.mousePosition;
-            Debug.Log("Mouse " + mousePos);
+            Debug.Log("Use legacy input manager.");
 #elif ENABLE_INPUT_SYSTEM
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-            Mouse.current.QueryRunInBackground();
+            Debug.Log("Use new input system.");
             Debug.Log("Run In Background " + Mouse.current.canRunInBackground);
 #else
             Debug.Log("Mouse position is not available.");
@@ -507,16 +505,6 @@ namespace Kirurobo
 
             // キー、マウス操作の下ウィンドウへの透過状態を更新
             UpdateClickThrough();
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            Vector2 mousePos = Input.mousePosition;
-            Debug.Log("Mouse " + mousePos);
-#elif ENABLE_INPUT_SYSTEM
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-            Debug.Log("NEW Mouse " + mousePos);
-#else
-            Debug.Log("Mouse position is not available.");
-#endif
         }
 
         /// <summary>
