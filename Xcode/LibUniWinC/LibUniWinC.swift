@@ -852,6 +852,33 @@ public class LibUniWinC {
         height.pointee = Float32(currentSize.height)
         return true
     }
+    
+    /// ウィンドウのクライアント領域位置・サイズを取得
+    /// - Parameters:
+    ///    - x: ウィンドウ左からのx座標
+    ///    - y: ウィンドウ下からのy座標
+    ///    - width: 幅
+    ///    - height: 高さ
+    /// - Returns: 成功すれば true
+    @objc public static func getClientRectangle(
+        x: UnsafeMutablePointer<Float32>,
+        y: UnsafeMutablePointer<Float32>,
+        width: UnsafeMutablePointer<Float32>,
+        height: UnsafeMutablePointer<Float32>) -> Bool {
+        if (targetWindow == nil) {
+            x.pointee = 0;
+            y.pointee = 0;
+            width.pointee = 0;
+            height.pointee = 0;
+            return false
+        }
+        let rect = targetWindow!.contentRect(forFrameRect: targetWindow!.frame)
+        x.pointee = Float32(rect.minX)
+        y.pointee = Float32(rect.minY)
+        width.pointee = Float32(rect.width)
+        height.pointee = Float32(rect.height)
+        return true
+    }
 
     @objc public static func registerWindowStyleChangedCallback(callback: @escaping intCallback) -> Bool {
         windowStyleChangedCallback = callback
