@@ -336,10 +336,12 @@ namespace Kirurobo
             if (uniwinc)
             {
                 var winPos = uniwinc.windowPosition;
+                var curPos = uniwinc.GetClientCursorPosition();
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
+                    + "\nScr. Cur.:" + curPos
                     + "\nUnity Cur.:" + (Vector2)GetMousePosition()
                     );
                 ShowClientSize();

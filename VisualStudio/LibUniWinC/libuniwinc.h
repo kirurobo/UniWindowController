@@ -106,6 +106,7 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetPosition(float* x, float* y);
 UNIWINC_EXPORT BOOL UNIWINC_API SetSize(const float width, const float height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetSize(float* width, float* height);
 UNIWINC_EXPORT BOOL UNIWINC_API GetClientSize(float* width, float* height);
+UNIWINC_EXPORT BOOL UNIWINC_API GetClientRectangle(float* x, float* y, float* width, float* height);
 UNIWINC_EXPORT INT32 UNIWINC_API GetCurrentMonitor();
 
 // Event handling

@@ -157,14 +157,20 @@ namespace TestLibUniWinC
             var myPid = System.Diagnostics.Process.GetCurrentProcess().Id;
             //var clientSize = this.ClientSize;
             var clientSize = uniwinc.GetClientSize();
+            var clientRect = uniwinc.GetClientRectangle();
 
             string message = String.Format(
-                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nhWnd {6:X}\r\nPID {9}\r\n",
+                "Pos. {0}, {1}\r\nSize {2}, {3}\r\nClient {4}, {5}\r\nClient rect {6}, {7}, {8}, {9}\r\nhWnd {10:X}\r\nPID {11}\r\n",
                 pos.x, pos.y, size.x, size.y, clientSize.x, clientSize.y,
-                "", this.Handle.ToInt32(),
-                "", myPid
+                clientRect.x, clientRect.y, clientRect.width, clientRect.height,
+                this.Handle.ToInt32(), myPid
                 );
 
+            var rect = this.ClientRectangle;
+            message += String.Format(
+                "Form client rect: {0}, {1}, {2}, {3}\r\n",
+                rect.X, rect.Y, rect.Width, rect.Height
+                );
 
             Console.WriteLine(message);
             textBoxMessage.Text = message;

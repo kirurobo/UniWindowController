@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using AOT;
 using UnityEngine;
 using System.Text;
+using System.Drawing;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -141,7 +142,11 @@ namespace Kirurobo
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool GetClientSize(out float x, out float y);
+            public static extern bool GetClientSize(out float width, out float height);
+
+            [DllImport("LibUniWinC")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool GetClientRectangle(out float x, out float y, out float width, out float height);
 
             [DllImport("LibUniWinC")]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -627,6 +632,18 @@ namespace Kirurobo
             Vector2 size = Vector2.zero;
             LibUniWinC.GetClientSize(out size.x, out size.y);
             return size;
+        }
+
+        /// <summary>
+        /// Get the client area ize.
+        /// </summary>
+        /// <returns>x is width and y is height</returns>
+        public Rect GetClientRectangle()
+        {
+            Vector2 pos = Vector2.zero;
+            Vector2 size = Vector2.zero;
+            LibUniWinC.GetClientRectangle(out pos.x, out pos.y, out size.x, out size.y);
+            return new Rect(pos.x, pos.y, size.x, size.y);
         }
 
         #endregion
