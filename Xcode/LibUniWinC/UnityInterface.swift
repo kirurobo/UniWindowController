@@ -131,6 +131,11 @@ public func GetClientSize(width: UnsafeMutablePointer<Float32>, height: UnsafeMu
     return LibUniWinC.getClientSize(width:width, height:height)
 }
 
+@_cdecl("GetClientRectangle")
+public func GetClientRectangle(x: UnsafeMutablePointer<Float32>, y: UnsafeMutablePointer<Float32>, width: UnsafeMutablePointer<Float32>, height: UnsafeMutablePointer<Float32>) -> Bool {
+    return LibUniWinC.getClientRectangle(x: x, y: y, width:width, height:height)
+}
+
 @_cdecl("GetCurrentMonitor")
 public func GetCurrentMonitor() -> Int32 {
     return LibUniWinC.getCurrentMonitor()
