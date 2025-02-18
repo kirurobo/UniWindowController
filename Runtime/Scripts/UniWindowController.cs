@@ -443,15 +443,15 @@ namespace Kirurobo
         
         void Start()
         {
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            Debug.Log("Use legacy input manager.");
-#elif ENABLE_INPUT_SYSTEM
-            Debug.Log("Use new input system.");
-            Debug.Log("Run In Background " + Mouse.current.canRunInBackground);
-#else
-            Debug.Log("Mouse position is not available.");
-#endif
+            //// New Input System で支障があったため検証用に出力
+// #if ENABLE_LEGACY_INPUT_MANAGER
+//             Debug.Log("Use legacy input manager.");
+// #elif ENABLE_INPUT_SYSTEM
+//             Debug.Log("Use new input system.");
+//             Debug.Log("Run In Background " + Mouse.current.canRunInBackground);
+// #else
+//             Debug.Log("Mouse position is not available.");
+// #endif
 
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
@@ -648,14 +648,12 @@ namespace Kirurobo
         /// <summary>
         /// 画面上のマウス座標を Unity のスクリーン座標系に換算して取得
         /// </summary>
-        [Obsolete]
-        public Vector2 GetClientCursorPosition()
+        private Vector2 GetClientCursorPosition()
         {
 
             // New Input System ではフォーカスが無い場合にマウス座標が取得できないため独自に計算する
             Vector2 mousePos = UniWinCore.GetCursorPosition();
             Vector2 winPos = windowPosition;
-            Vector2 winSize = windowSize;
             Rect clientRect = _uniWinCore.GetClientRectangle();
             Vector2 unityPos = new Vector2(
                 mousePos.x - winPos.x - clientRect.x,
@@ -676,10 +674,14 @@ namespace Kirurobo
 
             // エディターの場合は常にUnityの機能でマウス座標を取得
             //   Gameウィンドウ単体ではなかったり、Scaleが異なる場合があるため単純計算では求まらない
-#if UNITY_EDITOR && ENABLE_LEGACY_INPUT_MANAGER
+#if UNITY_EDITOR 
+    #if ENABLE_LEGACY_INPUT_MANAGER
             return Input.mousePosition;
-#elif UNITY_EDITOR && ENABLE_INPUT_SYSTEM
+    #elif UNITY_EDITOR && ENABLE_INPUT_SYSTEM
             return Mouse.current.position.ReadValue();
+    #else
+            return unityPos;
+    #endif
 #else
             return unityPos;
 #endif

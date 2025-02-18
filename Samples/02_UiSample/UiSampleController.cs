@@ -9,11 +9,6 @@ using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
-#if ENABLE_LEGACY_INPUT_MANAGER
-// Don't use InputSystem in this script to prevent TouchPhase duplication
-#elif ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace Kirurobo
 {
@@ -163,16 +158,16 @@ namespace Kirurobo
             }
 
             // マウス右ボタンクリックでメニューを表示させる。閾値以下の移動ならクリックとみなす。
-            if (GetMouseButtonDown(1))
+            if (InputProxy.GetMouseButtonDown(1))
             {
-                lastMousePosition = GetMousePosition();
+                lastMousePosition = InputProxy.mousePosition;
                 ResetTouchDuration();
             }
-            if (GetMouseButton(1))
+            if (InputProxy.GetMouseButton(1))
             {
-                mouseMoveSS += (GetMousePosition() - lastMousePosition).sqrMagnitude;
+                mouseMoveSS += (InputProxy.mousePosition - lastMousePosition).sqrMagnitude;
             }
-            if (GetMouseButtonUp(1))
+            if (InputProxy.GetMouseButtonUp(1))
             {
                 if (mouseMoveSS < mouseMoveSSThreshold)
                 {
@@ -189,7 +184,7 @@ namespace Kirurobo
                 Touch touch = Input.GetTouch(0);
                 if (touch.phase == TouchPhase.Began)
                 {
-                    lastMousePosition = GetMousePosition();
+                    lastMousePosition = Input.mousePosition;
                     ResetTouchDuration();
                 }
                 if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
@@ -216,25 +211,25 @@ namespace Kirurobo
             if (uniwinc)
             {
                 // Toggle transparent
-                if (GetKeyUp("t"))
+                if (InputProxy.GetKeyUp("t"))
                 {
                     uniwinc.isTransparent = !uniwinc.isTransparent;
                 }
 
                 // Toggle always on the front
-                if (GetKeyUp("f"))
+                if (InputProxy.GetKeyUp("f"))
                 {
                     uniwinc.isTopmost = !uniwinc.isTopmost;
                 }
 
                 // Toggle always on the bottom
-                if (GetKeyUp("b"))
+                if (InputProxy.GetKeyUp("b"))
                 {
                     uniwinc.isBottommost = !uniwinc.isBottommost;
                 }
 
                 // Toggle zoom
-                if (GetKeyUp("z"))
+                if (InputProxy.GetKeyUp("z"))
                 {
                     uniwinc.isZoomed = !uniwinc.isZoomed;
                 }
@@ -242,7 +237,7 @@ namespace Kirurobo
 
 
             // Test for OpenFilePanel
-            if (GetKeyUp("o"))
+            if (InputProxy.GetKeyUp("o"))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
@@ -259,7 +254,7 @@ namespace Kirurobo
             }
 
             // Test for SaveFilePanel
-            if (GetKeyUp("s"))
+            if (InputProxy.GetKeyUp("s"))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
@@ -281,7 +276,7 @@ namespace Kirurobo
             }
 
             // Quit or stop playing when pressed [ESC]
-            if (GetKeyUp("escape"))
+            if (InputProxy.GetKeyUp("escape"))
             {
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
@@ -336,13 +331,13 @@ namespace Kirurobo
             if (uniwinc)
             {
                 var winPos = uniwinc.windowPosition;
-                var curPos = uniwinc.GetClientCursorPosition();
+                //var curPos = uniwinc.GetClientCursorPosition();
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
-                    + "\nScr. Cur.:" + curPos
-                    + "\nUnity Cur.:" + (Vector2)GetMousePosition()
+                    //+ "\nScr. Cur.:" + curPos
+                    + "\nUnity Cur.:" + (Vector2)InputProxy.mousePosition
                     );
                 ShowClientSize();
             }
@@ -597,104 +592,6 @@ namespace Kirurobo
             {
                 Debug.Log(text);
             }
-        }
-
-        /// <summary>
-        /// Input System の利用に合わせてキーアップを取得
-        /// </summary>
-        /// <returns></returns>
-        private bool GetKeyUp(String key)
-        {
-            #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyUp(key);
-            #elif ENABLE_INPUT_SYSTEM
-            // 簡易的な実装。keyが１文字で、かつアルファベットか数字にのみ対応
-            if (key.Length == 1) {
-                Key k = Key.None;
-                char c = key[0];
-                if (c >= 'A' && c <= 'Z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'A'));
-                if (c >= 'a' && c <= 'z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'a'));
-                if (c >= '0' && c <= '9') k = (Key)Enum.ToObject(typeof(Key), (int)Key.Digit0 + (int)(c - '0'));
-                return Keyboard.current[k].wasReleasedThisFrame;
-            } else if (key == "escape") {
-                // 1文字以外は escape のみ対応
-                return Keyboard.current.escapeKey.wasReleasedThisFrame;
-            }
-            return false;
-            #else
-            return false;
-            #endif
-        }
-
-        /// <summary>
-        /// Input System の利用に合わせてマウス座標を取得
-        /// </summary>
-        /// <returns></returns>
-        private Vector3 GetMousePosition()
-        {
-            #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.mousePosition;
-            #elif ENABLE_INPUT_SYSTEM
-            return Mouse.current.position.ReadValue();
-            #else
-            return Vector2.zero;
-            #endif
-        }
-
-        /// <summary>
-        /// マウスボタンが現在押されているか判定
-        /// </summary>
-        /// <param name="button"></param>
-        /// <returns></returns>
-        private bool GetMouseButton(int button)
-        {
-            #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetMouseButton(button);
-            #elif ENABLE_INPUT_SYSTEM
-            if (button == 0) return Mouse.current.leftButton.isPressed;
-            if (button == 1) return Mouse.current.rightButton.isPressed;
-            if (button == 2) return Mouse.current.middleButton.isPressed;
-            return false;
-            #else
-            return false;
-            #endif
-        }
-
-        /// <summary>
-        /// このフレームでマウスボタンが押されたか判定
-        /// </summary>
-        /// <param name="button"></param>
-        /// <returns></returns>
-        private bool GetMouseButtonDown(int button)
-        {
-            #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetMouseButtonDown(button);
-            #elif ENABLE_INPUT_SYSTEM
-            if (button == 0) return Mouse.current.leftButton.wasPressedThisFrame;
-            if (button == 1) return Mouse.current.rightButton.wasPressedThisFrame;
-            if (button == 2) return Mouse.current.middleButton.wasPressedThisFrame;
-            return false;
-            #else
-            return false;
-            #endif
-        }
-
-        /// <summary>
-        /// このフレームでマウスボタンが離されたか判定
-        /// </summary>
-        /// <param name="button"></param>
-        /// <returns></returns>
-        private bool GetMouseButtonUp(int button) {
-            #if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetMouseButtonUp(button);
-            #elif ENABLE_INPUT_SYSTEM
-            if (button == 0) return Mouse.current.leftButton.wasReleasedThisFrame;
-            if (button == 1) return Mouse.current.rightButton.wasReleasedThisFrame;
-            if (button == 2) return Mouse.current.middleButton.wasReleasedThisFrame;
-            return false;
-            #else
-            return false;
-            #endif
         }
     }
 }
