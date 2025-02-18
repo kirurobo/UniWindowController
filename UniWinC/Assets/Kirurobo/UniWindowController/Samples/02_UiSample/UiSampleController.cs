@@ -607,14 +607,16 @@ namespace Kirurobo
             return Input.GetKeyUp(key);
             #elif ENABLE_INPUT_SYSTEM
             // 簡易的な実装。keyが１文字で、かつアルファベットか数字にのみ対応
-            if (key.Length == 1)
-            {
+            if (key.Length == 1) {
                 Key k = Key.None;
                 char c = key[0];
                 if (c >= 'A' && c <= 'Z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'A'));
                 if (c >= 'a' && c <= 'z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'a'));
                 if (c >= '0' && c <= '9') k = (Key)Enum.ToObject(typeof(Key), (int)Key.Digit0 + (int)(c - '0'));
                 return Keyboard.current[k].wasReleasedThisFrame;
+            } else if (key == "escape") {
+                // 1文字以外は escape のみ対応
+                return Keyboard.current.escapeKey.wasReleasedThisFrame;
             }
             return false;
             #else
