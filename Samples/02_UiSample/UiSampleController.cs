@@ -29,11 +29,12 @@ namespace Kirurobo
         private float mouseMoveSS = 0f;           // Sum of mouse trajectory squares. [px^2]
         private float mouseMoveSSThreshold = 36f; // Click (not dragging) threshold. [px^2]
         private Vector3 lastMousePosition;        // Right clicked position.
-        private float touchDuration = 0f;
-        private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
         private float lastEventOccurredTime = -5f;     // Timestamp the last event occurred [s]
         private float eventMessageTimeout = 1f;        // Show event message while this period [s]
-
+#if ENABLE_LEGACY_INPUT_MANAGER
+        private float touchDuration = 0f;
+        private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
+#endif
         public Toggle transparentToggle;
         public Slider alphaSlider;
         public Toggle topmostToggle;
@@ -165,7 +166,7 @@ namespace Kirurobo
             if (GetMouseButtonDown(1))
             {
                 lastMousePosition = GetMousePosition();
-                touchDuration = 0f;
+                ResetTouchDuration();
             }
             if (GetMouseButton(1))
             {
@@ -178,7 +179,7 @@ namespace Kirurobo
                     ShowMenu(lastMousePosition);
                 }
                 mouseMoveSS = 0f;
-                touchDuration = 0f;
+                ResetTouchDuration();
             }
             
             #if ENABLE_LEGACY_INPUT_MANAGER
@@ -189,7 +190,7 @@ namespace Kirurobo
                 if (touch.phase == TouchPhase.Began)
                 {
                     lastMousePosition = GetMousePosition();
-                    touchDuration = 0f;
+                    ResetTouchDuration();
                 }
                 if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
                 {
@@ -203,9 +204,12 @@ namespace Kirurobo
                         ShowMenu(lastMousePosition);
                     }
                     mouseMoveSS = 0f;
-                    touchDuration = 0f;
+                    ResetTouchDuration();
                 }
             }
+            #elif ENABLE_INPUT_SYSTEM
+            // 現状、New Input System ではタッチ対応は無し
+            // EnhancedTouch は InputAction と併用不可？
             #endif
 
             // キーでも設定変更
@@ -285,6 +289,16 @@ namespace Kirurobo
                 Application.Quit();
 #endif
             }
+        }
+
+        /// <summary>
+        /// タッチされ続けている時間の記録をリセット
+        /// 警告が出ないように Legacy Input Manager でのみ処理している
+        /// </summary>
+        void ResetTouchDuration() {
+            #if ENABLE_LEGACY_INPUT_MANAGER
+            touchDuration = 0f;
+            #endif
         }
 
         /// <summary>
