@@ -12,15 +12,15 @@ namespace Kirurobo {
     /// Legacy InputManager と InputSystem の両方に取り急ぎ対応するために用意したクラスです
     /// </summary>
 #if ENABLE_LEGACY_INPUT_MANAGER
-    public class InputModule : UnityEngine.EventSystems.StandaloneInputModule
+    public class InputModuleProxy : UnityEngine.EventSystems.StandaloneInputModule
     {
     }
 #elif ENABLE_INPUT_SYSTEM
-    public class InputModule : UnityEngine.InputSystem.UI.InputSystemUIInputModule
+    public class InputModuleProxy : UnityEngine.InputSystem.UI.InputSystemUIInputModule
     {
     }
 #else
-    public class InputModule
+    public class InputModuleProxy
     {
     }
 #endif

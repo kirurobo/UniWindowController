@@ -8,9 +8,7 @@
  */
 
 using System;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Kirurobo
 {
@@ -78,7 +76,6 @@ namespace Kirurobo
         void Update()
         {
             if (!currentCamera.isActiveAndEnabled) return;
-            if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
             {
                 HandleMouse();
             }
@@ -105,7 +102,7 @@ namespace Kirurobo
                 currentCamera = Camera.main;
             }
 
-            lastMousePosition = Input.mousePosition;
+            lastMousePosition = InputProxy.mousePosition;
         }
 
         /// <summary>
@@ -147,9 +144,9 @@ namespace Kirurobo
 
         internal virtual void HandleMouse()
         {
-            Vector3 mousePos = Input.mousePosition;
+            Vector3 mousePos = InputProxy.mousePosition;
             
-            if (Input.GetMouseButtonDown(0))
+            if (InputProxy.GetMouseButtonDown(0))
             {
                 // 左ボタン(0)ドラッグでは並進移動を行う
                 if (dragState == DragState.None && IsHit(mousePos))
@@ -166,7 +163,7 @@ namespace Kirurobo
                     lastMousePosition = mousePos;        // ドラッグ開始時にはリセット
                 } 
             }
-            else if (Input.GetMouseButtonDown(1))
+            else if (InputProxy.GetMouseButtonDown(1))
             {
                 // 右ボタン(1)ドラッグでは回転を行う
                 if (dragState == DragState.None && IsHit(mousePos))
@@ -180,7 +177,7 @@ namespace Kirurobo
             if (dragState == DragState.Rotating)
             {
                 // ボタンが押されている間のみ操作
-                if (Input.GetMouseButton(1))
+                if (InputProxy.GetMouseButton(1))
                 {
                     // ドラッグで回転
                     if ((axes & RotationAxes.Yaw) > RotationAxes.None)
@@ -208,7 +205,7 @@ namespace Kirurobo
             if (dragState == DragState.Translating)
             {
                 // ボタンが押されている間のみ操作
-                if (Input.GetMouseButton(0))
+                if (InputProxy.GetMouseButton(0))
                 {
                     // 画面範囲に制限する
                     if (confineTranslation)
@@ -232,6 +229,8 @@ namespace Kirurobo
                 }
             }
             
+            // ひとまず Legacy Input Manager でのみホイール操作を受け付けるものとしてリリース
+            #if ENABLE_LEGACY_INPUT_MANAGER
             // ホイールが回転されれば、拡大縮小
             if (!Mathf.Approximately(Input.GetAxis("Mouse ScrollWheel"), 0f) && IsHit(mousePos))
             {
@@ -244,6 +243,7 @@ namespace Kirurobo
 
                 UpdateTransform();
             }
+            #endif
                     
             lastMousePosition = mousePos;
         }
