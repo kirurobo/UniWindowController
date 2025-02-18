@@ -5,8 +5,7 @@ name: Generate upm branches
 
 on:
   push:
-    branches:
-      - main
+    # main ブランチが更新されたときではなく、'v*' というタグが push されたときにのみ実行させる
     tags:
       - v*
   workflow_dispatch:

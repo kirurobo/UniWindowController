@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
+#if ENABLE_LEGACY_INPUT_MANAGER
+#elif ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 
@@ -150,12 +151,14 @@ namespace  Kirurobo
             if (eventData.button != PointerEventData.InputButton.Left) return;
 
             // Return if any modifier key is pressed
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current[Key.LeftShift].isPressed || Keyboard.current[Key.RightShift].isPressed || Keyboard.current[Key.LeftCtrl].isPressed || Keyboard.current[Key.RightCtrl].isPressed || Keyboard.current[Key.LeftAlt].isPressed || Keyboard.current[Key.RightAlt].isPressed) return;
-#elif ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
-                || Input.GetKey(KeyCode.LeftCtrl) || Input.GetKey(KeyCode.RightCtrl)
+                || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
                 || Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) return;
+#elif ENABLE_INPUT_SYSTEM
+            if (Keyboard.current[Key.LeftShift].isPressed || Keyboard.current[Key.RightShift].isPressed
+                || Keyboard.current[Key.LeftCtrl].isPressed || Keyboard.current[Key.RightCtrl].isPressed
+                || Keyboard.current[Key.LeftAlt].isPressed || Keyboard.current[Key.RightAlt].isPressed) return;
 #endif
 
             // フルスクリーンならウィンドウ移動は行わない

@@ -83,16 +83,16 @@ namespace Kirurobo
         {
             // Show the context menu when right clicked.
             // If mouse movement is closer than a threshold, it is considered a click
-            if (Input.GetMouseButtonDown(1))
+            if (InputProxy.GetMouseButtonDown(1))
             {
-                lastMousePosition = Input.mousePosition;
+                lastMousePosition = InputProxy.mousePosition;
                 touchDuration = 0f;
             }
-            if (Input.GetMouseButton(1))
+            if (InputProxy.GetMouseButton(1))
             {
-                mouseMoveSS += (Input.mousePosition - lastMousePosition).sqrMagnitude;
+                mouseMoveSS += (InputProxy.mousePosition - lastMousePosition).sqrMagnitude;
             }
-            if (Input.GetMouseButtonUp(1))
+            if (InputProxy.GetMouseButtonUp(1))
             {
                 if (mouseMoveSS < mouseMoveSSThreshold)
                 {
@@ -102,6 +102,8 @@ namespace Kirurobo
                 touchDuration = 0f;
             }
 
+            // ひとまず Legacy Input Manager でのみタッチ処理を扱う
+            #if ENABLE_LEGACY_INPUT_MANAGER
             // Show the menu also when long touched
             if (Input.touchSupported && (Input.touchCount > 0))
             {
@@ -126,9 +128,10 @@ namespace Kirurobo
                     touchDuration = 0f;
                 }
             }
+            #endif
 
             // Show the menu also when pressed [Space] key
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (InputProxy.GetKeyUp("space"))
             {
                 if (menuPanel)
                 {
@@ -142,7 +145,7 @@ namespace Kirurobo
             }
 
             // Quit or stop playing when pressed [ESC]
-            if (Input.GetKey(KeyCode.Escape))
+            if (InputProxy.GetKeyUp("escape"))
             {
                 Quit();
             }

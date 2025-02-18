@@ -48,7 +48,7 @@ public class LibUniWinC {
         case Size = 2
         case Order = 4
     }
-        
+    
     /// Flag constants for file dialog
     public enum PanelFlag : Int32 {
         case None = 0
@@ -64,8 +64,8 @@ public class LibUniWinC {
         public func containedIn(value: Int32) -> Bool {
             return (self.rawValue & value > 0)
         }
-   }
-
+    }
+    
     public struct PanelSettings {
         public var structSize: Int32 = 0;
         public var flags: Int32 = 0;
@@ -83,7 +83,7 @@ public class LibUniWinC {
         
         /// 元々のCollectionBehavior
         public var collectionBehavior: NSWindow.CollectionBehavior = []
-
+        
         /// 元々のウィンドウLevel
         public var level: NSWindow.Level = NSWindow.Level.normal
         
@@ -97,7 +97,7 @@ public class LibUniWinC {
         public var contentViewWantsLayer: Bool = true
         public var contentViewLayerIsOpaque: Bool = true
         public var contentViewLayerBackgroundColor: CGColor? = CGColor.clear
-
+        
         
         /// 指定ウィンドウの初期値を記憶
         public func Store(window: NSWindow) -> Void {
@@ -138,7 +138,7 @@ public class LibUniWinC {
             window.contentView?.layer?.backgroundColor = self.contentViewLayerBackgroundColor
         }
     }
-
+    
     
     // MARK: - Static variables
     
@@ -161,19 +161,19 @@ public class LibUniWinC {
     public static var monitorChangedCallback: intCallback? = nil
     public static var windowStyleChangedCallback: intCallback? = nil
     private static var observerObject: Any? = nil
-
+    
     /// Sub view to implement file dropping
     private static var overlayView: OverlayView? = nil
-
+    
     /// プライマリーモニターの高さ
     private static var primaryMonitorHeight: CGFloat = 0
     
     private static var monitorCount: Int = 0
     private static var monitorRectangles: [CGRect] = []
     private static var monitorIndices: [Int] = []
-
+    
     // MARK: - Properties
-
+    
     /// 準備完了かどうかを返す
     /// - Returns: 準備完了ならtrue
     @objc public static func isActive() -> Bool {
@@ -198,7 +198,7 @@ public class LibUniWinC {
     @objc public static func isBottommost() -> Bool {
         return state.isBottommost
     }
-
+    
     @objc public static func isMaximized() -> Bool {
         return state.isZoomed
         //return _isZoomedActually()
@@ -207,7 +207,7 @@ public class LibUniWinC {
     @objc public static func isMinimized() -> Bool {
         return (targetWindow?.isMiniaturized ?? false)
     }
-
+    
     private static func _isZoomedActually() -> Bool {
         if (targetWindow == nil) {
             return false
@@ -224,7 +224,7 @@ public class LibUniWinC {
             return targetWindow!.isZoomed
         }
     }
-
+    
     // MARK: - Initialize, window handling
     
     /// Initialize
@@ -240,7 +240,7 @@ public class LibUniWinC {
         ) {
             notification -> Void in _onMonitorChanged()
         }
-
+        
         // Flag as initialized
         state.isReady = true
     }
@@ -277,10 +277,10 @@ public class LibUniWinC {
         // Sort the list so that the top left monitor is at the zero
         monitorIndices = monitorIndices.sorted(by: {
             (monitorRectangles[$0].minX < monitorRectangles[$1].minX)
-                || (monitorRectangles[$0].minX == monitorRectangles[$1].minX && monitorRectangles[$0].maxY < monitorRectangles[$1].maxY)
+            || (monitorRectangles[$0].minX == monitorRectangles[$1].minX && monitorRectangles[$0].maxY < monitorRectangles[$1].maxY)
         })
     }
-
+    
     /// Find my own window
     private static func _findMyWindow() -> NSWindow {
         //var myWindow: NSWindow = NSApp.orderedWindows.first!
@@ -291,16 +291,16 @@ public class LibUniWinC {
             if (window.isKeyWindow) {
                 return window
             }
-//            print("[DEBUG - orderedWindows]")
-//            print(window.title)
-//            print(window.isKeyWindow)
-//            print(window.isZoomed)
-//            print(window.contentLayoutRect)
+            //            print("[DEBUG - orderedWindows]")
+            //            print(window.title)
+            //            print(window.isKeyWindow)
+            //            print(window.isZoomed)
+            //            print(window.contentLayoutRect)
         }
         // キーウィンドウが見つからなければ先頭とする
         return NSApp.orderedWindows.first!
     }
-
+    
     /// Detach from the window
     @objc public static func detachWindow() -> Void {
         _detachWindow()
@@ -313,7 +313,7 @@ public class LibUniWinC {
         
         return true
     }
-
+    
     /// Set the target window
     /// Restore the former winodw if exist
     public static func _attachWindow(window: NSWindow) -> Void {
@@ -329,7 +329,7 @@ public class LibUniWinC {
         if (!state.isReady) {
             _setup()
         }
-
+        
         // Set to the target
         targetWindow = window
         
@@ -351,7 +351,7 @@ public class LibUniWinC {
         center.addObserver(self, selector: #selector(_keepKeyWindowObserver(notification:)), name: NSWindow.didResignKeyNotification, object: window)
         center.addObserver(self, selector: #selector(_keepBottommostObserver(notification:)), name: NSWindow.didBecomeKeyNotification, object: window)
     }
- 
+    
     private static func _detachWindow() -> Void {
         if (targetWindow != nil) {
             let center = NotificationCenter.default
@@ -364,9 +364,9 @@ public class LibUniWinC {
             //center.removeObserver(self, name: NSWindow.didExposeNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didResignKeyNotification, object: targetWindow)
             center.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: targetWindow)
-
+            
             //center.removeObserver(self)
-
+            
             // Restore the original style
             orgWindowInfo.Restore(window: targetWindow!)
             
@@ -379,7 +379,7 @@ public class LibUniWinC {
             targetWindow = nil
         }
     }
-
+    
     @objc static func _fullScreenChangedObserver(notification: Notification) {
         // Reapply the state at fullscreen
         _reapplyWindowStyles()
@@ -393,7 +393,7 @@ public class LibUniWinC {
     @objc static func _resizedObserver(notification: Notification) {
         if (targetWindow != nil) {
             let zoomed = _isZoomedActually()
-
+            
             if (state.isZoomed != zoomed) {
                 state.isZoomed = zoomed
             }
@@ -409,7 +409,7 @@ public class LibUniWinC {
             }
         }
     }
-
+    
     @objc static func _keepBottommostObserver(notification: Notification) {
         if ((targetWindow != nil) && state.isBottommost) {
             targetWindow!.level = orgWindowInfo.level
@@ -468,7 +468,7 @@ public class LibUniWinC {
         window.contentView?.addSubview(overlayView!)
         overlayView?.fitToSuperView()
     }
-        
+    
     /// Apply current window state
     private static func _reapplyWindowStyles() -> Void {
         if (targetWindow != nil) {
@@ -499,7 +499,7 @@ public class LibUniWinC {
         buffer[count] = UTF16Char.zero     // End of the string
         return true
     }
-
+    
     // MARK: - Functions to get or set the window state
     
     /// ウィンドウの透過／非透過設定
@@ -508,23 +508,23 @@ public class LibUniWinC {
     ///   - isTransparent: trueなら透過、falseなら戻す
     private static func _setWindowTransparent(window: NSWindow, isTransparent: Bool) -> Void {
         if (isTransparent) {
-//            window.styleMask = orgWindowInfo.styleMask
-//            //window.styleMask = []
-//            if (state.isBorderless) {
-//                window.titlebarAppearsTransparent = true
-//                window.titleVisibility = .hidden
-//                window.styleMask.insert(.borderless)
-//            }
+            //            window.styleMask = orgWindowInfo.styleMask
+            //            //window.styleMask = []
+            //            if (state.isBorderless) {
+            //                window.titlebarAppearsTransparent = true
+            //                window.titleVisibility = .hidden
+            //                window.styleMask.insert(.borderless)
+            //            }
             //window.hasShadow = false      // _setWindowBorderless()に移動
             window.backgroundColor = NSColor.clear
             window.isOpaque = false
-
+            
             //window.contentView?.wantsLayer = true
         } else {
-//            window.styleMask = orgWindowInfo.styleMask
-//            if (state.isBorderless) {
-//                window.styleMask.insert(.borderless)
-//            }
+            //            window.styleMask = orgWindowInfo.styleMask
+            //            if (state.isBorderless) {
+            //                window.styleMask.insert(.borderless)
+            //            }
             window.backgroundColor = orgWindowInfo.backgroundColor
             window.isOpaque = orgWindowInfo.isOpaque
             //window.hasShadow = orgWindowInfo.hasShadow
@@ -582,7 +582,7 @@ public class LibUniWinC {
             window.hasShadow = orgWindowInfo.hasShadow
         }
     }
-
+    
     /// ウィンドウ透過の方法を設定
     /// 現在はWindowsでのみ実装
     /// - Parameter type: 0:None, 1:Alpha, 2:ColorKey
@@ -603,7 +603,7 @@ public class LibUniWinC {
         }
         state.alphaValue = alpha
     }
-
+    
     /// ウィンドウ透過を有効化／無効化
     /// - Parameter isTransparent: trueなら透過ウィンドウにする
     @objc public static func setTransparent(isTransparent: Bool) -> Void {
@@ -618,7 +618,7 @@ public class LibUniWinC {
         
         state.isTransparent = isTransparent
     }
-
+    
     /// Hide or show the window border
     /// - Parameter isBorderless: true for borderless
     @objc public static func setBorderless(isBorderless: Bool) -> Void {
@@ -645,9 +645,9 @@ public class LibUniWinC {
             }
             
             // 透過切り替え直後にキー操作が効かなくなるためキーウインドウにしたい。だがうまくはいかないよう。透過だとキーにできないのは仕方がなさそう…
-//            window.makeMain()
-//            window.makeKey()
-
+            //            window.makeMain()
+            //            window.makeKey()
+            
             if (state.isZoomed) {
                 if (!window.isZoomed) {
                     window.zoom(nil)
@@ -660,12 +660,12 @@ public class LibUniWinC {
                 }
             } else {
                 // 枠なしを切り替えるたびにウィンドウサイズが小さくなったので、これはコメントアウト
-//                if (!isBorderless && state.isBorderless) {
-//                    // Restore the window size when the window become bordered
-//                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
-//                        window.setFrame(state.normalWindowRect, display: true, animate: false)
-//                    }
-//                }
+                //                if (!isBorderless && state.isBorderless) {
+                //                    // Restore the window size when the window become bordered
+                //                    if (state.normalWindowRect.width != 0 && state.normalWindowRect.height != 0) {
+                //                        window.setFrame(state.normalWindowRect, display: true, animate: false)
+                //                    }
+                //                }
             }
         }
         
@@ -675,7 +675,7 @@ public class LibUniWinC {
         
         state.isBorderless = isBorderless
     }
-
+    
     /// 常に最前面を有効化／無効化
     /// - Parameter isTopmost: true for topmost (higher than the menu bar)
     @objc public static func setTopmost(isTopmost: Bool) -> Void {
@@ -696,7 +696,7 @@ public class LibUniWinC {
         state.isTopmost = isTopmost
         state.isBottommost = false
     }
-
+    
     /// 常に最背面を有効化／無効化
     /// - Parameter isBottommost: trueなら最背面
     @objc public static func setBottommost(isBottommost: Bool) -> Void {
@@ -718,12 +718,13 @@ public class LibUniWinC {
         state.isBottommost = isBottommost
         state.isTopmost = false
     }
-
+    
     /// 操作のクリックスルーを有効化／無効化
     @objc public static func setClickThrough(isTransparent: Bool) -> Void {
         targetWindow!.ignoresMouseEvents = isTransparent
+        //targetWindow!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
     }
-
+    
     /// Maximize the window
     @objc public static func setMaximized(isZoomed: Bool) -> Void {
         if let window: NSWindow = targetWindow {
@@ -774,7 +775,7 @@ public class LibUniWinC {
         //let cocoaY = primaryMonitorHeight - CGFloat(y)
         //let position: NSPoint = NSMakePoint(CGFloat(x), cocoaY)
         //targetWindow?.setFrameTopLeftPoint(position)
-
+        
         // ウィンドウ左下を基準としてセット
         let position: NSPoint = NSMakePoint(CGFloat(x), CGFloat(y))
         targetWindow?.setFrameOrigin(position)
@@ -852,7 +853,35 @@ public class LibUniWinC {
         height.pointee = Float32(currentSize.height)
         return true
     }
-
+    
+    /// ウィンドウのクライアント領域位置・サイズを取得
+    /// - Parameters:
+    ///    - x: ウィンドウ左からのx座標
+    ///    - y: ウィンドウ下からのy座標
+    ///    - width: 幅
+    ///    - height: 高さ
+    /// - Returns: 成功すれば true
+    @objc public static func getClientRectangle(
+        x: UnsafeMutablePointer<Float32>,
+        y: UnsafeMutablePointer<Float32>,
+        width: UnsafeMutablePointer<Float32>,
+        height: UnsafeMutablePointer<Float32>) -> Bool {
+            if (targetWindow == nil) {
+                x.pointee = 0;
+                y.pointee = 0;
+                width.pointee = 0;
+                height.pointee = 0;
+                return false
+            }
+            let winRect = targetWindow!.frame
+            let rect = targetWindow!.contentRect(forFrameRect: targetWindow!.frame)
+            x.pointee = Float32(rect.minX - winRect.minX)
+            y.pointee = Float32(rect.minY - winRect.minY)
+            width.pointee = Float32(rect.width)
+            height.pointee = Float32(rect.height)
+            return true
+        }
+    
     @objc public static func registerWindowStyleChangedCallback(callback: @escaping intCallback) -> Bool {
         windowStyleChangedCallback = callback
         return true
@@ -862,7 +891,7 @@ public class LibUniWinC {
         windowStyleChangedCallback = nil
         return true
     }
-
+    
     
     // MARK: - Monitor Info.
     
@@ -907,7 +936,7 @@ public class LibUniWinC {
         }
         return Int32(primaryMonitorIndex)
     }
-
+    
     /// 現在有効な画面数を取得
     /// - Returns: 画面数
     @objc public static func getMonitorCount() -> Int32 {
@@ -950,19 +979,19 @@ public class LibUniWinC {
         monitorChangedCallback = nil
         return true
     }
-
-
+    
+    
     // MARK: - File drop
     
     @objc public static func setAllowDrop(enabled: Bool) -> Bool {
         if (overlayView == nil) {
             _setupOverlayView()
         }
-
+        
         overlayView?.setEnabled(enabled: enabled)
         return true
     }
-
+    
     @objc public static func registerDropFilesCallback(callback: @escaping stringCallback) -> Bool {
         dropFilesCallback = callback
         return true
@@ -972,7 +1001,7 @@ public class LibUniWinC {
         dropFilesCallback = nil
         return true
     }
-
+    
     
     // MARK: - Mouser curosor
     
@@ -987,7 +1016,7 @@ public class LibUniWinC {
         y.pointee = Float32(mousePos.y)
         return true
     }
-
+    
     /// カーソル位置を設定
     /// - Parameters:
     ///   - x: X座標
@@ -1013,12 +1042,12 @@ public class LibUniWinC {
     @objc public static func openFilePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSOpenPanel()
         let panelHelper = CustomPanelHelper(panel: panel)
-
+        
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-
+        
         if (targetWindow != nil) {
             if (state.isTopmost) {
                 // Temporarily disable always on top in order to show the dialog
@@ -1032,23 +1061,23 @@ public class LibUniWinC {
             //let myWindow: NSWindow? = NSApp.orderedWindows.first
             //panel.parent = myWindow
         }
-
+        
         panel.allowsMultipleSelection = PanelFlag.AllowMultipleSelection.containedIn(value: ps.flags)
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.allowedFileTypes = fileTypes
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
         panel.isAccessoryViewDisclosed = true   // これをしないと Options ボタンを押すまでファイルタイプ選択が出ない
-
+        
         panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         //panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
-
+        
         if (initialDir != "") {
             panel.directoryURL = URL(fileURLWithPath: initialDir, isDirectory: true)
         } else if (initialFile.deletingLastPathComponent != "") {
             panel.directoryURL = URL(fileURLWithPath: initialFile.deletingLastPathComponent, isDirectory: true)
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
-
+        
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsOtherFileTypes = false
@@ -1058,9 +1087,9 @@ public class LibUniWinC {
         panel.level = NSWindow.Level.popUpMenu
         panel.orderFrontRegardless()
         panel.center()
-
+        
         let result = panel.runModal();
-
+        
         var text: String = ""
         if (result == .OK) {
             if (panel.urls.count > 0) {
@@ -1077,15 +1106,15 @@ public class LibUniWinC {
             }
             if (state.isBorderless) {
                 _makeKeyWindow()
-//                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
-//                state.isBorderless = false;     // Suppress the callback
-//                setBorderless(isBorderless: false)
-//                state.isBorderless = true;      // Suppress the callback
-//                setBorderless(isBorderless: true)
+                //                // Restore the key window state. NSWindow.canBecomeKeyWindow is false by default for borderless window, so makeKey() is unavailable...
+                //                state.isBorderless = false;     // Suppress the callback
+                //                setBorderless(isBorderless: false)
+                //                state.isBorderless = true;      // Suppress the callback
+                //                setBorderless(isBorderless: true)
             }
             targetWindow?.makeKeyAndOrderFront(nil)
         }
-
+        
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
     
@@ -1096,12 +1125,12 @@ public class LibUniWinC {
     ///     - bufferSize: Size of UTF-16 string buffer
     @objc public static func openSavePanel(lpSettings: UnsafeRawPointer, lpBuffer: UnsafeMutablePointer<UniChar>?, bufferSize: UInt32) -> Bool {
         let panel = NSSavePanel()
-
+        
         let pPanelSettings = lpSettings.bindMemory(to: PanelSettings.self, capacity: MemoryLayout<PanelSettings>.size)
         let ps = pPanelSettings.pointee;
         let initialDir = getStringFromUtf16Array(textPointer: ps.initialDirectory)
         let initialFile = getStringFromUtf16Array(textPointer: ps.initialFile) as NSString
-
+        
         if (targetWindow != nil) {
             if (state.isTopmost) {
                 // Temporarily disable always on top in order to show the dialog
@@ -1115,7 +1144,7 @@ public class LibUniWinC {
             //let myWindow: NSWindow = NSApp.orderedWindows[0]
             //panel.parent = myWindow
         }
-
+        
         panel.showsHiddenFiles = PanelFlag.ShowHidden.containedIn(value: ps.flags)
         //panel.message = getStringFromUtf16Array(textPointer: ps.titleText)
         panel.title = getStringFromUtf16Array(textPointer: ps.titleText)
@@ -1126,7 +1155,7 @@ public class LibUniWinC {
         }
         panel.nameFieldStringValue = initialFile.lastPathComponent
         panel.allowsOtherFileTypes = true
-
+        
         panel.canCreateDirectories = true   //PanelFlag.CanCreateDirectories.containedIn(value: ps.flags)
         //panel.canSelectHiddenExtension = false
         //panel.showsTagField = false
@@ -1137,10 +1166,10 @@ public class LibUniWinC {
         // ファイル種類選択欄を追加
         let panelHelper = CustomPanelHelper(panel: panel)
         panelHelper.addFileTypes(text: getStringFromUtf16Array(textPointer: ps.filterText))
-
+        
         // ダイアログを開く
         let result = panel.runModal();
-
+        
         var text: String = ""
         if (result == .OK && (panel.url != nil)) {
             let url: String = panel.url!.path
@@ -1156,10 +1185,10 @@ public class LibUniWinC {
             }
             targetWindow?.makeKeyAndOrderFront(nil)
         }
-
+        
         return outputToStringBuffer(text: text, lpBuffer: lpBuffer, bufferSize: bufferSize)
     }
-
+    
     /// Parse an UTF-16 null terminated string pointer to String
     private static func getStringFromUtf16Array(textPointer: UnsafePointer<UniChar>?) -> String {
         if (textPointer == nil) {
@@ -1198,11 +1227,11 @@ public class LibUniWinC {
         
         // Do callback
         callback?(buffer)
-
+        
         buffer.deallocate()
         return true
     }
-
+    
     /// Return an UTF-16 string by using a pointer
     /// - Parameters:
     ///     - text: Parrameter as String
@@ -1239,7 +1268,7 @@ public class LibUniWinC {
     @objc public static func attachWindowHandle(hwnd: UInt64) -> Bool {
         return true
     }
-
+    
     /// Return some information for debugging
     @objc public static func getDebugInfo() -> Int32 {
         var result: Int32 = 0
@@ -1249,8 +1278,8 @@ public class LibUniWinC {
             if (targetWindow!.canBecomeKey) { result += 2 }
             if (targetWindow!.isKeyWindow) { result += 4 }
             
-//            // styleMaskの値を調べる
-//            result = Int32(targetWindow!.styleMask.rawValue)
+            //            // styleMaskの値を調べる
+            //            result = Int32(targetWindow!.styleMask.rawValue)
         }
         return result
     }

@@ -8,6 +8,17 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.5] - 2025-02-18
+### Changed
+- Renamed asmdef Unity.UniWindowController to Kirurobo.UniWindowController.
+- Renamed asmdef Unity.UniWindowController.Editor to Kirurobo.UniWindowController.Editor.
+  - Please remove if there are old files in the project.
+### Fixed
+- Fixed for support both of New Input System and Legacy Input Manager.
+- Fixed wrong name "LeftCtrl" and "RightCtrl" in the code.
+### Added
+- Added GetClientRectangle() in the native plugins.
+
 ## [v0.9.4] - 2025-02-06
 ### Changed
 - Support New Input System.

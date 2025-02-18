@@ -1069,6 +1069,42 @@ BOOL UNIWINC_API GetClientSize(float* width, float* height) {
 }
 
 /// <summary>
+/// Get the client area position and size of the window
+/// </summary>
+/// <param name="x">ウィンドウ左端からのx座標 [px]</param>
+/// <param name="y">ウィンドウ下端からのy座標 [px]</param>
+/// <param name="width">幅 [px]</param>
+/// <param name="height">高さ [px]</param>
+/// <returns>成功すれば true</returns>
+BOOL UNIWINC_API GetClientRectangle(float* x, float* y, float* width, float* height) {
+	*x = 0;
+	*y = 0;
+	*width = 0;
+	*height = 0;
+
+	if (hTargetWnd_ == NULL) return FALSE;
+	RECT windowRect;
+	if (GetWindowRect(hTargetWnd_, &windowRect)) {
+		LONG windowHeight = (windowRect.bottom - windowRect.top);
+		RECT rect;
+		if (GetClientRect(hTargetWnd_, &rect)) {
+			POINT originPoint;	// クライアント左下のスクリーン座標が入る
+			originPoint.x = rect.left;
+			originPoint.y = rect.bottom;
+			if (ClientToScreen(hTargetWnd_, &originPoint)) {
+				*x = (float)(originPoint.x - windowRect.left);
+				*y = (float)(windowHeight - (originPoint.y - windowRect.top));
+				*width = (float)(rect.right - rect.left);
+				*height = (float)(rect.bottom - rect.top);
+
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+/// <summary>
 /// Register the callback fucnction called when window style changed
 /// </summary>
 /// <param name="callback"></param>

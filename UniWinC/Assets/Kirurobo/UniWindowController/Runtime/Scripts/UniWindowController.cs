@@ -443,6 +443,16 @@ namespace Kirurobo
         
         void Start()
         {
+            //// New Input System で支障があったため検証用に出力
+// #if ENABLE_LEGACY_INPUT_MANAGER
+//             Debug.Log("Use legacy input manager.");
+// #elif ENABLE_INPUT_SYSTEM
+//             Debug.Log("Use new input system.");
+//             Debug.Log("Run In Background " + Mouse.current.canRunInBackground);
+// #else
+//             Debug.Log("Mouse position is not available.");
+// #endif
+
             // マウスカーソル直下の色を取得するコルーチンを開始
             StartCoroutine(HitTestCoroutine());
 
@@ -636,15 +646,53 @@ namespace Kirurobo
         }
 
         /// <summary>
+        /// 画面上のマウス座標を Unity のスクリーン座標系に換算して取得
+        /// </summary>
+        private Vector2 GetClientCursorPosition()
+        {
+
+            // New Input System ではフォーカスが無い場合にマウス座標が取得できないため独自に計算する
+            Vector2 mousePos = UniWinCore.GetCursorPosition();
+            Vector2 winPos = windowPosition;
+            Rect clientRect = _uniWinCore.GetClientRectangle();
+            Vector2 unityPos = new Vector2(
+                mousePos.x - winPos.x - clientRect.x,
+                mousePos.y - winPos.y - clientRect.y
+                );
+
+//             // デバッグ用
+//             // Unityで取得した値と比較
+// #if ENABLE_LEGACY_INPUT_MANAGER
+//             Vector2 position = Input.mousePosition;
+// #elif ENABLE_INPUT_SYSTEM
+//             Vector2 position = Mouse.current.position.ReadValue();
+// #endif
+//             if (!position.Equals(unityPos))
+//             {
+//                 Debug.LogWarning("Mouse position diff : " + position + " / " + unityPos);
+//             }
+
+            // エディターの場合は常にUnityの機能でマウス座標を取得
+            //   Gameウィンドウ単体ではなかったり、Scaleが異なる場合があるため単純計算では求まらない
+#if UNITY_EDITOR 
+    #if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.mousePosition;
+    #elif UNITY_EDITOR && ENABLE_INPUT_SYSTEM
+            return Mouse.current.position.ReadValue();
+    #else
+            return unityPos;
+    #endif
+#else
+            return unityPos;
+#endif
+        }
+
+        /// <summary>
         /// マウス下の画素があるかどうかを確認
         /// </summary>
         private void HitTestByOpaquePixel()
         {
-#if ENABLE_INPUT_SYSTEM
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-#elif ENABLE_LEGACY_INPUT_MANAGER
-            Vector2 mousePos = Input.mousePosition;
-#endif
+            Vector2 mousePos = GetClientCursorPosition();
 
             // マウス座標を調べる
             if (GetOnOpaquePixel(mousePos))
@@ -708,11 +756,7 @@ namespace Kirurobo
         /// </summary>
         private void HitTestByRaycast()
         {
-#if ENABLE_INPUT_SYSTEM
-            Vector2 position = Mouse.current.position.ReadValue();
-#elif ENABLE_LEGACY_INPUT_MANAGER
-            Vector2 position = Input.mousePosition;
-#endif
+            Vector2 position = GetClientCursorPosition();
             
             // // uGUIの上か否かを判定
             var raycastResults = new List<RaycastResult>();

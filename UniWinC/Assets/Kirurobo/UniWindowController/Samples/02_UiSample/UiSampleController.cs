@@ -24,11 +24,12 @@ namespace Kirurobo
         private float mouseMoveSS = 0f;           // Sum of mouse trajectory squares. [px^2]
         private float mouseMoveSSThreshold = 36f; // Click (not dragging) threshold. [px^2]
         private Vector3 lastMousePosition;        // Right clicked position.
-        private float touchDuration = 0f;
-        private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
         private float lastEventOccurredTime = -5f;     // Timestamp the last event occurred [s]
         private float eventMessageTimeout = 1f;        // Show event message while this period [s]
-
+#if ENABLE_LEGACY_INPUT_MANAGER
+        private float touchDuration = 0f;
+        private float touchDurationThreshold = 0.5f;   // Long tap time threshold. [s]
+#endif
         public Toggle transparentToggle;
         public Slider alphaSlider;
         public Toggle topmostToggle;
@@ -157,25 +158,26 @@ namespace Kirurobo
             }
 
             // マウス右ボタンクリックでメニューを表示させる。閾値以下の移動ならクリックとみなす。
-            if (Input.GetMouseButtonDown(1))
+            if (InputProxy.GetMouseButtonDown(1))
             {
-                lastMousePosition = Input.mousePosition;
-                touchDuration = 0f;
+                lastMousePosition = InputProxy.mousePosition;
+                ResetTouchDuration();
             }
-            if (Input.GetMouseButton(1))
+            if (InputProxy.GetMouseButton(1))
             {
-                mouseMoveSS += (Input.mousePosition - lastMousePosition).sqrMagnitude;
+                mouseMoveSS += (InputProxy.mousePosition - lastMousePosition).sqrMagnitude;
             }
-            if (Input.GetMouseButtonUp(1))
+            if (InputProxy.GetMouseButtonUp(1))
             {
                 if (mouseMoveSS < mouseMoveSSThreshold)
                 {
                     ShowMenu(lastMousePosition);
                 }
                 mouseMoveSS = 0f;
-                touchDuration = 0f;
+                ResetTouchDuration();
             }
             
+            #if ENABLE_LEGACY_INPUT_MANAGER
             // ロングタッチでもメニューを表示させる
             if (Input.touchSupported && (Input.touchCount > 0))
             {
@@ -183,7 +185,7 @@ namespace Kirurobo
                 if (touch.phase == TouchPhase.Began)
                 {
                     lastMousePosition = Input.mousePosition;
-                    touchDuration = 0f;
+                    ResetTouchDuration();
                 }
                 if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
                 {
@@ -197,33 +199,37 @@ namespace Kirurobo
                         ShowMenu(lastMousePosition);
                     }
                     mouseMoveSS = 0f;
-                    touchDuration = 0f;
+                    ResetTouchDuration();
                 }
             }
+            #elif ENABLE_INPUT_SYSTEM
+            // 現状、New Input System ではタッチ対応は無し
+            // EnhancedTouch は InputAction と併用不可？
+            #endif
 
             // キーでも設定変更
             if (uniwinc)
             {
                 // Toggle transparent
-                if (Input.GetKeyUp(KeyCode.T))
+                if (InputProxy.GetKeyUp("t"))
                 {
                     uniwinc.isTransparent = !uniwinc.isTransparent;
                 }
 
                 // Toggle always on the front
-                if (Input.GetKeyUp(KeyCode.F))
+                if (InputProxy.GetKeyUp("f"))
                 {
                     uniwinc.isTopmost = !uniwinc.isTopmost;
                 }
 
                 // Toggle always on the bottom
-                if (Input.GetKeyUp(KeyCode.B))
+                if (InputProxy.GetKeyUp("b"))
                 {
                     uniwinc.isBottommost = !uniwinc.isBottommost;
                 }
 
                 // Toggle zoom
-                if (Input.GetKeyUp(KeyCode.Z))
+                if (InputProxy.GetKeyUp("z"))
                 {
                     uniwinc.isZoomed = !uniwinc.isZoomed;
                 }
@@ -231,7 +237,7 @@ namespace Kirurobo
 
 
             // Test for OpenFilePanel
-            if (Input.GetKeyUp(KeyCode.O))
+            if (InputProxy.GetKeyUp("o"))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
@@ -248,7 +254,7 @@ namespace Kirurobo
             }
 
             // Test for SaveFilePanel
-            if (Input.GetKeyDown(KeyCode.S))
+            if (InputProxy.GetKeyUp("s"))
             {
                 FilePanel.Settings ds = new FilePanel.Settings
                 {
@@ -270,7 +276,7 @@ namespace Kirurobo
             }
 
             // Quit or stop playing when pressed [ESC]
-            if (Input.GetKey(KeyCode.Escape))
+            if (InputProxy.GetKeyUp("escape"))
             {
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
@@ -278,6 +284,16 @@ namespace Kirurobo
                 Application.Quit();
 #endif
             }
+        }
+
+        /// <summary>
+        /// タッチされ続けている時間の記録をリセット
+        /// 警告が出ないように Legacy Input Manager でのみ処理している
+        /// </summary>
+        void ResetTouchDuration() {
+            #if ENABLE_LEGACY_INPUT_MANAGER
+            touchDuration = 0f;
+            #endif
         }
 
         /// <summary>
@@ -315,11 +331,13 @@ namespace Kirurobo
             if (uniwinc)
             {
                 var winPos = uniwinc.windowPosition;
+                //var curPos = uniwinc.GetClientCursorPosition();
                 OutputMessage(
                     "Pos.: " + winPos
                     + "\nSize: " + uniwinc.windowSize
                     + "\nRel. Cur.:" + (uniwinc.cursorPosition - winPos)
-                    + "\nUnity Cur.:" + (Vector2)Input.mousePosition
+                    //+ "\nScr. Cur.:" + curPos
+                    + "\nUnity Cur.:" + (Vector2)InputProxy.mousePosition
                     );
                 ShowClientSize();
             }
