@@ -9,7 +9,7 @@ namespace Kirurobo
     public class SampleManager : MonoBehaviour
     {
         private static SampleManager _instance;
-        public static SampleManager Instance => _instance ?? (_instance = GameObject.FindObjectOfType<SampleManager>() ?? new SampleManager());
+        public static SampleManager Instance => _instance ?? (_instance = GameObject.FindAnyObjectByType<SampleManager>() ?? new SampleManager());
 
         public Canvas canvas;
 
