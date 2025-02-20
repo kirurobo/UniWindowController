@@ -63,7 +63,7 @@ namespace Kirurobo
             uniwinc = UniWindowController.current;
             
             // UniWindowDragMove を探す
-            uniWinMoveHandle = GameObject.FindObjectOfType<UniWindowMoveHandle>();
+            uniWinMoveHandle = GameObject.FindAnyObjectByType<UniWindowMoveHandle>();
 
             // CanvasのRectTransform取得
             if (menuPanel) canvasRect = menuPanel.GetComponentInParent<Canvas>().GetComponent<RectTransform>();

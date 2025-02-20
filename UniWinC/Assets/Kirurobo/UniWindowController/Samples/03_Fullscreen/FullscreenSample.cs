@@ -38,7 +38,7 @@ namespace Kirurobo
         void Start()
         {
             // UniWindowController を探す
-            uniwinc = GameObject.FindObjectOfType<UniWindowController>();
+            uniwinc = GameObject.FindAnyObjectByType<UniWindowController>();
 
             // CanvasのRectTransform取得
             if (menuPanel) canvasRect = menuPanel.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
