@@ -8,6 +8,12 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.6] - 2025-02-20
+### Changed
+- Replaced FindObjectOfType with FindAnyObjectByType.
+### Fixed
+- Fixed coordinate misalignment with Retina support on macOS.
+
 ## [v0.9.5] - 2025-02-18
 ### Changed
 - Renamed asmdef Unity.UniWindowController to Kirurobo.UniWindowController.
