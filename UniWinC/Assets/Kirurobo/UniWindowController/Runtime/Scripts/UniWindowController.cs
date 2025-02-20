@@ -14,6 +14,8 @@ using UnityEngine.EventSystems;
 using UnityEditor;
 using System.Reflection;
 using UnityEngine.Events;
+using System.Linq;
+
 #endif
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -372,7 +374,7 @@ namespace Kirurobo
                 //// もしメインカメラが見つからなければ、Findで探す
                 //if (!currentCamera)
                 //{
-                //    currentCamera = GameObject.FindObjectOfType<Camera>();
+                //    currentCamera = GameObject.FindAnyObjectByType<Camera>();
                 //}
             }
 
@@ -428,7 +430,7 @@ namespace Kirurobo
         /// <returns></returns>
         private static UniWindowController FindOrCreateInstance()
         {
-            var instance = GameObject.FindObjectOfType<UniWindowController>();
+            var instance = GameObject.FindAnyObjectByType<UniWindowController>();
             
             // 勝手に生成するのは今のところ無効としてみる
             // // シーンに見つからなければ新規作成
@@ -656,8 +658,8 @@ namespace Kirurobo
             Vector2 winPos = windowPosition;
             Rect clientRect = _uniWinCore.GetClientRectangle();
             Vector2 unityPos = new Vector2(
-                mousePos.x - winPos.x - clientRect.x,
-                mousePos.y - winPos.y - clientRect.y
+                (mousePos.x - winPos.x - clientRect.x) * Screen.width / clientRect.width,
+                (mousePos.y - winPos.y - clientRect.y) * Screen.height / clientRect.height
                 );
 
 //             // デバッグ用
