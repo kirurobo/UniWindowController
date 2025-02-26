@@ -721,8 +721,10 @@ public class LibUniWinC {
     
     /// 操作のクリックスルーを有効化／無効化
     @objc public static func setClickThrough(isTransparent: Bool) -> Void {
-        targetWindow!.ignoresMouseEvents = isTransparent
-        //targetWindow!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
+        if let window: NSWindow = targetWindow {
+            window.ignoresMouseEvents = isTransparent
+            //window!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
+        }
     }
     
     /// Maximize the window
