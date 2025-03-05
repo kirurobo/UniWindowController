@@ -202,6 +202,16 @@ public func GetCursorPosition(x: UnsafeMutablePointer<Float32>, y: UnsafeMutable
     return LibUniWinC.getCursorPosition(x:x, y:y)
 }
 
+@_cdecl("GetMouseButtons")
+public func GetMouseButtons() -> Int32 {
+    return LibUniWinC.getMouseButtons()
+}
+
+@_cdecl("GetModifierKeys")
+public func GetModifierKeys() -> Int32 {
+    return LibUniWinC.getModifierKeys()
+}
+
 // Call periodically to maintain window state.
 @_cdecl("Update")
 public func Update() -> Void {
