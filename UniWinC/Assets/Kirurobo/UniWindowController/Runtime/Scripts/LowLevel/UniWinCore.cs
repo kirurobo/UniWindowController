@@ -744,6 +744,24 @@ namespace Kirurobo
             return pos;
         }
 
+        /// <summary>
+        /// Get pressed mouse buttons.
+        /// </summary>
+        /// <returns>Bit flags of pressed buttons</returns>
+        public static int GetMouseButtons()
+        {
+            return LibUniWinC.GetMouseButtons();
+        }
+
+        /// <summary>
+        /// Get pressed modifier keys.
+        /// </summary>
+        /// <returns>Bit flags of pressed keys</returns>
+        public static int GetModifierKeys()
+        {
+            return LibUniWinC.GetModifierKeys();
+        }
+
         // Not implemented
         public static bool GetCursorVisible()
         {

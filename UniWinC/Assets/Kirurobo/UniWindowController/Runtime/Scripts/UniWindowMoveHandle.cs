@@ -140,36 +140,45 @@ namespace  Kirurobo
         {
             if (!_uniwinc || !_isDragging) return;
 
-            // ドラッグでの移動が無効化されていた場合
+            // ドラッグでの移動が無効化されていた場合はドラッグ終了
             if (!IsEnabled)
             {
                 EndDragging();
                 return;
             }
 
-            // Move the window when the left mouse button is pressed
-            if (eventData.button != PointerEventData.InputButton.Left) return;
+            // // マウス左ボタンが押されていなければドラッグ終了
+            // if (eventData.button != PointerEventData.InputButton.Left) return;
 
-            // Return if any modifier key is pressed
-#if ENABLE_LEGACY_INPUT_MANAGER
-            // Macの場合、マルチモニター間を移動するとEventSystemのOnEndDragが正しく呼ばれないため、マウスボタンを常に監視
-            if (!Input.Mouse.Button(0).IsPressed) {
+            // [Shift]、[Ctrl]、[Alt]、[Command] キーが押されている間はドラッグとして扱わない
+            var modifiers = UniWindowController.GetModifierKeys();
+            if (modifiers != UniWindowController.ModifierKey.None) return;
+
+            // マウスボタンが離されていればドラッグ終了
+            var buttons = UniWindowController.GetMouseButtons();
+            if ((buttons & UniWindowController.MouseButton.Left) == UniWindowController.MouseButton.None) {
                 EndDragging();
                 return;
             }
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
-                || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
-                || Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) return;
-#elif ENABLE_INPUT_SYSTEM
-            // Macの場合、マルチモニター間を移動するとEventSystemのOnEndDragが正しく呼ばれないため、マウスボタンを常に監視
-            if (!Mouse.current.leftButton.isPressed) {
-                EndDragging();
-                return;
-            }
-            if (Keyboard.current[Key.LeftShift].isPressed || Keyboard.current[Key.RightShift].isPressed
-                || Keyboard.current[Key.LeftCtrl].isPressed || Keyboard.current[Key.RightCtrl].isPressed
-                || Keyboard.current[Key.LeftAlt].isPressed || Keyboard.current[Key.RightAlt].isPressed) return;
-#endif
+// #if ENABLE_LEGACY_INPUT_MANAGER
+//             // Macの場合、マルチモニター間を移動するとEventSystemのOnEndDragが正しく呼ばれないため、マウスボタンを常に監視
+//             if (!Input.Mouse.Button(0).IsPressed) {
+//                 EndDragging();
+//                 return;
+//             }
+//             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
+//                 || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
+//                 || Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) return;
+// #elif ENABLE_INPUT_SYSTEM
+//             // Macの場合、マルチモニター間を移動するとEventSystemのOnEndDragが正しく呼ばれないため、マウスボタンを常に監視
+//             if (!Mouse.current.leftButton.isPressed) {
+//                 EndDragging();
+//                 return;
+//             }
+//             if (Keyboard.current[Key.LeftShift].isPressed || Keyboard.current[Key.RightShift].isPressed
+//                 || Keyboard.current[Key.LeftCtrl].isPressed || Keyboard.current[Key.RightCtrl].isPressed
+//                 || Keyboard.current[Key.LeftAlt].isPressed || Keyboard.current[Key.RightAlt].isPressed) return;
+// #endif
 
             // フルスクリーンならウィンドウ移動は行わない
             //  エディタだと true になってしまうようなので、エディタ以外でのみ確認
