@@ -85,6 +85,31 @@ namespace Kirurobo
         };
 
         /// <summary>
+        /// Mouse buttons
+        /// </summary>
+        [Flags]
+        public enum MouseButton : int
+        {
+            None = 0,
+            Left = 1,
+            Right = 2,
+            Middle = 4,
+        }
+
+        /// <summary>
+        /// Modifier keys
+        /// </summary>
+        [Flags]
+        public enum ModifierKey : int
+        {
+            None = 0,
+            Alt = 1,
+            Control = 2,
+            Shift = 4,
+            Command = 8,
+        }
+
+        /// <summary>
         /// Get the current instance of UniWindowController
         /// </summary>
         public static UniWindowController current => _current ? _current : FindOrCreateInstance();
@@ -1105,6 +1130,26 @@ namespace Kirurobo
         public static void SetCursorPosition(Vector2 position)
         {
             UniWinCore.SetCursorPosition(position);
+        }
+
+        /// <summary>
+        /// Get mouse buttons
+        /// </summary>
+        /// <returns></returns>
+        public static MouseButton GetMouseButtons()
+        {
+            int buttons = UniWinCore.GetMouseButtons();
+            return (MouseButton)buttons;
+        }
+
+        /// <summary>
+        /// Get pressed modifier keys
+        /// </summary>
+        /// <returns></returns>
+        public static ModifierKey GetModifierKeys()
+        {
+            int mod = UniWinCore.GetModifierKeys();
+            return (ModifierKey)mod;
         }
 
         /// <summary>
