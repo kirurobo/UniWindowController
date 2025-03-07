@@ -66,7 +66,7 @@ See also [Issues](https://github.com/kirurobo/UniWindowController/issues) for kn
   - Scripting Runtime: .NET 4.x or later
 - OS: Windows 10, Windows 11 or macOS
 
-Development environment is Unity 2020.4.30f1, Windows 11 / macOS 13.3
+Development environment is Unity 2022.3.22f1, Windows 11 / macOS 15.3
 
 
 ## Additional information

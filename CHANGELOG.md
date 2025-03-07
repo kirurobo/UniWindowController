@@ -8,6 +8,10 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.7] - 2025-03-07
+### Fixed
+- Improved stability on macOS.
+
 ## [v0.9.6] - 2025-02-20
 ### Changed
 - Replaced FindObjectOfType with FindAnyObjectByType.
