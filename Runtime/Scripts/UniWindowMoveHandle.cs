@@ -82,6 +82,9 @@ namespace  Kirurobo
             {
                 return;
             }
+
+            // マウス左ボタンでのみドラッグ
+            if (eventData.button != PointerEventData.InputButton.Left) return;
             
             // Macだと挙動を変える
             //  実際はRetinaサポートが有効のときだけだが、
