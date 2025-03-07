@@ -67,7 +67,7 @@ B. UnityPackage を利用する手順
   - Scripting Runtime: .NET 4.x or later
 - OS: Windows 10, Windows 11 or macOS
 
-開発は Unity 2020.4.30f1, Windows 11 / macOS 13.3 で行っています
+開発は Unity 2022.3.22f1, Windows 11 / macOS 15.3 で行っています
 
 
 ## 補足情報
