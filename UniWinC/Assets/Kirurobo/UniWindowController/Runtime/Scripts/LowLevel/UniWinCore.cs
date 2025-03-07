@@ -192,6 +192,12 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool GetCursorPosition(out float x, out float y);
 
+            [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
+            public static extern int GetMouseButtons();
+
+            [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
+            public static extern int GetModifierKeys();
+
 
             #region Working on Windows only
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
@@ -736,6 +742,24 @@ namespace Kirurobo
             Vector2 pos = Vector2.zero;
             LibUniWinC.GetCursorPosition(out pos.x, out pos.y);
             return pos;
+        }
+
+        /// <summary>
+        /// Get pressed mouse buttons.
+        /// </summary>
+        /// <returns>Bit flags of pressed buttons</returns>
+        public static int GetMouseButtons()
+        {
+            return LibUniWinC.GetMouseButtons();
+        }
+
+        /// <summary>
+        /// Get pressed modifier keys.
+        /// </summary>
+        /// <returns>Bit flags of pressed keys</returns>
+        public static int GetModifierKeys()
+        {
+            return LibUniWinC.GetModifierKeys();
         }
 
         // Not implemented

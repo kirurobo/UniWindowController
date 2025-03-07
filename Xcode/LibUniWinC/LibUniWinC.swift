@@ -721,8 +721,10 @@ public class LibUniWinC {
     
     /// 操作のクリックスルーを有効化／無効化
     @objc public static func setClickThrough(isTransparent: Bool) -> Void {
-        targetWindow!.ignoresMouseEvents = isTransparent
-        //targetWindow!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
+        if let window: NSWindow = targetWindow {
+            window.ignoresMouseEvents = isTransparent
+            //window!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
+        }
     }
     
     /// Maximize the window
@@ -1029,6 +1031,29 @@ public class LibUniWinC {
         
         moveEvent?.post(tap: .cgSessionEventTap)
         return true
+    }
+    
+    /// マウスのボタン押下状態を取得
+    /// - Returns: マウスボタン押下状態を示すビットフラグ（1: Left, 2: Right, 4: Middle）
+    @objc public static func getMouseButtons() -> Int32 {
+        let buttons = NSEvent.pressedMouseButtons
+        let result = buttons & (1 + 2 + 4)  // Middle ボタンまでは pressedMouseButtons の仕様と一致。それ以上は非対応。
+        return Int32(result)
+    }
+    
+    /// 修飾キー状態を取得
+    /// 数値は Windows API のものがベース。NSEvent.ModifierFlagsのrawValueとは異なる。
+    /// - Returns: 修飾キー押下を示すビットフラグ（0:None, 1:Option/Alt, 2:Control, 4:Shift, 8:Command/Win)
+    @objc public static func getModifierKeys() -> Int32 {
+        var result : Int32 = 0
+        
+        if let flags = NSApp.currentEvent?.modifierFlags {
+            result += (flags.contains(.option)) ? 1 : 0
+            result += (flags.contains(.control)) ? 2 : 0
+            result += (flags.contains(.shift)) ? 4 : 0
+            result += (flags.contains(.command)) ? 8 : 0
+        }
+        return result
     }
     
     

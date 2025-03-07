@@ -82,6 +82,7 @@ func getOpenFileNames() -> String {
 struct ContentView: View {
     @State private var buttonText = "Get all windows"
     @State private var outputText = ""
+    @State private var modifiersText = "None"
     @State private var window: NSWindow?
 
     var body: some View {
@@ -130,8 +131,19 @@ struct ContentView: View {
                 }
             }
         }){ Text("Save") }
+        
+        // v0.9.7- 追加されたGetModifierKeys()のテスト
+        Button(action: {
+            let keys = LibUniWinC.getModifierKeys()
+            if (keys == 0) {
+                modifiersText = "None"
+            } else {
+                modifiersText = (keys & 1 != 0 ? "Option " : "") + (keys & 2 != 0 ? "Control " : "") + (keys & 4 != 0 ? "Shift " : "") + (keys & 8 != 0 ? "Command " : "")
+            }
+        }) { Text("Show modifier keys when clicked") }
+        Text(modifiersText)
 
-                
+    
         Text("Window Info.").padding()
         
         Button(action: {

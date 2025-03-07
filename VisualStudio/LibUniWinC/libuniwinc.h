@@ -125,6 +125,10 @@ UNIWINC_EXPORT BOOL UNIWINC_API GetMonitorRectangle(const INT32 monitorIndex, fl
 // Mouse pointer
 UNIWINC_EXPORT BOOL UNIWINC_API SetCursorPosition(const float x, const float y);
 UNIWINC_EXPORT BOOL UNIWINC_API GetCursorPosition(float* x, float* y);
+UNIWINC_EXPORT INT32 UNIWINC_API GetMouseButtons();
+
+// Keyboard
+UNIWINC_EXPORT INT32 UNIWINC_API GetModifierKeys();
 
 // File drop
 UNIWINC_EXPORT BOOL UNIWINC_API SetAllowDrop(const BOOL bEnabled);

@@ -1275,6 +1275,45 @@ BOOL UNIWINC_API SetCursorPosition(const float x, const float y) {
 	return SetCursorPos(pos.x, pos.y);
 }
 
+/// <summary>
+/// マウスボタン押下状況を取得
+/// </summary>
+/// <returns>押下中なら1となるビットフラグ（1:Left, 2:Right, 4:Middle）</returns>
+INT32 UNIWINC_API GetMouseButtons() {
+	INT32 state = 0;
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+		state |= 1;
+	}
+	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000) {
+		state |= 2;
+	}
+	if (GetAsyncKeyState(VK_MBUTTON) & 0x8000) {
+		state |= 4;
+	}
+	return state;
+}
+
+/// <summary>
+/// 修飾キーの押下状況を取得
+/// </summary>
+/// <returns>押下中なら1となるビットフラグ（1:ALt, 2:Ctrl, 4:Shift, 8:Win）</returns>
+INT32 UNIWINC_API GetModifierKeys() {
+	INT32 state = 0;
+	if (GetAsyncKeyState(VK_MENU) & 0x8000) {
+		state |= 1;
+	}
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+		state |= 2;
+	}
+	if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+		state |= 4;
+	}
+	if (GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000) {
+		state |= 8;
+	}
+	return state;
+}
+
 #pragma endregion For mouse cursor
 
 
