@@ -20,7 +20,7 @@ https://twitter.com/i/status/1314440790945361920
 
 
 ## Demo
-You can find some sample builts on the [Release page](https://github.com/kirurobo/UniWindowController/releases).
+You can find a sample VRM viewer via [UniWinC_VRM](https://github.com/kirurobo/UniWinC_VRM).
 
 
 ## Installation

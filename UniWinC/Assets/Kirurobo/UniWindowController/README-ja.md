@@ -21,7 +21,7 @@ https://twitter.com/i/status/1314440790945361920
 
 
 ## デモ
-[Release のページ](https://github.com/kirurobo/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
+[UniWinC_VRM](https://github.com/kirurobo/UniWinC_VRM) にはビルドしたVRMファイルビューアーのサンプルを置いてあります。
 
 
 ## インストール
