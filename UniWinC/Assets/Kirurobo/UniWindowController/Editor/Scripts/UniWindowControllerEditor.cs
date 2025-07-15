@@ -1,7 +1,7 @@
 /*
  * UniWindowControllerEditor.cs
- * 
- * Author: Kirurobo http://twitter.com/kirurobo
+ *
+ * Author: Kirurobo http://x.com/kirurobo
  * License: MIT
  */
 
@@ -13,6 +13,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
+using UnityEngine.Rendering;
 
 namespace Kirurobo
 {
@@ -22,22 +23,58 @@ namespace Kirurobo
     [CustomEditor(typeof(UniWindowController))]
     public class UniWindowControllerEditor : Editor
     {
+        /// <summary>
+        /// カーソル下の色を表示するためのプロパティ
+        /// </summary>
         SerializedProperty pickedColor;
         
+        /// <summary>
+        /// ゲームビューのウィンドウ
+        /// </summary>
         private EditorWindow gameViewWindow;
 
+        /// <summary>
+        /// プロジェクト設定に関する警告を閉じておくか
         private bool isWarningDismissed = false;
+
+        /// <summary>
+        /// URP に関する警告を閉じておくか
+        /// </summary>
+        private bool isUrpWarningDismissed = true;
+
+        /// <summary>
+        /// URP が有効かどうか
+        /// </summary>
+        private bool hasUrp = false;
 
         void OnEnable()
         {
             LoadSettings();
 
             pickedColor = serializedObject.FindProperty("pickedColor");
+
+            // URP が有効か否かを判定
+            hasUrp = GetUrpSettings();
         }
 
         void OnDisable()
         {
             SaveSettings();
+        }
+
+        /// <summary>
+        /// URPが有効か否かを検出
+        /// </summary>
+        /// <returns></returns>
+        private bool GetUrpSettings()
+        {
+            var renderPipelineAsset = GraphicsSettings.defaultRenderPipeline;
+            if (renderPipelineAsset == null || renderPipelineAsset.GetType().Name != "UniversalRenderPipelineAsset")
+            {
+                // URP が設定されていない
+                return false;
+            }
+            return true;
         }
 
         private void LoadSettings()
@@ -50,6 +87,12 @@ namespace Kirurobo
             EditorUserSettings.SetConfigValue("WindowController_IS_WARNING DISMISSED", isWarningDismissed ? "1" : "0");
         }
 
+        /// <summary>
+        /// インスペクタでの表示をカスタマイズ
+        /// </summary>
+        /// <description>
+        /// 参考情報および、推奨設定の変更欄を表示します。
+        /// </description>
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -62,15 +105,26 @@ namespace Kirurobo
                 EditorGUI.EndDisabledGroup();
             }
 
+            // Project Settings の推奨設定を表示
+            isWarningDismissed = ShowPlayerSettingsValidation(isWarningDismissed);
+
+            // URP 関連の推奨設定を表示
+            isUrpWarningDismissed = ShowUrpSettingsValidation(isUrpWarningDismissed);
+        }
+
+        /// <summary>
+        /// Project Settings に関する推奨設定の自動設定欄を表示
+        /// </summary>
+        private bool ShowPlayerSettingsValidation(bool dismissed) {
             // 以下は Project Settings 関連
             EditorGUILayout.Space();
 
-            bool enableValidation = EditorGUILayout.Foldout(!isWarningDismissed, "Player Settings validation");
+            bool enableValidation = EditorGUILayout.Foldout(!dismissed, "Player Settings validation");
 
             // チェックするかどうかを記憶
-            if (enableValidation == isWarningDismissed)
+            if (enableValidation == dismissed)
             {
-                isWarningDismissed = !enableValidation;
+                dismissed = !enableValidation;
             }
 
             // 推奨設定のチェック
@@ -92,11 +146,11 @@ namespace Kirurobo
                     // Dismiss the validation
                     GUI.backgroundColor = Color.yellow;
                     if (GUILayout.Button(
-                        "✘ Mute this validation",
+                        "✘ Dismiss this validation",
                         GUILayout.MinHeight(25f)
                         ))
                     {
-                        isWarningDismissed = true;
+                        dismissed = true;
                         
                         //SaveSettings();        // Uncomment this if save you want to save immediately
                     }
@@ -126,8 +180,63 @@ namespace Kirurobo
                 
                 EditorGUILayout.Space();
             }
+            return dismissed;
         }
 
+        /// <summary>
+        /// URP に関する推奨設定の自動設定欄を表示
+        /// </summary>
+        private bool ShowUrpSettingsValidation(bool dismissed) {
+            // URP が無効ならば何もしない
+            if (!hasUrp) return dismissed;
+
+            // 以下は URP 関連の自動設定
+            EditorGUILayout.Space();
+
+            bool enableValidation = EditorGUILayout.Foldout(!dismissed, "URP Settings validation");
+            // チェックするかどうかを記憶
+            if (enableValidation == dismissed)
+            {
+                dismissed = !enableValidation;
+            }
+            // 推奨設定のチェック
+            //if (!isWarningDismissed)
+            if (enableValidation)
+            {
+                if (ValidateUrpSettings(false))
+                {
+                    // Apply all recommendation
+                    GUI.backgroundColor = Color.green;
+                    if (GUILayout.Button(
+                        "✔ Fix all settings to recommended values",
+                        GUILayout.MinHeight(25f)
+                        ))
+                    {
+                        ValidateUrpSettings(true);
+                    }
+
+                    // Dismiss the validation
+                    GUI.backgroundColor = Color.yellow;
+                    if (GUILayout.Button(
+                        "✘ Dismiss this validation",
+                        GUILayout.MinHeight(25f)
+                        ))
+                    {
+                        dismissed = true;
+                    }
+                    
+                    EditorGUILayout.Space();
+                }
+                else
+                {
+                    GUI.color = Color.green;
+                    GUILayout.Label("OK!");
+                }
+                
+                EditorGUILayout.Space();
+            }
+            return dismissed;
+        }
 
         private delegate void FixMethod();
 
@@ -160,6 +269,31 @@ namespace Kirurobo
                 
                 EditorGUILayout.EndHorizontal();
             }
+        }
+
+        /// <summary>
+        /// Show the recommendation only
+        /// </summary>
+        /// <param name="message">Warning message</param>
+        private void ShowInfo(string message, Object target = null)
+
+        {
+            // Show the message and a fix button
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.HelpBox(message, MessageType.Info, true);
+            GUILayout.FlexibleSpace();
+
+            // 自動設定できない対象は、プロジェクトウィンドウで示すのみ
+            if (target != null)
+            {
+                EditorGUILayout.BeginVertical();
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Ping", GUILayout.Width(60f))) { EditorGUIUtility.PingObject(target); }
+                //GUILayout.FlexibleSpace();
+                EditorGUILayout.EndVertical();
+            }
+            
+            EditorGUILayout.EndHorizontal();
         }
         
         /// <summary>
@@ -250,11 +384,86 @@ namespace Kirurobo
                     silentFix
                 );
             }
+
+            // Direct3D12 は透過ウィンドウに対応していないので、Graphics APIs for Windows から除外することを推奨
+            if (PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows))
+            {
+                // 自動の場合も警告を出す
+                ShowInfo(
+                    "Direct3D12 is not supported for transparent window. " +
+                    "Please consider using Direct3D11 instead of the 'Auto Graphics API for Windows' setting in Player Settings.",
+                    null
+                );
+            }
+            else if (PlayerSettings.GetGraphicsAPIs(BuildTarget.StandaloneWindows).Contains(GraphicsDeviceType.Direct3D12))
+            {
+                // Graphhics APIs for Windows に Direct3D12 が含まれている場合は警告を出す
+                ShowInfo(
+                    "Direct3D12 is not supported for transparent window. " +
+                    "Please remove Direct3D12 from 'Graphics APIs for Windows' in Player Settings.",
+                    null
+                );
+            }
 #endif
 
             return invalid;
         }
+        
+        /// <summary>
+        /// Validate player settings
+        /// </summary>
+        /// <param name="silentFix">false: show warning and fix button, true: fix without showing</param>
+        /// <returns>true if there are any invalid items</returns>
+        private bool ValidateUrpSettings(bool silentFix = false)
+        {
+            bool invalid = false;
+
+            // Universal Render Pipelineが有効ならば、HDRの無効化を推奨
+            foreach (var cam in Camera.allCameras)
+            {
+                if (cam.allowHDR) {
+                    string name = cam.name;
+                    invalid = true;
+                    FixSetting(
+                        $"{name}: Disable 'HDR' in the camera to make the window transparent.",
+                        () => cam.allowHDR = false,
+                        silentFix
+                    );
+                }
+                if (cam.allowMSAA) {
+                    string name = cam.name;
+                    invalid = true;
+                    FixSetting(
+                        $"{name}: Disable 'MSAA' in the camera to make the window transparent.",
+                        () => cam.allowMSAA = false,
+                        silentFix
+                    );
+                }
+            }
+
+            var urpAsset = GraphicsSettings.defaultRenderPipeline;
+            if (hasUrp && urpAsset != null)
+            {
+                // hasUrp == true の時点で urpAsset は UniversalRenderPipelineAsset であるはず。そのため allowPostProcessAlphaOutput があるはず
+                var alphaProcessingProperty = urpAsset.GetType().GetProperty("allowPostProcessAlphaOutput", BindingFlags.Public | BindingFlags.Instance);
+                if (alphaProcessingProperty != null)
+                {
+                    var alphaProcessing = alphaProcessingProperty.GetValue(urpAsset);
+                    if (!(bool)alphaProcessing)
+                    {
+                        invalid = true;
+                        ShowInfo(
+                            "Turn on 'Alpha Processing' in the URP asset",
+                            urpAsset
+                        );
+                    }
+                }
+            }
+
+            return invalid;
+        }
     }
+
 
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
     public class UniWindowControllerReadOnlyDrawer : PropertyDrawer
