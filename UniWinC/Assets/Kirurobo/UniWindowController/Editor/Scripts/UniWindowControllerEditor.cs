@@ -453,7 +453,7 @@ namespace Kirurobo
                     {
                         invalid = true;
                         ShowInfo(
-                            "Trun on 'Alpha Processing' in the URP asset",
+                            "Turn on 'Alpha Processing' in the URP asset",
                             urpAsset
                         );
                     }
