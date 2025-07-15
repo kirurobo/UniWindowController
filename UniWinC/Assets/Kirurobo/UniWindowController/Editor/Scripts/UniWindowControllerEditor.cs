@@ -384,6 +384,26 @@ namespace Kirurobo
                     silentFix
                 );
             }
+
+            // Direct3D12 は透過ウィンドウに対応していないので、Graphics APIs for Windows から除外することを推奨
+            if (PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows))
+            {
+                // 自動の場合も警告を出す
+                ShowInfo(
+                    "Direct3D12 is not supported for transparent window. " +
+                    "Please consider using Direct3D11 instead of the 'Auto Graphics API for Windows' setting in Player Settings.",
+                    null
+                );
+            }
+            else if (PlayerSettings.GetGraphicsAPIs(BuildTarget.StandaloneWindows).Contains(GraphicsDeviceType.Direct3D12))
+            {
+                // Graphhics APIs for Windows に Direct3D12 が含まれている場合は警告を出す
+                ShowInfo(
+                    "Direct3D12 is not supported for transparent window. " +
+                    "Please remove Direct3D12 from 'Graphics APIs for Windows' in Player Settings.",
+                    null
+                );
+            }
 #endif
 
             return invalid;
