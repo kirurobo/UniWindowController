@@ -1,17 +1,18 @@
-name: Generate preview-upm branches
+name: Generate upm branches
 
 # Reference
 # - https://tips.hecomi.com/entry/2021/10/29/001304
 
 on:
   push:
-    branches:
-      - main
+    # main ブランチが更新されたときではなく、'v*' というタグが push されたときにのみ実行させる
+    tags:
+      - v*
   workflow_dispatch:
 
 env:
   MAIN_BRANCH: main
-  UPM_BRANCH: preview-upm
+  UPM_BRANCH: upm
   PKG_ROOT_DIR: UniWinC/Assets/Kirurobo/UniWindowController
   SAMPLES_DIR: Samples
   DOC_FILES: 
@@ -27,6 +28,11 @@ jobs:
           fetch-depth: 0
       - run: git checkout "$MAIN_BRANCH"
       
+      # イベントを起動したタグを steps.tag.outputs.name に格納
+      - name: Tag name
+        id: tag
+        run: echo ::set-output name=name::${GITHUB_REF#refs/tags/v}
+      
       # 生成者の名前を設定
       - name: Git config
         run: |
@@ -34,7 +40,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
       # UPM 用のブランチを作成
-      - name: Create preview UPM branches
+      - name: Create UPM branches
         run: |
           # 古いブランチを削除
           git branch -D "$UPM_BRANCH" &> /dev/null || echo "$UPM_BRANCH" branch is not found
@@ -45,14 +51,28 @@ jobs:
           # 切り出したブランチに移動
           git checkout "$UPM_BRANCH"
           
+          ## メインブランチにあった README などをインポート
+          #for file in "$DOC_FILES"; do
+          #	git checkout "$MAIN_BRANCH" $file &> /dev/null || echo "$file" is not found
+          #done
+          
           # サンプルディレクトリを ~ 付きに改名
           git mv "$SAMPLES_DIR" "$SAMPLES_DIR~" &> /dev/null || echo "$SAMPLES_DIR" is not found
           
           # サンプルディレクトリの .meta は削除
           rm "$SAMPLES_DIR.meta"
           
+          ## package.json のバージョンを置換
+          # sed -i -e "s/\"version\":.*$\"version\": \"$TAG\",/" package.json || echo package.json is not found
+          
           # タグ名とともにコミット
-          git commit -am "Update preview UPM."
+          git commit -am "release $TAG."
           
           # GitHubへプッシュ
           git push -f origin "$UPM_BRANCH"
+          
+          # タグ付きのブランチも作成してプッシュ
+          git checkout -b "$UPM_BRANCH@$TAG"
+          git push -f origin "$UPM_BRANCH@$TAG"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
