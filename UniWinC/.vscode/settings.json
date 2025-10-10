@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "UniWinC.sln"
+    "dotnet.defaultSolution": "UniWinC.slnx"
 }
