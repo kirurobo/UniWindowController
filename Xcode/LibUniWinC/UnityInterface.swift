@@ -50,6 +50,11 @@ public func IsMinimized() -> Bool {
     return LibUniWinC.isMinimized()
 }
 
+@_cdecl("IsFreePositioningEnabled")
+public func IsFreePositioningEnabled() -> Bool {
+    return LibUniWinC.isFreePositioningEnabled()
+}
+
 @_cdecl("DetachWindow")
 public func DetachWindow() -> Bool {
     LibUniWinC.detachWindow()
@@ -104,6 +109,11 @@ public func SetMaximized(isZoomed: Bool) -> Void {
 @_cdecl("SetClickThrough")
 public func SetClickThrough(isTransparent: Bool) -> Void {
     LibUniWinC.setClickThrough(isTransparent: isTransparent)
+}
+
+@_cdecl("EnableFreePositioning")
+public func EnableFreePositioning(isFree: Bool) -> Void {
+    LibUniWinC.enableFreePositioning(enabled: isFree)
 }
 
 @_cdecl("SetPosition")

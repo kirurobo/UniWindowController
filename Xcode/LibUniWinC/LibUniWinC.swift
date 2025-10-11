@@ -18,6 +18,29 @@
 
 import Foundation
 import Cocoa
+import ObjectiveC
+
+extension NSWindow {
+    /// swizzleによってconstrainFrameRectを無効にする
+    func swizzleConstrainFrameRect() {
+        let originalSelector = #selector(constrainFrameRect(_:to:))
+        let swizzledSelector = #selector(disabled_constrainFrameRect(_:to:))
+
+        guard let originalMethod = class_getInstanceMethod(NSWindow.self, originalSelector),
+              let swizzledMethod = class_getInstanceMethod(NSWindow.self, swizzledSelector) else {
+            return
+        }
+
+        // constrainFrameRectを元のものと入れ替える
+        method_exchangeImplementations(originalMethod, swizzledMethod)
+    }
+
+    /// 制限なしとした constrainFrameRect
+   @objc func disabled_constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+       return frameRect
+   }
+}
+
 
 /// Window controller main logic
 @objcMembers
@@ -39,6 +62,11 @@ public class LibUniWinC {
         
         // Keep unzoomed size for the borderless window
         public var normalWindowRect: NSRect = NSRect(x: 0, y: 0, width: 0, height: 0)
+        
+        // メニューバーより上にも自由配置を許すか
+        public var isFreePositioningEnabled: Bool = false
+        // 自由移動のため実際にcontentFrameRectを無効化されたか
+        public var isConstrainFrameRectDisabled: Bool = false
     }
     
     /// Event types for WindowStyleChanged
@@ -136,6 +164,9 @@ public class LibUniWinC {
             window.contentView?.wantsLayer = self.contentViewWantsLayer
             window.contentView?.layer?.isOpaque = self.contentViewLayerIsOpaque
             window.contentView?.layer?.backgroundColor = self.contentViewLayerBackgroundColor
+            
+            // Restore the constrainFrameRect()
+            _enableFreePositioning(enabled: false)
         }
     }
     
@@ -206,6 +237,10 @@ public class LibUniWinC {
     
     @objc public static func isMinimized() -> Bool {
         return (targetWindow?.isMiniaturized ?? false)
+    }
+    
+    @objc public static func isFreePositioningEnabled() -> Bool {
+        return state.isFreePositioningEnabled
     }
     
     private static func _isZoomedActually() -> Bool {
@@ -481,6 +516,8 @@ public class LibUniWinC {
             setBorderless(isBorderless: state.isBorderless)
             setMaximized(isZoomed: state.isZoomed)
             setAlphaValue(alpha: state.alphaValue)
+            
+            _enableFreePositioning(enabled: state.isFreePositioningEnabled)
         }
     }
     
@@ -724,6 +761,29 @@ public class LibUniWinC {
         if let window: NSWindow = targetWindow {
             window.ignoresMouseEvents = isTransparent
             //window!.acceptsMouseMovedEvents = true      // 試しに付けてみたが不要なようだった
+        }
+    }
+    
+    /// macOSで通常は制限されているウィンドウ位置を許可する
+    @objc public static func enableFreePositioning(enabled: Bool) -> Void {
+        // 指示された内容を現在の設定値として覚える
+        state.isFreePositioningEnabled = enabled
+        
+        // 実際の処理
+        _enableFreePositioning(enabled: enabled)
+    }
+    
+    /// constrainFrameRect() による制限を解除／復帰
+    private static func _enableFreePositioning(enabled: Bool) -> Void {
+        // 自由位置のenabledは、constrainのdisabled。すでに一致していればメソッド交換は行わない
+        if (enabled == state.isConstrainFrameRectDisabled) {
+            return
+        }
+        
+        if let window: NSWindow = targetWindow {
+            // constrainFrameRect の交換を行う（無効化も、復帰も交換）
+            window.swizzleConstrainFrameRect()
+            state.isConstrainFrameRectDisabled.toggle()
         }
     }
     
