@@ -276,7 +276,20 @@ namespace Kirurobo
         /// </summary>
         [Tooltip("Will be used the next time the window becomes transparent")]
         public Color32 keyColor = new Color32(0x01, 0x00, 0x01, 0x00);
-        
+
+        /// <summary>
+        /// macOSで、メニューバーより上にウィンドウを配置できるようにするか
+        /// </summary>
+        public bool isFreePositioningEnabled
+        {
+            get { return ((_uniWinCore == null) ? _isFreePositioningEnabled : _isFreePositioningEnabled = _uniWinCore.IsFreePositioningEnabled); }
+            set { SetFreePositioning(value); }
+        }
+        [Header("For macOS only")]
+        [Tooltip("Disable constrainFrameRect() *Only available on macOS")]
+        [SerializeField, EditableProperty]
+        private bool _isFreePositioningEnabled = false;
+
         /// <summary>
         /// Is the mouse pointer on an opaque pixel or an object
         /// </summary>
@@ -868,6 +881,7 @@ namespace Kirurobo
                     SetZoomed(_isZoomed);
                     SetClickThrough(_isClickThrough);
                     SetAllowDrop(_allowDropFiles);
+                    SetFreePositioning(_isFreePositioningEnabled);
 
                     // ウィンドウ取得時にはモニタ変更と同等の処理を行う
                     OnMonitorChanged?.Invoke();
@@ -1034,6 +1048,17 @@ namespace Kirurobo
             _allowDropFiles = enabled;
         }
 
+        /// <summary>
+        /// macOSで、メニューバーより上を含む自由な位置ウィンドウを配置できるようにする
+        /// </summary>
+        /// <param name="enabled"></param>
+        private void SetFreePositioning(bool enabled)
+        {
+            if (_uniWinCore == null) return;
+
+            _uniWinCore.EnableFreePositioning(enabled);
+            _isFreePositioningEnabled = _uniWinCore.IsFreePositioningEnabled;
+        }
 
         /// <summary>
         /// Get the number of connected monitors

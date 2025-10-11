@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &4
 LightmapSettings:
@@ -467,6 +466,7 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
 --- !u!114 &305005405 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7299255619972666376, guid: 38b9db02f63429f49bd117e7f988d985,
@@ -1394,6 +1394,11 @@ PrefabInstance:
     - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
         type: 3}
       propertyPath: _isTransparent
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2416199871598626845, guid: e893aefd93740714b999573b02916984,
+        type: 3}
+      propertyPath: _isFreePositioningEnabled
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
