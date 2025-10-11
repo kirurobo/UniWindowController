@@ -17,13 +17,14 @@ static SIZE szVirtualScreen_;
 static INT nPrimaryMonitorHeight_;
 static BOOL bIsTransparent_ = FALSE;
 static BOOL bIsBorderless_ = FALSE;
-static BYTE byAlpha_ = 0xFF;						// ウィンドウ全体の透明度 0x00:透明 ～ 0xFF:不透明
+static BYTE byAlpha_ = 0xFF;							// ウィンドウ全体の透明度 0x00:透明 ～ 0xFF:不透明
 static BOOL bIsTopmost_ = FALSE;
 static BOOL bIsBottommost_ = FALSE;
 static BOOL bIsBackground_ = FALSE;
+static BOOL bIsFreePositioning_ = FALSE;				// macOSのみ有効。Windowsでは値の保持のみ
 static BOOL bIsClickThrough_ = FALSE;
 static BOOL bAllowDropFile_ = FALSE;
-static COLORREF dwKeyColor_ = 0x00000000;		// AABBGGRR
+static COLORREF dwKeyColor_ = 0x00000000;				// AABBGGRR
 static TransparentType nTransparentType_ = TransparentType::Alpha;
 static TransparentType nCurrentTransparentType_ = TransparentType::Alpha;
 static INT nMonitorCount_ = 0;							// モニタ数。モニタ解像度一覧取得時は一時的に0に戻る
@@ -533,6 +534,15 @@ BOOL UNIWINC_API IsMinimized() {
 }
 
 /// <summary>
+/// （macOSのみ有効）ウィンドウの自由配置機能が有効かどうかを返します
+/// </summary>
+/// <returns>Windowsでは特に制限なしのためTRUE</returns>
+BOOL UNIWINC_API IsFreePositioningEnabled()
+{
+	return bIsFreePositioning_;
+}
+
+/// <summary>
 /// Restore and release the target window
 /// </summary>
 /// <returns></returns>
@@ -575,6 +585,7 @@ HWND FindOwnerWindowHandle() {
 ///   (To attach the process with multiple windows)
 /// </summary>
 /// <returns></returns>
+
 BOOL UNIWINC_API AttachMyActiveWindow() {
 	DWORD currentPid = GetCurrentProcessId();
 	HWND hWnd = GetActiveWindow();
@@ -922,6 +933,17 @@ void UNIWINC_API SetMaximized(const BOOL bZoomed) {
 			ShowWindow(hTargetWnd_, SW_NORMAL);
 		}
 	}
+}
+
+/// <summary>
+/// （macOSのみ）ウィンドウ配置制限を解除・復帰します
+/// </summary>
+/// <param name="isFree">Windowsでは動作しません</param>
+/// <returns>なし</returns>
+void UNIWINC_API EnableFreePositioning(const BOOL isFree)
+{
+	bIsFreePositioning_ = isFree;
+	return;
 }
 
 /// <summary>
