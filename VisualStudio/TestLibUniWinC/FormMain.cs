@@ -47,6 +47,20 @@ namespace TestLibUniWinC
             comboBoxTransparentType.SelectedIndex = 0;
             comboBoxTransparentType.SelectedIndexChanged += comboBoxTransparentType_SelectedIndexChanged;
 
+            comboBoxOrderType.Items.Add(UniWinCore.TopmostType.None);
+            comboBoxOrderType.Items.Add(UniWinCore.TopmostType.AboveTaskbar);
+            comboBoxOrderType.Items.Add(UniWinCore.TopmostType.BelowTaskbar);
+            comboBoxOrderType.SelectedIndex = 0;
+            comboBoxOrderType.SelectedIndexChanged += (s, e) =>
+            {
+                var item = comboBoxOrderType.SelectedItem;
+                if ((uniwinc != null) && (item is UniWinCore.TopmostType))
+                {
+                    var type = (UniWinCore.TopmostType)item;
+                    uniwinc.SetTopmostType(type);
+                }
+            };
+
             // 文字や背景が黒だと透けてしまうのは防げていない…
             textBoxMessage.BackColor = Color.FromArgb(0xFF, 0x33, 0x33, 0x33);
             //OpaqueAllTextColor(this);
@@ -342,6 +356,8 @@ namespace TestLibUniWinC
             uniwinc.Update();
             
             PerformEvent();
+
+            //textBoxMessage.Text = UniWinCore.GetDebugInfo().ToString();
         }
 
         /// <summary>

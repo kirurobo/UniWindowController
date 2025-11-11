@@ -39,6 +39,13 @@ enum class WindowStateEventType : int {
 	WallpaperModeDisabled = 64 + 1,
 };
 
+// 最前面表示の場合、順序を監視して調整するモード
+enum class TopMostType : int {
+	None = 0,	// 操作なし
+	AboveTaskbar = 1,	// タスクバーより前面を維持
+	BelowTaskbar = 2,	// タスクバーの後ろを維持
+};
+
 enum class PanelFlag : int {
 	None = 0,
 	FileMustExist = 1,
@@ -146,6 +153,7 @@ UNIWINC_EXPORT INT32 UNIWINC_API GetDebugInfo();
 // Windows only
 UNIWINC_EXPORT void UNIWINC_API SetTransparentType(const TransparentType type);
 UNIWINC_EXPORT void UNIWINC_API SetKeyColor(const COLORREF color);
+UNIWINC_EXPORT void UNIWINC_API SetTopmostType(const TopMostType type);
 UNIWINC_EXPORT HWND UNIWINC_API GetWindowHandle();
 UNIWINC_EXPORT HWND UNIWINC_API GetDesktopWindowHandle();
 UNIWINC_EXPORT DWORD UNIWINC_API GetMyProcessId();
