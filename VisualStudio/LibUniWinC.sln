@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
+VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibUniWinC", "TestLibUniWinC\TestLibUniWinC.csproj", "{692F2A0A-92CB-4EAD-AE40-2BFF56098881}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -32,14 +32,14 @@ Global
 		{692F2A0A-92CB-4EAD-AE40-2BFF56098881}.Release|x64.Build.0 = Release|x64
 		{692F2A0A-92CB-4EAD-AE40-2BFF56098881}.Release|x86.ActiveCfg = Release|x86
 		{692F2A0A-92CB-4EAD-AE40-2BFF56098881}.Release|x86.Build.0 = Release|x86
-		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|ARM64.ActiveCfg = Debug|ARM
-		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|ARM64.Build.0 = Debug|ARM
+		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|ARM64.Build.0 = Debug|ARM64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|x64.ActiveCfg = Debug|x64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|x64.Build.0 = Debug|x64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|x86.ActiveCfg = Debug|Win32
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Debug|x86.Build.0 = Debug|Win32
-		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|ARM64.ActiveCfg = Release|ARM
-		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|ARM64.Build.0 = Release|ARM
+		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|ARM64.ActiveCfg = Release|ARM64
+		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|ARM64.Build.0 = Release|ARM64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|x64.ActiveCfg = Release|x64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|x64.Build.0 = Release|x64
 		{517DFA3A-0554-4F0C-B219-55E7A3B4B14F}.Release|x86.ActiveCfg = Release|Win32
