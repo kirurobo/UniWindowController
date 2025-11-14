@@ -51,6 +51,16 @@ namespace Kirurobo
             WallpaperModeDisabled = 64 + 1,
         };
 
+        /// <summary>
+        /// Z order type
+        /// </summary>
+        public enum TopmostType: int
+        {
+            None = 0,
+            AboveTaskbar = 1,
+            BelowTaskbar = 2,
+        }
+
         #region Native functions
         protected class LibUniWinC
         {
@@ -213,6 +223,12 @@ namespace Kirurobo
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern void SetKeyColor(uint colorref);
 
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void SetTopmostType(int type);
+
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void OnApplicationFocus(bool focus);
+
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern int GetDebugInfo();
 
@@ -295,6 +311,11 @@ namespace Kirurobo
         /// The color to use for transparency when the transparentType is ColorKey
         /// </summary>
         private Color32 keyColor = new Color32(1, 0, 1, 0);
+
+        /// <summary>
+        /// Type of z-order
+        /// </summary>
+        private TopmostType topmostType = TopmostType.None;
 
 
         #region Constructor or destructor
@@ -518,6 +539,14 @@ namespace Kirurobo
         public void Update()
         {
             LibUniWinC.Update();
+        }
+
+        /// <summary>
+        /// フォーカスが変化したとき、最前面であれば順序を維持する
+        /// </summary>
+        public void OnApplicationFocus(bool focus)
+        {
+            LibUniWinC.OnApplicationFocus(focus);
         }
 
         string GetDebubgWindowSizeInfo()
@@ -808,6 +837,13 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
+
+        public void SetTopmostType(TopmostType type)
+        {
+            LibUniWinC.SetTopmostType((Int32)type);
+            topmostType = type;
+        }
+
         #endregion
 
         #region for macOS only

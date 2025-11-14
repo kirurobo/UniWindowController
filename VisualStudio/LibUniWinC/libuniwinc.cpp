@@ -467,33 +467,17 @@ BOOL getTopMost() {
 /// <returns></returns>
 void UNIWINC_API Update() {
 	// 今のところWindowsでは何もしない
-	static HWND lastForegroundWnd = NULL;
-	HWND hForegroundWnd = GetForegroundWindow();
-	if (hForegroundWnd != lastForegroundWnd) {
-		// フォアグラウンドウィンドウが変わった
-		lastForegroundWnd = hForegroundWnd;
+	return;
+}
 
-		//// タスクバーウィンドウハンドルを取得して比較
-		////   これはセカンダリモニタのタスクバーに非対応だった
-		//HWND hTrayWnd = FindWindow(TEXT("Shell_TrayWnd"), NULL);
-		//if (hTrayWnd == hForegroundWnd) {
-
-
-		if (hForegroundWnd != hTargetWnd_) {
-			// タスクバーがフォアグラウンドになった場合、最前面維持モードであれば調整
-			//if (bIsTopmost_ && (nTopMostType_ == TopMostType::AboveTaskbar)) {
-			//	// タスクバーより前面を維持
-			//	SetWindowPos(
-			//		hTargetWnd_,
-			//		HWND_TOPMOST,
-			//		0, 0, 0, 0,
-			//		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
-			//	);
-			//}
-			if (hTargetWnd_) {
-				SetTimer(hTargetWnd_, TIMER_ID_TOPMOST, 200, NULL);
-			}
-		}
+/// <summary>
+/// Unityのアプリケーションフォーカス変更時に呼ぶ
+/// </summary>
+/// <returns></returns>
+void UNIWINC_API OnApplicationFocus(const BOOL focus) {
+	// 少し待ってから最前面維持を行うようタイマーをセット
+	if (!focus && hTargetWnd_) {
+		SetTimer(hTargetWnd_, TIMER_ID_TOPMOST, 100, NULL);
 	}
 	return;
 }

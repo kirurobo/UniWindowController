@@ -55,6 +55,13 @@ namespace Kirurobo
             ColorKey = 2,
         }
 
+        public enum OrderLevel : int
+        {
+            None = UniWinCore.TopmostType.None,
+            AboveMenuBar = UniWinCore.TopmostType.AboveTaskbar,
+            BelowMenuBar = UniWinCore.TopmostType.BelowTaskbar,
+        }
+
         /// <summary>
         /// Scecifies method to hit-test (i.e., switching click-through)
         /// </summary>
@@ -263,6 +270,12 @@ namespace Kirurobo
         /// </summary>
         [Tooltip("Main camera is used if None")]
         public Camera currentCamera;
+
+        /// <summary>
+        /// ウィンドウ順序の指定
+        /// </summary>
+        [Tooltip("Window z-order level")]
+        public OrderLevel orderLevel = OrderLevel.None;
 
         /// <summary>
         /// 透過方式の指定
@@ -912,7 +925,15 @@ namespace Kirurobo
                 {
                     SetClickThrough(false);
                 }
-            }
+            } else
+			{
+				if (_isTopmost)
+                {
+                    // フォーカスが外れたのちには最前面状態を再設定
+                    _uniWinCore.OnApplicationFocus(focus);
+                    Debug.Log("Reapply topmost on focus lost.");
+				}
+			}
         }
 
         /// <summary>
@@ -1026,6 +1047,18 @@ namespace Kirurobo
             _uniWinCore.EnableBottommost(bottommost);
             _isBottommost = _uniWinCore.IsBottommost;
             _isTopmost = _uniWinCore.IsTopmost;
+        }
+
+        /// <summary>
+        /// ウィンドウ順序を指定
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetOrder(UniWindowController.OrderLevel level)
+        {
+            //if (_isTopmost == topmost) return;
+            if (_uniWinCore == null) return;
+            _uniWinCore.SetTopmostType((UniWinCore.TopmostType)level);
+            orderLevel = level;
         }
 
         /// <summary>

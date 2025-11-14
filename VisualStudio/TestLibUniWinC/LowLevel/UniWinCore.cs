@@ -226,6 +226,9 @@ namespace Kirurobo
             [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
             public static extern void SetTopmostType(int type);
 
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void OnApplicationFocus(bool focus);
+            
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern int GetDebugInfo();
 
@@ -536,6 +539,14 @@ namespace Kirurobo
         public void Update()
         {
             LibUniWinC.Update();
+        }
+
+        /// <summary>
+        /// フォーカスが変化したとき、最前面であれば順序を維持する
+        /// </summary>
+        public void OnApplicationFocus(bool focus)
+        {
+            LibUniWinC.OnApplicationFocus(focus);
         }
 
         string GetDebubgWindowSizeInfo()
