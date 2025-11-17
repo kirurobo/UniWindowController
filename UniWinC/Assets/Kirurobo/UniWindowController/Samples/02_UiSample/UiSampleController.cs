@@ -233,6 +233,12 @@ namespace Kirurobo
                 {
                     uniwinc.isZoomed = !uniwinc.isZoomed;
                 }
+
+                // Toggle free positioning
+                if (InputProxy.GetKeyUp("p"))
+                {
+                    uniwinc.isFreePositioningEnabled = !uniwinc.isFreePositioningEnabled;
+                }
             }
 
 

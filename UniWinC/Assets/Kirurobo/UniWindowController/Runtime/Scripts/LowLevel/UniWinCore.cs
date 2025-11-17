@@ -81,10 +81,14 @@ namespace Kirurobo
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool IsBottommost();
 
-            [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
+            [DllImport("LibUniWinC", CallingConvention=CallingConvention.Winapi)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool IsMaximized();
 
+            [DllImport("LibUniWinC", CallingConvention=CallingConvention.Winapi)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool IsFreePositioningEnabled();
+            
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool AttachMyWindow();
@@ -122,8 +126,11 @@ namespace Kirurobo
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern void SetBottommost([MarshalAs(UnmanagedType.U1)] bool bEnabled);
 
-            [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
             public static extern void SetMaximized([MarshalAs(UnmanagedType.U1)] bool bZoomed);
+            
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void EnableFreePositioning([MarshalAs(UnmanagedType.U1)] bool bEnabled);
 
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern void SetPosition(float x, float y);
@@ -266,6 +273,18 @@ namespace Kirurobo
         /// </summary>
         public bool IsClickThrough { get { return (IsActive && _isClickThrough); } }
         private bool _isClickThrough = false;
+
+        /// <summary>
+        /// Determines whether the attached window is borderless (no title bar and borders)
+        /// </summary>
+        public bool IsBorderless { get { return (IsActive && _isBorderless); } }
+        private bool _isBorderless = false;
+
+        /// <summary>
+        /// Determines whether the attached window can be freely positioned (macOS only)
+        /// </summary>
+        public bool IsFreePositioningEnabled { get { return (IsActive && _isFreePositioningEnabled); } }
+        private bool _isFreePositioningEnabled = false;
 
         /// <summary>
         /// Type of transparent method for Windows
@@ -789,9 +808,21 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
-#endregion
+        #endregion
 
-#region About monitors
+        #region for macOS only
+        /// <summary>
+        /// ウィンドウの自由配置を設定／解除（macOSのみ対応）
+        /// </summary>
+        /// <param name="enabled"></param>
+        public void EnableFreePositioning(bool enabled)
+        {
+            LibUniWinC.EnableFreePositioning(enabled);
+            _isFreePositioningEnabled = LibUniWinC.IsFreePositioningEnabled();
+        }
+        #endregion
+
+        #region About monitors
         /// <summary>
         /// Get the monitor index where the window is located
         /// </summary>
