@@ -65,7 +65,7 @@ public class LibUniWinC {
         
         // メニューバーより上にも自由配置を許すか
         public var isFreePositioningEnabled: Bool = false
-        // 自由移動のため実際にcontentFrameRectを無効化されたか
+        // 自由移動のため実際にconstrainFrameRectを無効化されたか
         public var isConstrainFrameRectDisabled: Bool = false
     }
     
@@ -773,7 +773,7 @@ public class LibUniWinC {
         _enableFreePositioning(enabled: enabled)
     }
     
-    /// constrainFrameRect() による制限を解除／復帰
+    /// constrainFrameRect による制限を解除／復帰
     private static func _enableFreePositioning(enabled: Bool) -> Void {
         // 自由位置のenabledは、constrainのdisabled。すでに一致していればメソッド交換は行わない
         if (enabled == state.isConstrainFrameRectDisabled) {
