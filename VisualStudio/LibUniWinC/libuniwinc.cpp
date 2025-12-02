@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "libuniwinc.h"
 
-#define TIMER_ID_TOPMOST 1
 
 static HWND hTargetWnd_ = NULL;
 static HWND hPanelOwnerWnd_ = NULL;
@@ -32,15 +31,12 @@ static INT nMonitorCount_ = 0;							// モニタ数。モニタ解像度一覧�
 static RECT pMonitorRect_[UNIWINC_MAX_MONITORCOUNT];	// EnumDisplayMonitorsの順番で保持した、各画面のRECT
 static INT pMonitorIndices_[UNIWINC_MAX_MONITORCOUNT];	// このライブラリ独自のモニタ番号をキーとした、EnumDisplayMonitorsでの順番
 static HMONITOR hMonitors_[UNIWINC_MAX_MONITORCOUNT];	// Monitor handles
-static TopMostType nTopMostType_ = TopMostType::None;	// 最前面時にZオーダーを監視する挙動。 0:操作なし、1:タスクバーより前面を維持、2:タスクバーの後ろを維持
 static WNDPROC lpMyWndProc_ = NULL;
 static WNDPROC lpOriginalWndProc_ = NULL;
 //static HHOOK hHook_ = NULL;
 static WindowStyleChangedCallback hWindowStyleChangedHandler_ = nullptr;
 static MonitorChangedCallback hMonitorChangedHandler_ = nullptr;
 static FilesCallback hDropFilesHandler_ = nullptr;
-
-static INT nDebugCount_ = 0;
 
 
 // ========================================================================
@@ -471,18 +467,6 @@ void UNIWINC_API Update() {
 }
 
 /// <summary>
-/// Unityのアプリケーションフォーカス変更時に呼ぶ
-/// </summary>
-/// <returns></returns>
-void UNIWINC_API OnApplicationFocus(const BOOL focus) {
-	// 少し待ってから最前面維持を行うようタイマーをセット
-	if (!focus && hTargetWnd_) {
-		SetTimer(hTargetWnd_, TIMER_ID_TOPMOST, 100, NULL);
-	}
-	return;
-}
-
-/// <summary>
 /// 利用可能な状態ならTRUEを返す
 /// </summary>
 /// <returns></returns>
@@ -848,23 +832,10 @@ void UNIWINC_API SetTopmost(const BOOL bTopmost) {
 	if (hTargetWnd_) {
 		SetWindowPos(
 			hTargetWnd_,
-			bTopmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+			(bTopmost ? HWND_TOPMOST : HWND_NOTOPMOST),
 			0, 0, 0, 0,
 			SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
 		);
-
-		// もし最前面でもタスクバーの下に配置する設定なら、順序を再調整
-		if (bTopmost && nTopMostType_ == TopMostType::BelowTaskbar) {
-			HWND hTaskBar = FindWindow(TEXT("Shell_TrayWnd"), NULL);
-			if (hTaskBar != NULL) {
-				SetWindowPos(
-					hTargetWnd_,
-					hTaskBar,
-					0, 0, 0, 0,
-					SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
-				);
-			}
-		}
 
 		// Run callback if the topmost state changed
 		if (bIsTopmost_ != bTopmost) {
@@ -967,7 +938,7 @@ void UNIWINC_API SetMaximized(const BOOL bZoomed) {
 /// <summary>
 /// （macOSのみ）ウィンドウ配置制限を解除・復帰します
 /// </summary>
-/// <param name="isFree">Windowsでは動作しません</param>
+/// <param name="isFree">メニューバーに重なる位置も許すか（Windowsでは元々可能なため効果無し）</param>
 /// <returns>なし</returns>
 void UNIWINC_API EnableFreePositioning(const BOOL isFree)
 {
@@ -1449,48 +1420,10 @@ LRESULT CALLBACK customWindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 		break;
 
-	case WM_TIMER:
-		if (wParam == 1) {
-			if (bIsTopmost_ && nTopMostType_ == TopMostType::AboveTaskbar) {
-				// 最前面化されていてタスクバーより上にある場合、フォーカスを失っても最前面を維持
-				SetWindowPos(
-					hTargetWnd_,
-					HWND_TOPMOST,
-					0, 0, 0, 0,
-					SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE //| SWP_ASYNCWINDOWPOS // | SWP_FRAMECHANGED
-				);
-			}
-			KillTimer(hWnd, TIMER_ID_TOPMOST);
-		}
-		break;
-
-	case WM_DESTROY:
-		// タイマー停止
-		KillTimer(hWnd, TIMER_ID_TOPMOST);
-		break;
-
 	case WM_WINDOWPOSCHANGING:
-		{
-			WINDOWPOS* pWinPos = (WINDOWPOS*)lParam;
-
-			// 常に最背面
-			if (bIsBottommost_) {
-				pWinPos->hwndInsertAfter = HWND_BOTTOM;
-			}
-			else if (bIsTopmost_) {
-				// 常に最前面の場合、指定があればタスクバーとの関係を維持
-				if (nTopMostType_ == TopMostType::AboveTaskbar) {
-					// タスクバーより上を維持
-					pWinPos->hwndInsertAfter = HWND_TOPMOST;
-				}
-				else if (nTopMostType_ == TopMostType::BelowTaskbar) {
-					// タスクバーより下を維持
-					HWND hTaskbar = FindWindow(L"Shell_TrayWnd", NULL);
-					if (hTaskbar != NULL) {
-						pWinPos->hwndInsertAfter = hTaskbar;
-					}
-				}
-			}
+		// 常に最背面
+		if (bIsBottommost_) {
+			((WINDOWPOS*)lParam)->hwndInsertAfter = HWND_BOTTOM;
 		}
 		break;
 
@@ -2044,10 +1977,8 @@ BOOL UNIWINC_API OpenSavePanel(const PPANELSETTINGS pSettings, LPWSTR pResultBuf
 /// </summary>
 /// <returns></returns>
 INT32 UNIWINC_API GetDebugInfo() {
-	//INT32 value = (INT32)GetTopWindow(NULL);
-	//INT32 value = (INT32)GetForegroundWindow();
-	INT32 value = (INT32)nDebugCount_;
-	return value;
+	LONG style = GetWindowLong(hTargetWnd_, GWL_STYLE);
+	return style;
 }
 
 // ========================================================================
@@ -2075,10 +2006,6 @@ HWND UNIWINC_API GetDesktopWindowHandle() {
 /// <returns></returns>
 DWORD UNIWINC_API GetMyProcessId() {
 	return GetCurrentProcessId();
-}
-
-void UNIWINC_API SetTopmostType(const TopMostType type) {
-	nTopMostType_ = type;
 }
 
 #pragma endregion Windows-only public functions
