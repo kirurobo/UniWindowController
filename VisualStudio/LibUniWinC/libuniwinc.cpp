@@ -1348,6 +1348,9 @@ INT32 UNIWINC_API GetModifierKeys() {
 /// <param name="hDrop"></param>
 /// <returns></returns>
 BOOL receiveDropFiles(HDROP hDrop) {
+	// 最大バッファー長。これを超えると失敗とする。
+	const UINT MAX_BUFFER_SIZE = 204800;
+
 	// TODO: Windowsでは特殊文字がファイル名に入る例はまず無さそうだが、macOSと同様にダブルクォーテーション囲みにした方がよい
 	//		CSVと同様にダブルクォーテーションが文字としてあれば二重にする
 	UINT num = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
@@ -1360,6 +1363,11 @@ BOOL receiveDropFiles(HDROP hDrop) {
 			bufferSize += size + sizeof(L'\n');		// Add a delimiter size
 		}
 		bufferSize++;
+
+		// バッファーサイズが大きすぎる場合は失敗とする
+		if (bufferSize > MAX_BUFFER_SIZE) {
+			return FALSE;
+		}
 
 		// Allocate buffer
 		LPWSTR buffer;
@@ -1628,14 +1636,22 @@ BOOL UNIWINC_API UnregisterDropFilesCallback() {
 /// <param name="lpBuffer"></param>
 /// <param name="nBufferSize"></param>
 BOOL parsePaths(LPWSTR lpBuffer, const UINT32 nBufferLength) {
-	// 複製を保存するのに必要な長さを調べる
-	int bufferLength = nBufferLength;
-	int length = bufferLength;	// OPENFILENAME中で実際に利用した長さ
-	int pathCount = 0;			// NULL区切りでみた行数。複数選択時は1より大きくなる
-	int firstLineLength = bufferLength;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
+	// 確保できる最大バッファサイズの制限 [bytes]
+	const UINT32 MAX_BUFFER_SIZE = 204800;
+
+	// 無効な引数か、処理可能サイズオーバーならば失敗として終了
+	if (lpBuffer == NULL || nBufferLength == 0 || nBufferLength > MAX_BUFFER_SIZE) {
+		return FALSE;
+	}
+
+	// 複製を保存するのに必要な長さ
+	UINT bufferLength = (nBufferLength > MAX_BUFFER_SIZE ? MAX_BUFFER_SIZE : nBufferLength);
+	UINT length = bufferLength;	// OPENFILENAME中で実際に利用した長さ
+	UINT pathCount = 0;			// NULL区切りでみた行数。複数選択時は1より大きくなる
+	UINT firstLineLength = bufferLength;	// 先頭要素の長さ。複数選択時にはフォルダ名が入る部分
 
 	// 要素の数、全体の文字数を数える
-	for (int i = 0; i < bufferLength; i++) {
+	for (UINT i = 0; i < bufferLength; i++) {
 		if (lpBuffer[i] == L'\0') {
 			if (firstLineLength == bufferLength) firstLineLength = i;
 			pathCount++;
