@@ -39,10 +39,22 @@ namespace Kirurobo {
             if (key.Length == 1) {
                 Key k = Key.None;
                 char c = key[0];
-                if (c >= 'A' && c <= 'Z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'A'));
-                if (c >= 'a' && c <= 'z') k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(c - 'a'));
-                if (c >= '0' && c <= '9') k = (Key)Enum.ToObject(typeof(Key), (int)Key.Digit0 + (int)(c - '0'));
-                return Keyboard.current[k].wasReleasedThisFrame;
+                if (c >= '0' && c <= '9') {
+                    // 数字の場合はDigit0～Digit9とNumpad0～Numpad9の両方に反応
+                    k = (Key)Enum.ToObject(typeof(Key), (int)Key.Numpad0 + (int)(c - '0'));
+                    if (Keyboard.current[k].wasReleasedThisFrame) return true;
+
+                    // Digitの場合はDigit0の値が最大
+                    k = (Key)Enum.ToObject(typeof(Key), (int)Key.Digit1 + (int)((c == '0' ? 9 : c - '1')));
+                    if (Keyboard.current[k].wasReleasedThisFrame) return true;
+                }
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                    // アルファベットの場合は大文字・小文字ともに反応{
+                    k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(Char.ToUpper(c) - 'A'));
+                    if (Keyboard.current[k].wasReleasedThisFrame) return true;
+                    k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(Char.ToLower(c) - 'a'));
+                    if (Keyboard.current[k].wasReleasedThisFrame) return true;
+                }
             } else if (key == "escape") {
                 return Keyboard.current.escapeKey.wasReleasedThisFrame;
             } else if (key == "space") {
