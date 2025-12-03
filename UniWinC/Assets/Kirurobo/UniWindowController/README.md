@@ -57,7 +57,7 @@ To make the background transparent, the alpha channel must be maintained.
 There are some conditions for this.  
 - HDR must be disabled [Reference](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
     - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
-- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-250757726)
+- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2601063168)
 
 
 ## Limitations
