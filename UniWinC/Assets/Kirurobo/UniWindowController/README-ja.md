@@ -53,7 +53,16 @@ B. UnityPackage を利用する手順
 5. ビルドしたものを起動
 
 
+### URP 利用時の設定
+背景を透明にするためには、アルファチャンネルを維持する必要があります。  
+そのためにいくつかの条件があります。  
+- HDR は無効にする [参考](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
+    - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
+- AlphaProcessing は有効にする [図](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-250757726)
+
+
 ## 制限事項
+- Direct3D12 では背景透過が有効となりません。Direct3D11 では `Use DXGI flip model swapchain for D3D11` を無効にすることで透過が可能です。
 - Unityエディタ上では透過はできません。ビルドをしてお試しください。
   - 常に最前面やウィンドウ移動等は動作しますが、実行中にゲームビューを閉じたりドッキングの配置を変えることはお勧めしません。一応、ゲームビューにフォーカスを移すとウィンドウを再取得はします。
 - マウスでは良いのですが、タッチ操作には適切な対応がまだ定まっていません。

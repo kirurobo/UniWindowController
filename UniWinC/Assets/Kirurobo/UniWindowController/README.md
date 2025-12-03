@@ -52,7 +52,16 @@ B. Using an UnityPackage
 5. Launch the build
 
 
+### Settings when using URP 
+To make the background transparent, the alpha channel must be maintained.  
+There are some conditions for this.  
+- HDR must be disabled [Reference](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
+    - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
+- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-250757726)
+
+
 ## Limitations
+- Background transparency is not enabled in Direct3D12; in Direct3D11, transparency can be enabled by disabling `Use DXGI flip model swapchain for D3D11`.
 - Transparency is not available on the Unity Editor. Please build and try it.
   - It works for topmost, moving windows, etc., but I do not recommend closing the game view or changing the docking arrangement while it is running. In the meantime, the window will reacquire when the focus is shifted to the game view.
 - The proper support for touch operations has not yet been determined.

@@ -3,6 +3,8 @@ Unified window controller for macOS and Windows
 略称：UniWinC（ユニウィンク）
 
 [![license](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/kirurobo/UniWindowController/blob/master/LICENSE)
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="20px"/></a>
+
 
 ### README
 - [Japanese (日本語での説明)](README-ja.md)
@@ -21,7 +23,7 @@ https://twitter.com/i/status/1314440790945361920
 
 
 ## デモ
-[Release のページ](https://github.com/kirurobo/UniWindowController/releases)  にビルドしたサンプルを置いてあります。
+[UniWinC_VRM](https://github.com/kirurobo/UniWinC_VRM) にはビルドしたVRMファイルビューアーのサンプルを置いてあります。
 
 
 ## インストール
@@ -76,7 +78,7 @@ B. UnityPackage を利用する手順
   - Scripting Runtime: .NET 4.x or later
 - OS: Windows 10, Windows 11 or macOS
 
-開発は Unity 2020.4.30f1, Windows 11 / macOS 13.3 で行っています
+開発は Unity 2022.3.22f1, Windows 11 / macOS 15.3 で行っています
 
 
 ## 補足情報
