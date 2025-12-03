@@ -58,7 +58,7 @@ B. UnityPackage を利用する手順
 そのためにいくつかの条件があります。  
 - HDR は無効にする [参考](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
     - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
-- AlphaProcessing は有効にする [図](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-250757726)
+- AlphaProcessing は有効にする [図](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2601063168)
 
 
 ## 制限事項
