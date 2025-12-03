@@ -49,10 +49,8 @@ namespace Kirurobo {
                     if (Keyboard.current[k].wasReleasedThisFrame) return true;
                 }
                 if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-                    // アルファベットの場合は大文字・小文字ともに反応{
+                    // アルファベットの場合は大文字・小文字どちらでも可とする
                     k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(Char.ToUpper(c) - 'A'));
-                    if (Keyboard.current[k].wasReleasedThisFrame) return true;
-                    k = (Key)Enum.ToObject(typeof(Key), (int)Key.A + (int)(Char.ToLower(c) - 'a'));
                     if (Keyboard.current[k].wasReleasedThisFrame) return true;
                 }
             } else if (key == "escape") {
