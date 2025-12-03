@@ -8,6 +8,11 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.8] - 2025-11-18
+### Added
+- Added IsFreePositioningEnabled property for macOS.
+- Changed .bundle's signing to adhoc for macOS.
+
 ## [v0.9.7] - 2025-03-07
 ### Fixed
 - Improved stability on macOS.
