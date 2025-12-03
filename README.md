@@ -3,6 +3,8 @@ Unified window controller for macOS and Windows
 Abbreviation：UniWinC
 
 [![license](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/kirurobo/UniWindowController/blob/master/LICENSE)
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="20px"/></a>
+
 
 ### README
 - [Japanese (日本語での説明)](README-ja.md)
@@ -20,7 +22,7 @@ https://twitter.com/i/status/1314440790945361920
 
 
 ## Demo
-You can find some sample builts on the [Release page](https://github.com/kirurobo/UniWindowController/releases).
+You can find a sample VRM viewer via [UniWinC_VRM](https://github.com/kirurobo/UniWinC_VRM).
 
 
 ## Installation
@@ -55,7 +57,7 @@ To make the background transparent, the alpha channel must be maintained.
 There are some conditions for this.  
 - HDR must be disabled [Reference](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
     - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
-- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-250757726)
+- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2601063168)
 
 
 ## Limitations
@@ -75,7 +77,7 @@ See also [Issues](https://github.com/kirurobo/UniWindowController/issues) for kn
   - Scripting Runtime: .NET 4.x or later
 - OS: Windows 10, Windows 11 or macOS
 
-Development environment is Unity 2020.4.30f1, Windows 11 / macOS 13.3
+Development environment is Unity 2022.3.22f1, Windows 11 / macOS 15.3
 
 
 ## Additional information
