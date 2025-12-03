@@ -3,6 +3,8 @@ Unified window controller for macOS and Windows
 略称：UniWinC（ユニウィンク）
 
 [![license](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/kirurobo/UniWindowController/blob/master/LICENSE)
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="20px"/></a>
+
 
 ### README
 - [Japanese (日本語での説明)](README-ja.md)
