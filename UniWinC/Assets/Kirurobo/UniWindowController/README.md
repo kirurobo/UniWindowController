@@ -3,6 +3,8 @@ Unified window controller for macOS and Windows
 Abbreviation：UniWinC
 
 [![license](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/kirurobo/UniWindowController/blob/master/LICENSE)
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="20px"/></a>
+
 
 ### README
 - [Japanese (日本語での説明)](README-ja.md)
@@ -50,7 +52,16 @@ B. Using an UnityPackage
 5. Launch the build
 
 
+### Settings when using URP 
+To make the background transparent, the alpha channel must be maintained.  
+There are some conditions for this.  
+- HDR must be disabled [Reference](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2507577260)
+    - Main Camera (GameObject) > Camera (Component) > Output > HDR: Off
+- AlphaProcessing must be enabled [Figure](https://github.com/kirurobo/UniWindowController/issues/42#issuecomment-2601063168)
+
+
 ## Limitations
+- Background transparency is not enabled in Direct3D12; in Direct3D11, transparency can be enabled by disabling `Use DXGI flip model swapchain for D3D11`.
 - Transparency is not available on the Unity Editor. Please build and try it.
   - It works for topmost, moving windows, etc., but I do not recommend closing the game view or changing the docking arrangement while it is running. In the meantime, the window will reacquire when the focus is shifted to the game view.
 - The proper support for touch operations has not yet been determined.
