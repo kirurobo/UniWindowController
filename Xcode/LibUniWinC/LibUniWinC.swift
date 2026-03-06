@@ -175,7 +175,10 @@ public class LibUniWinC {
     
     /// 操作対象となるウィンドウ。nilだと未指定
     private static var targetWindow: NSWindow? = nil
-    
+
+    /// 無限に再帰的にキーウィンドウ化されることを防ぐためのフラグ
+    private static var isMakingKeyWindow: Bool = false
+
     /// 現在の設定を保持する構造体
     private static var state: State = State()
     
@@ -437,10 +440,24 @@ public class LibUniWinC {
     }
     
     @objc static func _keepKeyWindowObserver(notification: Notification) {
-        if (targetWindow != nil && !state.isBottommost) {
-            if (orgWindowInfo.isKeyWindow && !targetWindow!.isKeyWindow) {
-                _makeKeyWindow()
-                //_doWindowStyleChangedCallback(num: EventType.Order)
+        guard let window = targetWindow else {
+            return
+        }
+        if (state.isBottommost) {
+            return
+        }
+        // Unity6においては、同期的にmakeKeyの処理を行うとdidResignKey/didBecomeKeyが再帰的に発生しスタックをオーバーフローしたので, 非同期に実行する
+        if (orgWindowInfo.isKeyWindow && !window.isKeyWindow) {
+            
+            if (isMakingKeyWindow) {
+                return
+            }
+            isMakingKeyWindow = true
+            Task { @MainActor in
+                defer { isMakingKeyWindow = false }
+                if let w = targetWindow, orgWindowInfo.isKeyWindow && !w.isKeyWindow && !state.isBottommost {
+                    _makeKeyWindow()
+                }
             }
         }
     }
@@ -670,12 +687,16 @@ public class LibUniWinC {
             if (orgWindowInfo.isKeyWindow) {
                 if (isBorderless) {
                     // 枠なしにする前に、キーウィンドウにしておく
-                    window.makeKey()
+                    if (!window.isKeyWindow) {
+                        Task { @MainActor in window.makeKey() }
+                    }
                     _setWindowBorderless(window: window, isBorderless: isBorderless)
                 } else {
                     // 枠ありにした後で、キーウィンドウにする
                     _setWindowBorderless(window: window, isBorderless: isBorderless)
-                    window.makeKey()
+                    if (!window.isKeyWindow) {
+                        Task { @MainActor in window.makeKey() }
+                    }
                 }
             } else {
                 _setWindowBorderless(window: window, isBorderless: isBorderless)

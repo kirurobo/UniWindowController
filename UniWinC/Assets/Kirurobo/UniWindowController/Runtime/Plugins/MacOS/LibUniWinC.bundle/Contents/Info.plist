@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>25B78</string>
+	<string>25C56</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -37,9 +37,9 @@
 	<key>DTSDKName</key>
 	<string>macosx26.1</string>
 	<key>DTXcode</key>
-	<string>2611</string>
+	<string>2610</string>
 	<key>DTXcodeBuild</key>
-	<string>17B100</string>
+	<string>17B55</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>11.0</string>
 	<key>NSHumanReadableCopyright</key>
