@@ -116,6 +116,7 @@ namespace TestLibUniWinC
         /// </summary>
         private void UpdateMonitorCombobox()
         {
+            int monitor = uniwinc.GetCurrentMonitor();
             int count = UniWinCore.GetMonitorCount();
             int index = comboBoxFitMonitor.SelectedIndex;
 

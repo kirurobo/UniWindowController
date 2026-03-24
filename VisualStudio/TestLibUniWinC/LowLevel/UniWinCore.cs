@@ -344,14 +344,32 @@ namespace Kirurobo
             //DetachWindow();
 
             // Instead of DetachWindow()
-            LibUniWinC.UnregisterDropFilesCallback();
-            LibUniWinC.UnregisterMonitorChangedCallback();
-            LibUniWinC.UnregisterWindowStyleChangedCallback();
+            UnregisterCallbacks();
         }
         #endregion
 
 
         #region Callbacks
+
+        /// <summary>
+        /// コールバックを登録
+        /// </summary>
+        private void RegisterCallbacks()
+        {
+            LibUniWinC.RegisterDropFilesCallback(_dropFilesCallback);
+            LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
+            LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
+        }
+
+        /// <summary>
+        /// コールバックを解除
+        /// </summary>
+        private void UnregisterCallbacks()
+        {
+            LibUniWinC.UnregisterDropFilesCallback();
+            LibUniWinC.UnregisterMonitorChangedCallback();
+            LibUniWinC.UnregisterWindowStyleChangedCallback();
+        }
 
         /// <summary>
         /// モニタまたは解像度が変化したときのコールバック
@@ -482,6 +500,7 @@ namespace Kirurobo
             //  最前面ではないのが本来と決め打ちで、デタッチ時無効化する
             EnableTopmost(false);
 #endif
+            UnregisterCallbacks();
             LibUniWinC.DetachWindow();
         }
 
@@ -502,10 +521,9 @@ namespace Kirurobo
 #else
             LibUniWinC.AttachMyWindow();
 #endif
+
             // Add event handlers
-            LibUniWinC.RegisterDropFilesCallback(_dropFilesCallback);
-            LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
-            LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
+            RegisterCallbacks();
 
             IsActive = LibUniWinC.IsActive();
             return IsActive;
@@ -513,7 +531,18 @@ namespace Kirurobo
 
         public bool AttachWindowHandle(IntPtr hWnd)
         {
+            if (IsActive)
+            {
+
+                // すでにウィンドウがアタッチされている場合は、いったんデタッチする
+                DetachWindow();
+            }
+
             LibUniWinC.AttachWindowHandle(hWnd);
+
+            // Add event handlers
+            RegisterCallbacks();
+
             IsActive = LibUniWinC.IsActive();
             return IsActive;
         }
