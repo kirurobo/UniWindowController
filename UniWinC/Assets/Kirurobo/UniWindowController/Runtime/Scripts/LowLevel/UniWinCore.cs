@@ -51,6 +51,16 @@ namespace Kirurobo
             WallpaperModeDisabled = 64 + 1,
         };
 
+        /// <summary>
+        /// Z order type
+        /// </summary>
+        public enum TopmostType: int
+        {
+            None = 0,
+            AboveTaskbar = 1,
+            BelowTaskbar = 2,
+        }
+
         #region Native functions
         protected class LibUniWinC
         {
@@ -213,6 +223,12 @@ namespace Kirurobo
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern void SetKeyColor(uint colorref);
 
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void SetTopmostType(int type);
+
+            [DllImport("LibUniWinC", CallingConvention = CallingConvention.Winapi)]
+            public static extern void OnApplicationFocus(bool focus);
+
             [DllImport("LibUniWinC",CallingConvention=CallingConvention.Winapi)]
             public static extern int GetDebugInfo();
 
@@ -296,6 +312,11 @@ namespace Kirurobo
         /// </summary>
         private Color32 keyColor = new Color32(1, 0, 1, 0);
 
+        /// <summary>
+        /// Type of z-order
+        /// </summary>
+        private TopmostType topmostType = TopmostType.None;
+
 
         #region Constructor or destructor
         /// <summary>
@@ -323,14 +344,32 @@ namespace Kirurobo
             //DetachWindow();
 
             // Instead of DetachWindow()
-            LibUniWinC.UnregisterDropFilesCallback();
-            LibUniWinC.UnregisterMonitorChangedCallback();
-            LibUniWinC.UnregisterWindowStyleChangedCallback();
+            UnregisterCallbacks();
         }
         #endregion
 
 
         #region Callbacks
+
+        /// <summary>
+        /// コールバックを登録
+        /// </summary>
+        private void RegisterCallbacks()
+        {
+            LibUniWinC.RegisterDropFilesCallback(_dropFilesCallback);
+            LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
+            LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
+        }
+
+        /// <summary>
+        /// コールバックを解除
+        /// </summary>
+        private void UnregisterCallbacks()
+        {
+            LibUniWinC.UnregisterDropFilesCallback();
+            LibUniWinC.UnregisterMonitorChangedCallback();
+            LibUniWinC.UnregisterWindowStyleChangedCallback();
+        }
 
         /// <summary>
         /// モニタまたは解像度が変化したときのコールバック
@@ -461,6 +500,7 @@ namespace Kirurobo
             //  最前面ではないのが本来と決め打ちで、デタッチ時無効化する
             EnableTopmost(false);
 #endif
+            UnregisterCallbacks();
             LibUniWinC.DetachWindow();
         }
 
@@ -481,10 +521,9 @@ namespace Kirurobo
 #else
             LibUniWinC.AttachMyWindow();
 #endif
+
             // Add event handlers
-            LibUniWinC.RegisterDropFilesCallback(_dropFilesCallback);
-            LibUniWinC.RegisterMonitorChangedCallback(_monitorChangedCallback);
-            LibUniWinC.RegisterWindowStyleChangedCallback(_windowStyleChangedCallback);
+            RegisterCallbacks();
 
             IsActive = LibUniWinC.IsActive();
             return IsActive;
@@ -492,7 +531,18 @@ namespace Kirurobo
 
         public bool AttachWindowHandle(IntPtr hWnd)
         {
+            if (IsActive)
+            {
+
+                // すでにウィンドウがアタッチされている場合は、いったんデタッチする
+                DetachWindow();
+            }
+
             LibUniWinC.AttachWindowHandle(hWnd);
+
+            // Add event handlers
+            RegisterCallbacks();
+
             IsActive = LibUniWinC.IsActive();
             return IsActive;
         }
@@ -518,6 +568,14 @@ namespace Kirurobo
         public void Update()
         {
             LibUniWinC.Update();
+        }
+
+        /// <summary>
+        /// フォーカスが変化したとき、最前面であれば順序を維持する
+        /// </summary>
+        public void OnApplicationFocus(bool focus)
+        {
+            LibUniWinC.OnApplicationFocus(focus);
         }
 
         string GetDebubgWindowSizeInfo()
@@ -808,6 +866,13 @@ namespace Kirurobo
             LibUniWinC.SetKeyColor((UInt32)(color.b * 0x10000 + color.g * 0x100 + color.r));
             keyColor = color;
         }
+
+        public void SetTopmostType(TopmostType type)
+        {
+            LibUniWinC.SetTopmostType((Int32)type);
+            topmostType = type;
+        }
+
         #endregion
 
         #region for macOS only

@@ -8,6 +8,10 @@ How to write the changelog.
 https://keepachangelog.com/ja/1.0.0/
 --->
 
+## [v0.9.9] - 2026-03-13
+### Fixed
+- Fixed crash bug on macOS Unity 6. #105
+
 ## [v0.9.8] - 2025-11-18
 ### Added
 - Added IsFreePositioningEnabled property for macOS.

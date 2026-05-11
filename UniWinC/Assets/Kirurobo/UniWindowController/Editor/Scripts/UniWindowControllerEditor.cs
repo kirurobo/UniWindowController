@@ -246,7 +246,8 @@ namespace Kirurobo
         /// <param name="message">Warning message</param>
         /// <param name="fixAction"></param>
         /// <param name="silentFix">false: show warning and fix button, true: fix without showing</param>
-        private void FixSetting(string message, FixMethod fixAction, bool silentFix = false)
+        /// <param name="buttonLabel">Label for the fix button</param>
+        private void FixSetting(string message, FixMethod fixAction, bool silentFix = false, string buttonLabel = "Fix")
 
         {
             if (silentFix)
@@ -263,7 +264,8 @@ namespace Kirurobo
                 
                 EditorGUILayout.BeginVertical();
                 EditorGUILayout.Space();
-                if (GUILayout.Button("Fix", GUILayout.Width(60f))) { fixAction.Invoke(); }
+                Vector2 buttonSize = GUI.skin.button.CalcSize(new GUIContent(buttonLabel));
+                if (GUILayout.Button(buttonLabel, GUILayout.Width(buttonSize.x))) { fixAction.Invoke(); }
                 //GUILayout.FlexibleSpace();
                 EditorGUILayout.EndVertical();
                 
@@ -416,30 +418,8 @@ namespace Kirurobo
         /// <returns>true if there are any invalid items</returns>
         private bool ValidateUrpSettings(bool silentFix = false)
         {
-            bool invalid = false;
-
-            // Universal Render Pipelineが有効ならば、HDRの無効化を推奨
-            foreach (var cam in Camera.allCameras)
-            {
-                if (cam.allowHDR) {
-                    string name = cam.name;
-                    invalid = true;
-                    FixSetting(
-                        $"{name}: Disable 'HDR' in the camera to make the window transparent.",
-                        () => cam.allowHDR = false,
-                        silentFix
-                    );
-                }
-                if (cam.allowMSAA) {
-                    string name = cam.name;
-                    invalid = true;
-                    FixSetting(
-                        $"{name}: Disable 'MSAA' in the camera to make the window transparent.",
-                        () => cam.allowMSAA = false,
-                        silentFix
-                    );
-                }
-            }
+            bool invalid = false;               // URP の推奨設定に反していれば true
+            bool hasHighPrecisionHDR = false;   // URP で HDR カラーを 64 ビットにしていれば true
 
             var urpAsset = GraphicsSettings.defaultRenderPipeline;
             if (hasUrp && urpAsset != null)
@@ -455,6 +435,61 @@ namespace Kirurobo
                         ShowInfo(
                             "Turn on 'Alpha Processing' in the URP asset",
                             urpAsset
+                        );
+                    }
+                }
+
+                // defaultRenderPipeline が URP だった場合、HDR カラーのビット深度が 64 ビットかどうかを調べておく
+                var hdrColorBufferPrecisionProperty = urpAsset.GetType().GetProperty("hdrColorBufferPrecision", BindingFlags.Public | BindingFlags.Instance);
+                if (hdrColorBufferPrecisionProperty != null)                {
+                    var hdrColorBufferPrecision = hdrColorBufferPrecisionProperty.GetValue(urpAsset);
+
+                    // UnityEngine.Rendering.Universal.HDRColorBufferPrecision._64Bits (== 1) への参照が無い場合のため、int値で比較する
+                    if ((int)hdrColorBufferPrecision == 1)
+                    {
+                        hasHighPrecisionHDR = true;
+                    }
+                    else
+                    {
+                        // HDR カラーのビット深度が 64 ビットでない場合に、supportsHDR が true ならば情報を出しておく
+                        var supportsHDRProperty = urpAsset.GetType().GetProperty("supportsHDR", BindingFlags.Public | BindingFlags.Instance);
+                        if (supportsHDRProperty != null)
+                        {
+                            var supportsHDR = supportsHDRProperty.GetValue(urpAsset);
+                            if ((bool)supportsHDR)
+                            {
+                                invalid = true;
+                                ShowInfo(
+                                    "Set the 'HDR Color Buffer Precision' of the URP asset to 64-bit to make window transparent with HDR support. \n"
+                                    + "(In the Inspector, this option will not be visible unless you check 'Advanced Properties' of 'Rendering'.)",
+                                    urpAsset
+                                );
+                            }
+                        }
+                    }
+                }
+
+                // Universal Render Pipelineが有効ならば、HDRの無効化を推奨
+                foreach (var cam in Camera.allCameras)
+                {
+                    if (cam.allowHDR && !hasHighPrecisionHDR) {
+                        string name = cam.name;
+                        invalid = true;
+                        FixSetting(
+                            $"{name}: Tom make window transparent, disable 'HDR' or change the HDR color buffer precision to 64bits in the URP asset.",
+                            () => cam.allowHDR = false,
+                            silentFix,
+                            "Turn off HDR"
+                        );
+                    }
+                    if (cam.allowMSAA) {
+                        string name = cam.name;
+                        invalid = true;
+                        FixSetting(
+                            $"{name}: Disable 'MSAA' in the camera to make the window transparent.",
+                            () => cam.allowMSAA = false,
+                            silentFix,
+                            "Turn off MSAA"
                         );
                     }
                 }

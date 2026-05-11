@@ -37,6 +37,7 @@ namespace Kirurobo
         [FormerlySerializedAs("maximizedToggle")] public Toggle zoomedToggle;
         public Toggle dragMoveToggle;
         public Toggle allowDropToggle;
+        public Dropdown orderDropdown;
         public Dropdown fitWindowDropdown;
         public Toggle showBorderlineToggle;
         public Button widthDownButton;
@@ -85,6 +86,7 @@ namespace Kirurobo
                 allowDropToggle?.onValueChanged.AddListener(val => uniwinc.allowDropFiles = val);
 
                 fitWindowDropdown?.onValueChanged.AddListener(val => SetFitToMonitor(val));
+                orderDropdown?.onValueChanged.AddListener(val => uniwinc.SetOrder((UniWindowController.OrderLevel)val));
 
                 widthDownButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(-100, 0));
                 widthUpButton?.onClick.AddListener(() => uniwinc.windowSize += new Vector2(+100, 0));
@@ -462,13 +464,18 @@ namespace Kirurobo
                     }
                     fitWindowDropdown.RefreshShownValue();
                 }
+                
+                if (orderDropdown)
+                {
+                    orderDropdown.value = (int)uniwinc.orderLevel;
+                    orderDropdown.RefreshShownValue();
+                }
 
                 if (transparentTypeDropdown)
                 {
                     transparentTypeDropdown.value = (int)uniwinc.transparentType;
                     transparentTypeDropdown.RefreshShownValue();
                 }
-
 
                 if (hitTestTypeDropdown)
                 {
